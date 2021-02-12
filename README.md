@@ -17,9 +17,9 @@ To retrieve the package please visit <https://artifactory.habana-labs.com/repo-u
 ```
 - Once installed the following files will be added to your machine 
   
-  | Location | Purpose | |
+  |  |Location | Purpose  |
   |--|--------------------|-----------------------------|
-  |1 | /usr/bin/tpc-clang | TPC-C compiler and assember |
+  |1 | /usr/bin/tpc-clang | TPC-C compiler and assembler |
   |2 | /usr/bin/tpc-llvm-objdump | TPC dis-assembler|
   |3 | /usr/lib/habanatools/libtpcsim_shared.so | TPC simulator|
   |4 | /usr/lib/habanatools/libtpc_tests_core.so | Test core library |  
@@ -54,7 +54,7 @@ Clone the repository
 ```  
  git clone https://github.com/habana-labs-demo/Habana_Custom_Kernel.git
 ``` 
-In the terminal or linux command line, make sure you are in the project root directory, then create a directory called build
+In the terminal, make sure you are in the project root directory, then create a directory called build
 ```  
 mkdir build
 cd build
@@ -64,4 +64,4 @@ then run the following commands
 cmake ..
 make
 ```  
-Now in build/src directory you can see the libmy_tpc_perf_lib.so, which is your custom kernel library. 
+After build, you can find libcustom_tpc_perf_lib.so in build/src directory, which is your custom kernel library, and tpc_kernel_tests in build/tests, which contains all the unit tests.
