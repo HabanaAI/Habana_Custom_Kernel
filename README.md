@@ -5,13 +5,14 @@ This repository provides the examples to write and build Habana custom kernels u
 * [TPC Kernels Overview](#tpc-kernels-overview)
 * [Install Habana Tool For Ubuntu](#install-habana-tool-for-ubuntu)
 * [Template Examples](#template-examples)
+* [Tensorflow Custom Ops](#tensorflow-custom-ops)
 
 ## TPC Kernels Overview
 The Tensor Processor Core™ (**TPC**) is a fully programmable VLIW4 processor designed to execute non-linear deep learning operators. It is embedded in Habana’s Gaudi deep learning accelerator. Habana’s Gaudi SoC contains numerous TPC cores all operating in parallel, with each core running a single thread. The TPC is designed with very long instruction word (VLIW) architecture. It has a wide single instruction multiple data (SIMD) vector unit that support 2048-bit SIMD operations with data types such as float, bfloat16, INT16, INT32 and INT8. In each cycle, the TPC’s ALU (Arithmetic Logic Unit) can execute up to 64 floats/INT32 ops, or 128 INT16 ops, or 256 INT8 ops.
 TPC is designed for workloads that do not map to MME (Matrix Multiplication Engine). Those workloads or operators can be implemented using TPC kernels. 
 
 ## Install Habana Tool For Ubuntu
-To retrieve the package please visit <https://artifactory.habana-labs.com/repo-ubuntu18.04/pool/qa/h/habanatools/> and download the latest release package. Details are provided via email. You can use most browsers (Firefox preferred), then download habanatools_0.13.0-xxx_amd64.deb for Debian. 
+To retrieve the package please visit <https://vault.habana.ai/ui/repos/tree/General/gaudi-tools-debian%2Fbionic%2Fpool%2Fmain%2Fh%2Fhabanatools%2Fhabanatools_0.13.0-380_amd64.deb> and download the latest release package for Ubuntu 18.04. You can find different packages for different OS you used. 
 ```  
   sudo dpkg -i ./habanatools_0.13.0-xxx_amd64.deb 
 ```
@@ -31,11 +32,11 @@ To retrieve the package please visit <https://artifactory.habana-labs.com/repo-u
 - Compiler usage example
 The compiler supports a single translation unit, hence ‘-c’ argument should be defined.
 ```  
- /usr/bin/tpc-clang reduction.c -c -x c++ -o reduction.o
+ /usr/bin/tpc-clang batch_norm_fwd_f32.c -c -x c++ -o batch_norm_fwd_f32.o
 ```  
-The output of the compilation session will be an elf file named ‘reduction.o’ . To extract raw binary, from the elf, use the following command:
+The output of the compilation session will be an elf file named ‘batch_norm_fwd_f32.o’ . To extract raw binary, from the elf, use the following command:
 ```  
- objcopy -O binary --only-section=.text reduction.o reduction.bin 
+ objcopy -O binary --only-section=.text batch_norm_fwd_f32.o batch_norm_fwd_f32.bin 
 ```  
 Using CMAKE tool shown in the following template example
     
@@ -52,7 +53,7 @@ Make sure your Habana tools are installed, check the /usr/bin/tpc-clang and Cmak
 
 Clone the repository
 ```  
- git clone https://github.com/habana-labs-demo/Habana_Custom_Kernel.git
+ git clone git@github.com:HabanaAI/Habana_Custom_Kernel.git
 ``` 
 In the terminal, make sure you are in the project root directory, then create a directory called build
 ```  
@@ -65,3 +66,6 @@ cmake ..
 make
 ```  
 After build, you can find libcustom_tpc_perf_lib.so in build/src directory, which is your custom kernel library, and tpc_kernel_tests in build/tests, which contains all the unit tests.
+
+## Tensorflow Custom Ops
+The user also can develop their own TF custom ops using their own TPC kernels. Please visit <https://github.com/HabanaAI/Model-References/tree/master/TensorFlow/examples/custom_op> for more details and make sure add your custom kernel path to environment variable GC_KERNEL_PATH, like export GC_KERNEL_PATH=/path/to/your_so/libcustom_tpc_perf_lib.so:/usr/lib/habanalabs/libtpc_kernels.so.
