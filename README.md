@@ -12,7 +12,7 @@ The Tensor Processor Core™ (**TPC**) is a fully programmable VLIW4 processor d
 TPC is designed for workloads that do not map to MME (Matrix Multiplication Engine). Those workloads or operators can be implemented using TPC kernels. 
 
 ## Install Habana Tool For Ubuntu
-To retrieve the package please visit <https://vault.habana.ai/ui/repos/tree/General/gaudi-tools-debian%2Fbionic%2Fpool%2Fmain%2Fh%2Fhabanatools> and download the latest release package for Ubuntu 18.04. You can find different packages for different OS you used. 
+To retrieve the package please visit <https://vault.habana.ai/ui/repos/tree/General/debian%2Fbionic%2Fpool%2Fmain%2Fh%2Fhabanatools> and download the latest release package for Ubuntu 18.04. You can find different packages for different OS you used. 
 ```  
   sudo dpkg -i ./habanatools_0.13.0-xxx_amd64.deb 
 ```
