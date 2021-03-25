@@ -40,7 +40,7 @@ The output of the compilation session will be an elf file named ‘batch_norm_fw
 ```  
 Using CMAKE tool shown in the following template examples.
     
-For other OS, please refer to <https://habana-labs-tpc-gaudi.readthedocs-hosted.com/en/latest/TPC_Tools_Installation/TPC_Tools_Installation_Guide.html> for more details.
+For other OS, please refer to <https://docs.habana.ai/en/latest/TPC_Tools_Installation/TPC_Tools_Installation_Guide.html> for more details.
 
 ## Template Examples
 The template examples show users how to create and build the custom kernels, which can be used in Tensorflow (**TF**) custom ops later.
@@ -67,7 +67,7 @@ cmake ..
 make
 ```  
 After build, you can find libcustom_tpc_perf_lib.so in build/src directory, which is your custom kernel library, and tpc_kernel_tests in build/tests, which contains all the unit tests.
-For more details about TPC kernel writing, please visit <https://habana-labs-tpc-gaudi.readthedocs-hosted.com/en/latest/TPC_User_Guide/TPC_User_Guide.html>.
+For more details about TPC kernel writing, please visit <https://docs.habana.ai/en/latest/TPC_User_Guide/TPC_User_Guide.html>.
 
 ## Tensorflow Custom Ops
 The user also can develop their own TF custom ops using their own TPC kernels. Please visit <https://github.com/HabanaAI/Model-References/tree/master/TensorFlow/examples/custom_op> for more details and make sure add your custom kernel path to environment variable GC_KERNEL_PATH, like export GC_KERNEL_PATH=/path/to/your_so/libcustom_tpc_perf_lib.so:/usr/lib/habanalabs/libtpc_kernels.so.
