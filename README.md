@@ -3,7 +3,7 @@ This repository provides the examples to write and build Habana custom kernels u
 
 ## Table Of Contents
 * [TPC Kernels Overview](#tpc-kernels-overview)
-* [Install HabanaTools For Ubuntu](#install-habanatools-for-ubuntu)
+* [Install Habanatools For Ubuntu](#install-habanatools-for-ubuntu)
 * [Template Examples](#template-examples)
 * [Tensorflow Custom Ops](#tensorflow-custom-ops)
 
@@ -11,10 +11,10 @@ This repository provides the examples to write and build Habana custom kernels u
 The Tensor Processor Core™ (**TPC**) is a fully programmable VLIW4 processor designed to execute non-linear deep learning operators. It is embedded in Habana’s Gaudi deep learning accelerator. Habana’s Gaudi SoC contains numerous TPC cores all operating in parallel, with each core running a single thread. The TPC is designed with very long instruction word (VLIW) architecture. It has a wide single instruction multiple data (SIMD) vector unit that support 2048-bit SIMD operations with data types such as float, bfloat16, INT16, INT32 and INT8. In each cycle, the TPC’s ALU (Arithmetic Logic Unit) can execute up to 64 floats/INT32 ops, or 128 INT16 ops, or 256 INT8 ops.
 TPC is designed for workloads that do not map to MME (Matrix Multiplication Engine). Those workloads or operators can be implemented using TPC kernels. 
 
-## Install HabanaTools For Ubuntu
-To retrieve the package please visit <https://vault.habana.ai/ui/repos/tree/General/debian%2Fbionic%2Fpool%2Fmain%2Fh%2Fhabanatools> and download the latest release package for Ubuntu 18.04. You can find different packages for different OS you used. 
+## Install Habanatools For Ubuntu
+To retrieve the package please visit [Habana Vault](https://vault.habana.ai/ui/repos/tree/General/debian%2Fbionic%2Fpool%2Fmain%2Fh%2Fhabanatools) and download the latest release package for Ubuntu 18.04. You can find different packages for different OS you used. 
 ```  
-  sudo dpkg -i ./habanatools_0.13.0-xxx_amd64.deb 
+  sudo dpkg -i ./habanatools_0.13.0-380_amd64.deb 
 ```
 - Once installed the following files will be added to your machine 
   
@@ -40,7 +40,7 @@ The output of the compilation session will be an elf file named ‘batch_norm_fw
 ```  
 Using CMAKE tool shown in the following template examples.
     
-For other OS, please refer to <https://docs.habana.ai/en/latest/TPC_Tools_Installation/TPC_Tools_Installation_Guide.html> for more details.
+For other OS, please refer to the [TPC Tools Installation Guide](https://docs.habana.ai/en/latest/TPC_Tools_Installation/TPC_Tools_Installation_Guide.html) for more details.
 
 ## Template Examples
 The template examples show users how to create and build the custom kernels, which can be used in Tensorflow (**TF**) custom ops later.
@@ -67,7 +67,7 @@ cmake ..
 make
 ```  
 After build, you can find libcustom_tpc_perf_lib.so in build/src directory, which is your custom kernel library, and tpc_kernel_tests in build/tests, which contains all the unit tests.
-For more details about TPC kernel writing, please visit <https://docs.habana.ai/en/latest/TPC_User_Guide/TPC_User_Guide.html>.
+For more details about TPC kernel writing, please refer to the [TPC User Guide](https://docs.habana.ai/en/latest/TPC_User_Guide/TPC_User_Guide.html) for more information.
 
 ## Tensorflow Custom Ops
-The user also can develop their own TF custom ops using their own TPC kernels. Please visit <https://github.com/HabanaAI/Model-References/tree/master/TensorFlow/examples/custom_op> for more details and make sure add your custom kernel path to environment variable GC_KERNEL_PATH, like export GC_KERNEL_PATH=/path/to/your_so/libcustom_tpc_perf_lib.so:/usr/lib/habanalabs/libtpc_kernels.so.
+The user also can develop their own TF custom ops using their own TPC kernels. Please visit [TensorFlow Custom OPs Examples](https://github.com/HabanaAI/Model-References/tree/master/TensorFlow/examples/custom_op) for more details and make sure add your custom kernel path to environment variable GC_KERNEL_PATH, like export GC_KERNEL_PATH=/path/to/your_so/libcustom_tpc_perf_lib.so:/usr/lib/habanalabs/libtpc_kernels.so.
