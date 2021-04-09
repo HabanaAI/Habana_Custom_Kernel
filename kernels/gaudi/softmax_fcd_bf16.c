@@ -16,9 +16,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 void main(
     tensor ifm,
-    tensor ofm,
-    // LUT is an aux tensor, it should be the last argument
-    tensor lut_tab
+    tensor ofm
 )
 {
     const int depth  = 0;
@@ -52,21 +50,11 @@ void main(
 
     int5 ifmCoords = { depthStart, widthStart, heightStart, batchStart, 0 };
 
-    char256 lut0, lut1, lut2, lut3;
-
     bfloat128 zero_bf16 = v_bf16_mov_s(0.f);
 
     bfloat128 x;
     bfloat128 y;
     bfloat128 sum;
-
-    int5 lutCoords = { 0 };
-
-    // Load lut values for reduction operation
-    lut0 = v_i8_ld_tnsr_b(lutCoords, lut_tab, 0, 0, 1, 0);    lutCoords[depth] += 256;
-    lut1 = v_i8_ld_tnsr_b(lutCoords, lut_tab, 0, 0, 1, 0);    lutCoords[depth] += 256;
-    lut2 = v_i8_ld_tnsr_b(lutCoords, lut_tab, 0, 0, 1, 0);    lutCoords[depth] += 256;
-    lut3 = v_i8_ld_tnsr_b(lutCoords, lut_tab, 0, 0, 1, 0);    lutCoords[depth] += 256;
 
     for (int b = batchStart; b < batchEnd; b += batchStep)
     {
@@ -104,54 +92,8 @@ void main(
                 }
 
 
-               // Sum across the vector
-               // Final sum will be stored in first element/first group which will be broadcasted later
-               // Note: Each vector contains 4 dual groups and each group has 16 elements
-               bfloat128 dgroup, group, temp;
-               // Get data from 2nd dual group
-               dgroup = v_bf16_mov_dual_group_b(sum, 0xFFFFFFFF, 1, 0, MkWr(1, 1), 0, 1, 0);
-               // Dual group (0 + 1)
-               sum = sum + dgroup;
-               // Get data from 3rd dual group
-               dgroup = v_bf16_mov_dual_group_b(sum, 0xFFFFFFFF, 2, 0, MkWr(1, 1), 0, 1, 0);
-               // Dual group (0 + 1 + 2)
-               sum = sum + dgroup;
-               // Get data from 4th dual group
-               dgroup = v_bf16_mov_dual_group_b(sum, 0xFFFFFFFF, 3, 0, MkWr(1, 1), 0, 1, 0);
-               // Dual group (0 + 1 + 2 + 3)
-               sum = sum + dgroup;
-
-               // Exchange hi and lo groups
-               group = v_bf16_mov_group_b(sum, 0xFFFFFFFF, (0b1111 << 2) | 0b11, 0, 1, 0);
-               // Dual group (0 + 1 + 2 + 3) + lo_hi groups
-               sum = sum + group;
-
-               // lut values are used to shuffle within a group
-               // 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14
-               temp = v_bf16_shuffle_b(sum, (uchar256)lut0, 0, sum, 1, 0);
-               // Dual group (0 + 1 + 2 + 3) + lo_hi groups + element (0 + 1)
-               sum = sum + temp;
-               // 0+1, .., 2+3, .., 4+5, .., 6+7, .., 8+9, .., 10+11, .., 12+13, .., 14+15, ..
-               temp = v_bf16_shuffle_b(sum, (uchar256)lut1, 0, sum, 1, 0);
-               // Dual group (0 + 1 + 2 + 3) + lo_hi groups + element (0 + 1 + 2)
-               sum = sum + temp;
-               // 0+1+2+3,...4+5+6+7,... 8+9+10+11, ..., 12+13+14+15
-               temp = v_bf16_shuffle_b(sum, (uchar256)lut2, 0, sum, 1, 0);
-               // Dual group (0 + 1 + 2 + 3) + lo_hi groups + element (0 + 1 + 2 + 3)
-               sum = sum + temp;
-               // 0+1+2+3+4+5+6+7,.......... 8+9+10+11+12+13+14+15,....
-               temp = v_bf16_shuffle_b(sum, (uchar256)lut3, 0, sum, 1, 0);
-               // Dual group (0 + 1 + 2 + 3) + lo_hi groups + element (0 + 1 + 2 + 3)
-               sum = sum + temp;
-               // 0+1+2+3+4+5+6+7+8+9+10+11+12+13+14+15,....
-
-               // Broadcast sum to 2nd dual_group
-               sum = v_bf16_mov_dual_group_b(sum, 0xFFFFFFFF, 0, 1, MkWr(1, 1), sum, 1, 0);
-               // Broadcast sum to 3rd dual_group
-               sum = v_bf16_mov_dual_group_b(sum, 0xFFFFFFFF, 0, 2, MkWr(1, 1), sum, 1, 0);
-               // Broadcast sum to 4th dual_group
-               sum = v_bf16_mov_dual_group_b(sum, 0xFFFFFFFF, 0, 3, MkWr(1, 1), sum, 1, 0);
-
+                // Sum across the vector
+                sum = v_bf16_reduce_add(sum);
 
                 ifmCoords[width] = w;
                 float64_pair_t sumf32;

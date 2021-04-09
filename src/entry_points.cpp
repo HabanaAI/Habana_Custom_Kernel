@@ -29,6 +29,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "leakyrelu_f32_gaudi.hpp"
 #include "sparse_lengths_sum_bf16.hpp"
 #include "customdiv_fwd_f32.hpp"
+#include "relu6_all.hpp"
 
 #include "entry_points.hpp"
 
@@ -89,6 +90,15 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            sparseLengthsSumInstance.GetKernelName(names[GAUDI_KERNEL_SPARSE_LEN_SUM_BF16]);
            CustomdivFwdF32 customdivFwdF32Instance;
            customdivFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_CUSTOMDIV_FWD_F32]);
+           Relu6All Relu6FwdF32Instance(Relu6All::fwd_f32);
+           Relu6FwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_F32], Relu6All::fwd_f32);
+           Relu6All Relu6BwdF32Instance(Relu6All::bwd_f32);
+           Relu6BwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_F32], Relu6All::bwd_f32);
+           Relu6All Relu6FwdBF16Instance(Relu6All::fwd_bf16);
+           Relu6FwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_BF16], Relu6All::fwd_bf16);
+           Relu6All Relu6BwdBF16Instance(Relu6All::bwd_bf16);
+           Relu6BwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_BF16], Relu6All::bwd_bf16);
+
         }
 
         if (kernelCount != nullptr)
@@ -225,6 +235,33 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return customdivFwdF32Instance.HabanaKernel(params,instance);
+    }
+    Relu6All Relu6FwdF32Instance(Relu6All::fwd_f32);
+    Relu6FwdF32Instance.GetKernelName(kernelName, Relu6All::fwd_f32);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return Relu6FwdF32Instance.GetGcDefinitions(params,instance);
+    }
+
+    Relu6All Relu6BwdF32Instance(Relu6All::bwd_f32);
+    Relu6BwdF32Instance.GetKernelName(kernelName, Relu6All::bwd_f32);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return Relu6BwdF32Instance.GetGcDefinitions(params,instance);
+    }
+
+    Relu6All Relu6FwdBF16Instance(Relu6All::fwd_bf16);
+    Relu6FwdBF16Instance.GetKernelName(kernelName, Relu6All::fwd_bf16);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return Relu6FwdBF16Instance.GetGcDefinitions(params,instance);
+    }
+
+    Relu6All Relu6BwdBF16Instance(Relu6All::bwd_bf16);
+    Relu6BwdBF16Instance.GetKernelName(kernelName, Relu6All::bwd_bf16);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return Relu6BwdBF16Instance.GetGcDefinitions(params,instance);
     }
 
     return gcapi::GLUE_NODE_NOT_FOUND;
