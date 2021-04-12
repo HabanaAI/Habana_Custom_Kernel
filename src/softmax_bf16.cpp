@@ -15,7 +15,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #include "softmax_bf16.hpp"
-#include "reduction_fcd_tab.hpp"
 
 extern unsigned char _binary___softmax_fcd_bf16_o_start;
 extern unsigned char _binary___softmax_fcd_bf16_o_end;
@@ -199,35 +198,7 @@ gcapi::GlueCodeReturn_t SoftMaxBF16::HabanaKernel(
     /*************************************************************************************
     *    Stage IV -  Set Auxiliary Tensor
     **************************************************************************************/
-    if (def->axis == 0)
-    {
-        // Reduction_fcd_tab contains the indexes of vector elements to be swapped
-        // to perform reduction
-        kernel->auxiliaryTensorCount = 1;
-        kernel->auxiliaryTensors[0].geometry.dims = 1;
-        kernel->auxiliaryTensors[0].geometry.sizes[0] = sizeof(reduction_fcd_tab_i16);
-        kernel->auxiliaryTensors[0].geometry.sizes[1] = 0;
-        kernel->auxiliaryTensors[0].geometry.sizes[2] = 0;
-        kernel->auxiliaryTensors[0].geometry.sizes[3] = 0;
-        kernel->auxiliaryTensors[0].geometry.sizes[4] = 0;
-
-        kernel->auxiliaryTensors[0].dataType = gcapi::DATA_I8;
-
-        const uint8_t *  pLut = &reduction_fcd_tab_i16[0][0];
-        unsigned required_size =
-                    kernel->auxiliaryTensors[0].geometry.sizes[0] * sizeof(int8_t);
-        // Check whether required memory is allocated for auxiliary tensor
-        if (required_size > kernel->auxiliaryTensors[0].bufferSize)
-        {
-            kernel->auxiliaryTensors[0].bufferSize = required_size;
-            return gcapi::GLUE_INSUFICIENT_AUX_BUFFER_SIZE;
-        }
-        kernel->auxiliaryTensors[0].bufferSize = required_size;
-
-        // Initialize the auxiliary tensor with reduction_fcd_tab
-        memcpy(kernel->auxiliaryTensors[0].pData, pLut, required_size);
-    }
-
+ 
     /*************************************************************************************
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
