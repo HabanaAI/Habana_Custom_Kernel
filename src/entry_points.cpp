@@ -211,30 +211,30 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     leakyReluGaudiInstance.GetKernelName(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
-        return leakyReluGaudiInstance.HabanaKernel(params,instance);
+        return leakyReluGaudiInstance.GetGcDefinitions(params,instance);
     }
     SoftMaxBF16 softmaxBf16Instance;
     softmaxBf16Instance.GetKernelNameFcd(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
-        return softmaxBf16Instance.HabanaKernel(params,instance);
+        return softmaxBf16Instance.GetGcDefinitions(params,instance);
     }
     softmaxBf16Instance.GetKernelNameNonFcd(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
-        return softmaxBf16Instance.HabanaKernel(params,instance);
+        return softmaxBf16Instance.GetGcDefinitions(params,instance);
     }
     SparseLengthsSumBF16 sparseLengthsSumBf16Instance;
     sparseLengthsSumBf16Instance.GetKernelName(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
-        return sparseLengthsSumBf16Instance.HabanaKernel(params, instance);
+        return sparseLengthsSumBf16Instance.GetGcDefinitions(params, instance);
     }
     CustomdivFwdF32 customdivFwdF32Instance;
     customdivFwdF32Instance.GetKernelName(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
-        return customdivFwdF32Instance.HabanaKernel(params,instance);
+        return customdivFwdF32Instance.GetGcDefinitions(params,instance);
     }
     Relu6All Relu6FwdF32Instance(Relu6All::fwd_f32);
     Relu6FwdF32Instance.GetKernelName(kernelName, Relu6All::fwd_f32);

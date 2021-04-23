@@ -14,28 +14,28 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef _SPARSE_LENGTHS_SUM_BF16_HPP
-#define _SPARSE_LENGTHS_SUM_BF16_HPP
+#ifndef _CUSTOMDIV_FWD_F32_HPP
+#define _CUSTOMDIV_FWD_F32_HPP
 
-#include <gc_interface.h>
-#include <cstring>
+#include "gc_interface.h"
 
-class SparseLengthsSumBF16
+class CustomdivFwdF32
 {
 public:
-    SparseLengthsSumBF16() {}
+    CustomdivFwdF32() {}
+    virtual ~CustomdivFwdF32() {}
 
-    virtual ~SparseLengthsSumBF16() {}
-
-    virtual gcapi::GlueCodeReturn_t HabanaKernel(
-            gcapi::HabanaKernelParams_t *params,
-            gcapi::HabanaKernelInstantiation_t *kernel);
+    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
+            gcapi::HabanaKernelParams_t* params,
+            gcapi::HabanaKernelInstantiation_t* kernel);
 
     virtual gcapi::GlueCodeReturn_t GetKernelName(
-            char kernelName[gcapi::MAX_NODE_NAME]);
+            char kernelName [gcapi::MAX_NODE_NAME]);
 
 private:
-    SparseLengthsSumBF16(const SparseLengthsSumBF16 &other) = delete;
-    SparseLengthsSumBF16 &operator=(const SparseLengthsSumBF16 &other) = delete;
+    CustomdivFwdF32(const CustomdivFwdF32& other) = delete;
+    CustomdivFwdF32& operator=(const CustomdivFwdF32& other) = delete;
 };
-#endif /* _SPARSE_LENGTHS_SUM_BF16_HPP */
+
+
+#endif //_CUSTOMDIV_FWD_F32_HPP

@@ -50,6 +50,7 @@ private:
     input.Data()[inputValues.pos] = 23.5f;
 
     // generate input for query call
+    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
     m_in_defs.NodeParams = &inputValues;
     m_in_defs.inputTensorNr = 1;
     m_in_defs.outputTensorNr = 0;

@@ -26,7 +26,7 @@ gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetKernelName(
     return gcapi::GLUE_SUCCESS;
 }
 
-gcapi::GlueCodeReturn_t SparseLengthsSumBF16::HabanaKernel(
+gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetGcDefinitions(
             gcapi::HabanaKernelParams_t* params,
             gcapi::HabanaKernelInstantiation_t* kernel)
 {

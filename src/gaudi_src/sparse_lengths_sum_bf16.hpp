@@ -14,36 +14,28 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef _LEAKYRELU_F32_GAUDI_HPP
-#define _LEAKYRELU_F32_GAUDI_HPP
+#ifndef _SPARSE_LENGTHS_SUM_BF16_HPP
+#define _SPARSE_LENGTHS_SUM_BF16_HPP
 
-#include "gc_interface.h"
+#include <gc_interface.h>
+#include <cstring>
 
-class LeakyReluF32Gaudi
+class SparseLengthsSumBF16
 {
 public:
-    LeakyReluF32Gaudi() {}
-    virtual ~LeakyReluF32Gaudi() {}
+    SparseLengthsSumBF16() {}
 
-    virtual gcapi::GlueCodeReturn_t HabanaKernel(
-            gcapi::HabanaKernelParams_t* params,
-            gcapi::HabanaKernelInstantiation_t* kernel);
+    virtual ~SparseLengthsSumBF16() {}
+
+    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
+            gcapi::HabanaKernelParams_t *params,
+            gcapi::HabanaKernelInstantiation_t *kernel);
 
     virtual gcapi::GlueCodeReturn_t GetKernelName(
-            char kernelName [gcapi::MAX_NODE_NAME]);
-
-    // This struct is common between the TPC kernel writer and the framework
-    // layer writer. The programmer who adds a new layer to the framework-backend
-    // is responsible to fill the structure with valid data.
-    struct LeakyReluParam
-    {
-        float alpha;
-    };
+            char kernelName[gcapi::MAX_NODE_NAME]);
 
 private:
-    LeakyReluF32Gaudi(const LeakyReluF32Gaudi& other) = delete;
-    LeakyReluF32Gaudi& operator=(const LeakyReluF32Gaudi& other) = delete;
+    SparseLengthsSumBF16(const SparseLengthsSumBF16 &other) = delete;
+    SparseLengthsSumBF16 &operator=(const SparseLengthsSumBF16 &other) = delete;
 };
-
-
-#endif //_LEAKYRELU_F32_GAUDI_HPP
+#endif /* _SPARSE_LENGTHS_SUM_BF16_HPP */

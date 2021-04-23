@@ -16,10 +16,15 @@
 set(TARGET custom_tpc_perf_lib)
 
 # Decide which files to compile
-file(GLOB SRC *.cpp)
+file(GLOB SRC *.cpp gaudi_src/*.cpp goya_src/*.cpp)
 
 # define .so object for compiling.
 add_library(${TARGET} SHARED ${SRC})
+
+include_directories(.
+                    gaudi_src
+                    goya_src
+                    )
 
 # Generate a list of all TPC headers for compilation dependencies.
 file(GLOB TPC_GOYA_HEADERS ../kernels/goya/*.h)

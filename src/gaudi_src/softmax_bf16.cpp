@@ -35,7 +35,7 @@ extern unsigned char _binary___softmax_non_fcd_bf16_o_end;
      return gcapi::GLUE_SUCCESS;
  }
 
-gcapi::GlueCodeReturn_t SoftMaxBF16::HabanaKernel(
+gcapi::GlueCodeReturn_t SoftMaxBF16::GetGcDefinitions(
             gcapi::HabanaKernelParams_t* params,
             gcapi::HabanaKernelInstantiation_t* kernel)
 {

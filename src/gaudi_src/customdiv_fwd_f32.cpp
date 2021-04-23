@@ -15,32 +15,31 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #include <cstring>
-#include "leakyrelu_f32_gaudi.hpp"
+#include "customdiv_fwd_f32.hpp"
 
 
-extern unsigned char _binary___leakyrelu_f32_gaudi_o_start;
-extern unsigned char _binary___leakyrelu_f32_gaudi_o_end;
+extern unsigned char _binary___customdiv_fwd_f32_o_start;
+extern unsigned char _binary___customdiv_fwd_f32_o_end;
 
-gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::GetKernelName(
+gcapi::GlueCodeReturn_t CustomdivFwdF32::GetKernelName(
         char kernelName [gcapi::MAX_NODE_NAME])
 {
-    strcpy(kernelName,"leakyrelu_f32_gaudi");
+    strcpy(kernelName,"customdiv_fwd_f32");
     return gcapi::GLUE_SUCCESS;
 }
 
-gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::HabanaKernel(
+gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
         gcapi::HabanaKernelParams_t* params,
         gcapi::HabanaKernelInstantiation_t* kernel)
 {
-	const int c_unrollCount = 4;
     gcapi::GlueCodeReturn_t retVal;
     /*************************************************************************************
     *   Stage I - validate input
     **************************************************************************************/
     //validate correct amount of input tensors
-    if (params->inputTensorNr != 1)
+    if (params->inputTensorNr != 2)
     {
-        params->inputTensorNr  = 1;
+        params->inputTensorNr  = 2;
         return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
     }
     //validate correct amount of output tensors
@@ -52,9 +51,11 @@ gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::HabanaKernel(
 
     // validate input and output data type
     if (params->inputTensors[0].dataType != gcapi::DATA_F32 ||
+        params->inputTensors[1].dataType != gcapi::DATA_F32 ||
         params->outputTensors[0].dataType != gcapi::DATA_F32)
     {
         params->inputTensors[0].dataType = gcapi::DATA_F32;
+        params->inputTensors[1].dataType = gcapi::DATA_F32;
         params->outputTensors[0].dataType = gcapi::DATA_F32;
         return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
     }
@@ -86,7 +87,7 @@ gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::HabanaKernel(
     kernel->indexSpaceGeometry.dims = 4;
     kernel->indexSpaceGeometry.sizes[0] = depthIndex;
 	//reduce index space due to unroll.
-    kernel->indexSpaceGeometry.sizes[1] = (outputSizes[1] +(c_unrollCount-1)) / c_unrollCount; 
+    kernel->indexSpaceGeometry.sizes[1] = outputSizes[1]; 
     kernel->indexSpaceGeometry.sizes[2] = outputSizes[2];
     kernel->indexSpaceGeometry.sizes[3] = outputSizes[3];
 
@@ -96,29 +97,26 @@ gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::HabanaKernel(
     // f_start f(i) = elementsInVec*i + 0;
     // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
     // Resource 0 (IFM) dim 0
-    kernel->inputTensorAccessPattern[0].dim[0].dim      = 0;
-    kernel->inputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
-    kernel->inputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
-    kernel->inputTensorAccessPattern[0].dim[0].start_b  = 0;
-    kernel->inputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
-
-	kernel->inputTensorAccessPattern[0].dim[1].dim      = 1;
-    kernel->inputTensorAccessPattern[0].dim[1].start_a  = c_unrollCount;
-    kernel->inputTensorAccessPattern[0].dim[1].end_a    = c_unrollCount;
-    kernel->inputTensorAccessPattern[0].dim[1].start_b  = 0;
-    kernel->inputTensorAccessPattern[0].dim[1].end_b    = c_unrollCount - 1;
-	
-    // f_start f(i) = 1*i + 0;
-    // f_end   f(i) = 1*i + 0;
-    // Resource 0 (IFM) dim 1-4
-    for (int dims = 2; dims < 4; dims++)
+    for (unsigned i = 0; i < params->inputTensorNr; i++)
     {
-        kernel->inputTensorAccessPattern[0].dim[dims].dim      = dims;
-        kernel->inputTensorAccessPattern[0].dim[dims].start_a  = 1;
-        kernel->inputTensorAccessPattern[0].dim[dims].end_a    = 1;
-        kernel->inputTensorAccessPattern[0].dim[dims].start_b  = 0;
-        kernel->inputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
-    }
+        kernel->inputTensorAccessPattern[i].dim[0].dim      = 0;
+        kernel->inputTensorAccessPattern[i].dim[0].start_a  = elementsInVec;
+        kernel->inputTensorAccessPattern[i].dim[0].end_a    = elementsInVec;
+        kernel->inputTensorAccessPattern[i].dim[0].start_b  = 0;
+        kernel->inputTensorAccessPattern[i].dim[0].end_b    = elementsInVec - 1;
+
+        // f_start f(i) = 1*i + 0;
+        // f_end   f(i) = 1*i + 0;
+        // Resource 0 (IFM) dim 1-4
+        for (int dims = 1; dims < 4; dims++)
+        {
+            kernel->inputTensorAccessPattern[i].dim[dims].dim      = dims;
+            kernel->inputTensorAccessPattern[i].dim[dims].start_a  = 1;
+            kernel->inputTensorAccessPattern[i].dim[dims].end_a    = 1;
+            kernel->inputTensorAccessPattern[i].dim[dims].start_b  = 0;
+            kernel->inputTensorAccessPattern[i].dim[dims].end_b    = 1 - 1;
+        }        
+    }    
 
     // f_start f(i) = elementsInVec*i + 0;
     // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
@@ -129,16 +127,10 @@ gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::HabanaKernel(
     kernel->outputTensorAccessPattern[0].dim[0].start_b  = 0;
     kernel->outputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
 	
-	kernel->outputTensorAccessPattern[0].dim[1].dim      = 1;
-    kernel->outputTensorAccessPattern[0].dim[1].start_a  = c_unrollCount;
-    kernel->outputTensorAccessPattern[0].dim[1].end_a    = c_unrollCount;
-    kernel->outputTensorAccessPattern[0].dim[1].start_b  = 0;
-    kernel->outputTensorAccessPattern[0].dim[1].end_b    = c_unrollCount - 1;
-
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (OFM) dim 1-4
-    for (int dims = 2; dims < 4; dims++)
+    for (int dims = 1; dims < 4; dims++)
     {
         kernel->outputTensorAccessPattern[0].dim[dims].dim      = dims;
         kernel->outputTensorAccessPattern[0].dim[dims].start_a  = 1;
@@ -151,21 +143,19 @@ gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::HabanaKernel(
     /*************************************************************************************
     *    Stage IV -  define scalar parameters
     **************************************************************************************/
-    LeakyReluParam* lrParam = static_cast<LeakyReluParam*>(params->NodeParams);
-    kernel->kernel.paramsNr = sizeof(*lrParam) / sizeof(float);
-    memcpy(&(kernel->kernel.scalarParams[0]), lrParam, sizeof(*lrParam));
+    kernel->kernel.paramsNr = 0;
 
     /*************************************************************************************
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
-    unsigned IsaSize = (&_binary___leakyrelu_f32_gaudi_o_end - &_binary___leakyrelu_f32_gaudi_o_start);
+    unsigned IsaSize = (&_binary___customdiv_fwd_f32_o_end - &_binary___customdiv_fwd_f32_o_start);
     unsigned givenBinarySize = kernel->elfSize;
     kernel->elfSize = IsaSize;
 
     if (givenBinarySize >= IsaSize)
     {
         memcpy (kernel->kernelElf ,
-                    &_binary___leakyrelu_f32_gaudi_o_start,
+                    &_binary___customdiv_fwd_f32_o_start,
                     IsaSize);
     }
     else

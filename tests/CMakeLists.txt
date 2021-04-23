@@ -18,11 +18,16 @@ include(ExternalProject)
 #required for 'ExternalProject_Add' command
 set(TEST_TARGET tpc_kernel_tests)
 
-include_directories(../src                          # include headers in src
+include_directories(../src/gaudi_src                          # include headers in src
+                    ../src/goya_src
+                    ../src
+                    ./gaudi_test
+                    ./goya_test
+                    .
                     )
 
 # Select files to compile
-file(GLOB TESTS_FILES *.cpp)
+file(GLOB TESTS_FILES *.cpp gaudi_test/*.cpp goya_test/*.cpp)
 
 # Create test executable
 add_executable(${TEST_TARGET} ${TESTS_FILES})

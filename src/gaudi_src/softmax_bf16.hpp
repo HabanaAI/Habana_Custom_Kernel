@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs.
+Copyright (c) 2020 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -14,28 +14,47 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef _CUSTOMDIV_FWD_F32_HPP
-#define _CUSTOMDIV_FWD_F32_HPP
+#ifndef _SOFTMAX_BF16_HPP
+#define _SOFTMAX_BF16_HPP
 
+#include <vector>
+#include <cstring>
 #include "gc_interface.h"
 
-class CustomdivFwdF32
+
+
+class SoftMaxBF16
 {
 public:
-    CustomdivFwdF32() {}
-    virtual ~CustomdivFwdF32() {}
+    SoftMaxBF16() {}
+    virtual ~SoftMaxBF16() {}
 
-    virtual gcapi::GlueCodeReturn_t HabanaKernel(
-            gcapi::HabanaKernelParams_t* params,
-            gcapi::HabanaKernelInstantiation_t* kernel);
+    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
+                                  gcapi::HabanaKernelParams_t* in_defs,
+                                  gcapi::HabanaKernelInstantiation_t* out_defs);
 
-    virtual gcapi::GlueCodeReturn_t GetKernelName(
-            char kernelName [gcapi::MAX_NODE_NAME]);
+     virtual gcapi::GlueCodeReturn_t GetKernelNameFcd(
+             char kernelName [gcapi::MAX_NODE_NAME]);
+
+     virtual gcapi::GlueCodeReturn_t GetKernelNameNonFcd(
+             char kernelName [gcapi::MAX_NODE_NAME]);
+
+
+    // This struct is common between the TPC kernel writer and the framework
+    // layer writer. The programmer who adds a new layer to the framework-backend
+    // is responsible to fill the structure with valid data.
+    struct SoftMaxParam
+    {
+        int32_t axis;
+    };
+
 
 private:
-    CustomdivFwdF32(const CustomdivFwdF32& other) = delete;
-    CustomdivFwdF32& operator=(const CustomdivFwdF32& other) = delete;
+    SoftMaxBF16(const SoftMaxBF16& other) = delete;
+    SoftMaxBF16& operator=(const SoftMaxBF16& other) = delete;
 };
 
 
-#endif //_CUSTOMDIV_FWD_F32_HPP
+#endif
+
+
