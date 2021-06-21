@@ -153,7 +153,7 @@ void main(tensor input_tensor,
             // Shuffle first element of vector to dual group 0
             float64 scale_1_v = v_f32_shuffle_b(scale_zp_1, lut1, 0, scale_zp_1, 1, 0);
             float64 scale_2_v = v_f32_shuffle_b(scale_zp_2, lut1, 0, scale_zp_2, 1, 0);
-            printf("value 0 in vector scale_1_v is %f\n", scale_1_v[0]);
+            //printf("value 0 in vector scale_1_v is %f\n", scale_1_v[0]);
 
             // Move dual group 0 to dual group 1
             scale_1_v = v_f32_mov_dual_group_b(scale_1_v, 0xFFFFFFFF, 0, 1, MkWr(1, 1), scale_1_v, 1, 0);

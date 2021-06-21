@@ -61,11 +61,11 @@ public:
         }
     }
 
-    virtual void AllocatePrintfTensor(
+    /*virtual void AllocatePrintfTensor(
                                 std::vector<TensorDescriptor>& descriptors,
                                 const gcapi::HabanaKernelParams_t& in_defs,
                                 const gcapi::HabanaKernelInstantiation_t& out_defs,
-                                const TpcElfTools::TPCProgramHeader& programHeader);
+                                const TpcElfTools::TPCProgramHeader& programHeader);*/
 
     virtual void ShowMessageFromPrintfTensor(std::string title = "");
 
@@ -94,6 +94,7 @@ private:
                                     IndexSpaceMappingTest_t testMode = e_defaultMode);
     //these methods are used to scramble the execution of index space elements to
     // catch concurrent programming errors.
+    /*
     void DivideIndexSpaceRecursive(const int maxPartition,
                                    const int currentDim,
                                    int& partitionCount,
@@ -112,6 +113,7 @@ private:
                           const int indexSpaceDim,
                           IndexSpace input,
                           std::vector<IndexSpace>& output);
+    */
     // this is a debug helper function to print glue code outputs.
     void PrintKernelOutputParams(const gcapi::HabanaKernelParams_t* gc_input,
                                  const gcapi::HabanaKernelInstantiation_t*gc_output);

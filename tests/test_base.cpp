@@ -19,8 +19,9 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include "TPC.h" //TPC simulator header
 #include "test_base.hpp"
-#include "test_base_tpc_callback.hpp"
+//#include "test_base_tpc_callback.hpp"
 #include "tpc_elf_api.hpp"
+#include "tpc_test_core_api.h"
 
 int c_divide_by_all_indices        = 5;
 bool TestBase::s_printfIsUsed = false;
@@ -58,29 +59,29 @@ TensorDescriptorGaudi TestBase::DaliTensorDescToGaudiDesc(const TensorDescriptor
     return gaudiDesc;
 }
 
-
-#define PRINTF_SIZE_BYTES (32*1024) /* 32kB */
+/*
+#define PRINTF_SIZE_BYTES (32*1024) // 32kB 
 
 void TestBase::AllocatePrintfTensor( std::vector<TensorDescriptor>& descriptors,
                                      const gcapi::HabanaKernelParams_t& in_defs,
                                      const gcapi::HabanaKernelInstantiation_t& out_defs,
                                      const TpcElfTools::TPCProgramHeader & programHeader)
 {
-    /* first, turn off s_printfIsUsed flag for cases of consecutive tests execution. */
+    // first, turn off s_printfIsUsed flag for cases of consecutive tests execution. 
     TestBase::s_printfIsUsed = false;
 
     if (programHeader.printfUsed)
     {
-        /* in case of repeated call of AllocatePrintfTensor function and reinitialization of
-           s_ptr_printfTensor, the previous PrintfTensor will be automatically correctly destroyed
-           due to functionality of smart pointers.*/
+        // in case of repeated call of AllocatePrintfTensor function and reinitialization of
+        //   s_ptr_printfTensor, the previous PrintfTensor will be automatically correctly destroyed
+        //   due to functionality of smart pointers.
         TestBase::s_ptr_printfTensor = std::make_shared<test::PrintfTensor>(PRINTF_SIZE_BYTES);
 
         descriptors.push_back(TestBase::s_ptr_printfTensor->GetTensorDescriptor());
         TestBase::s_printfIsUsed = true;
     }
 }
-
+*/
 void TestBase::ShowMessageFromPrintfTensor(std::string title)
 {
     if (TestBase::s_printfIsUsed)
@@ -99,8 +100,8 @@ unsigned int TestBase::RunSimulation(   std::vector<TensorDescriptor>& descripto
                                         const gcapi::HabanaKernelInstantiation_t& gc_output,
                                         IndexSpaceMappingTest_t testMode)
 {
-
-    TpcElfTools::TPCProgramHeader programHeader = {};
+    
+    /*TpcElfTools::TPCProgramHeader programHeader = {};
 
     TpcElfTools::ExtractTpcProgramHeaderFromElf(gc_output.kernelElf,
                                                     gc_output.elfSize,
@@ -149,6 +150,9 @@ unsigned int TestBase::RunSimulation(   std::vector<TensorDescriptor>& descripto
     printf("Program executed in %u cycles\n", retVal);
 
     return retVal;
+    */
+   return tpc_tests::RunSimulation(gc_input, gc_output, descriptors);
+
 }
 
 unsigned int TestBase::RunSimulationInternal(const std::vector<TensorDescriptor>& descriptors,
@@ -157,7 +161,7 @@ unsigned int TestBase::RunSimulationInternal(const std::vector<TensorDescriptor>
                                     int offsets [5],
                                     IndexSpaceMappingTest_t testMode)
 {
-    std::shared_ptr<TPCCallbackInterface> pCallbackInterface
+    /*std::shared_ptr<TPCCallbackInterface> pCallbackInterface
                     = std::make_shared<TestBaseTPCCallback>(&gc_input, &gc_output, offsets);
 
     TPCGenerations generation = TPCGenerations::DALI;
@@ -170,7 +174,7 @@ unsigned int TestBase::RunSimulationInternal(const std::vector<TensorDescriptor>
                pCallbackInterface,
                gc_output.flags.specialFunctionsUsed, //false == large VLM
                generation);
-
+    
     // generate and load tensor descriptors
     if (gc_input.deviceId == gcapi::DEVICE_ID_GOYA)
     {
@@ -215,10 +219,13 @@ unsigned int TestBase::RunSimulationInternal(const std::vector<TensorDescriptor>
                 std::dynamic_pointer_cast<TestBaseTPCCallback>(pCallbackInterface);
     // validate the index space mapping is correct and optimized.
     pTestBaseCallback->ValidateAccessPattern(testMode);
-
+    
+    */
+   VPEStats stat;
     return stat.instructionsExecuted;
 }
 
+/*
 // Divide all dimensions of the index-space by 2.
 void TestBase::DivideIndexSpaceRecursive(const int maxPartition,
                                          const int currentDim,
@@ -299,7 +306,7 @@ void TestBase::DivideIndexSpace(const int maxPartition,
 
     std::random_shuffle(std::begin(output), std::end(output));
 }
-
+*/
 static const std::string dataType[] = {"float32", "float16", "int32", "int16", "int8", "uint8", "bfloat16"};
 
 void TestBase::PrintKernelInputParams(const gcapi::HabanaKernelParams_t* gc_input)

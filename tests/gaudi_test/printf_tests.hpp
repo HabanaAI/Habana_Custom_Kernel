@@ -69,18 +69,21 @@ private:
     }
 
     // Executes a simulation of kernel using TPC simulator
-    RunSimulation(vec, m_in_defs, m_out_defs);
+    TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
 
     // Get the scalar values from kernel
     uint32_t * pScalarParams  = m_out_defs.kernel.scalarParams;
 
     // Check scalar values that was printed using %f or %d
     for(int n = 0; n < TestBase::s_ptr_printfTensor->GetNumMessages() - 1; n++)
+    //for(int n = 0; n < TestCore::s_ptr_printfTensor->GetNumMessages() - 1; n++)
     {
         if(TestBase::s_ptr_printfTensor->ValueIs(n))  // if the message has a value (is not sole string)
+        //if(TestCore::s_ptr_printfTensor->ValueIs(n))  // if the message has a value (is not sole string)
         {
             // Verify if the message contains the correct scalar data
             if (*pScalarParams != TestBase::s_ptr_printfTensor->GetImprint(n))
+            //if (*pScalarParams != TestCore::s_ptr_printfTensor->GetImprint(n))
             {
                 std::cout << "test failed!!" << std::endl;
                 return -1;
@@ -94,6 +97,7 @@ private:
     int n = sprintf(buf, "value in vector is %f\n", input.Data()[inputValues.pos]);
     std::string ref_message = std::string(buf, n);
     if(ref_message.compare(TestBase::s_ptr_printfTensor->GetMessageWithNumber(3)))
+    //if(ref_message.compare(TestCore::s_ptr_printfTensor->GetMessageWithNumber(3)))
     {
         std::cout << "test failed!!" << std::endl;
         return -1;
@@ -101,6 +105,7 @@ private:
 
     // Check the number of messages
     if (TestBase::s_ptr_printfTensor->GetNumMessages() != 4)
+    //if (TestCore::s_ptr_printfTensor->GetNumMessages() != 4)
     {
         std::cout << "test failed!!" << std::endl;
         return -1;
