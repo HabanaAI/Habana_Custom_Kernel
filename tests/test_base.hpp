@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2018 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -20,7 +20,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include <memory>
 
 #include "tensor.h"
-#include "printf.hpp"
 #include "gc_interface.h"
 #include "tpc_elf_api.hpp"
 
@@ -61,19 +60,10 @@ public:
         }
     }
 
-    /*virtual void AllocatePrintfTensor(
-                                std::vector<TensorDescriptor>& descriptors,
-                                const gcapi::HabanaKernelParams_t& in_defs,
-                                const gcapi::HabanaKernelInstantiation_t& out_defs,
-                                const TpcElfTools::TPCProgramHeader& programHeader);*/
-
-    virtual void ShowMessageFromPrintfTensor(std::string title = "");
-
     static TensorDescriptorGaudi DaliTensorDescToGaudiDesc(const TensorDescriptor * desc);
     static const int num_dims_in_irf = 5;
     static bool s_printfIsUsed;
-    static std::shared_ptr<test::PrintfTensor> s_ptr_printfTensor;
-
+    
     void ReleaseKernelNames(char** kernelNames, unsigned kernelCount)
     {
         // release memory
@@ -92,28 +82,6 @@ private:
                                     const gcapi::HabanaKernelInstantiation_t& gc_output,
                                     int offsets [5],
                                     IndexSpaceMappingTest_t testMode = e_defaultMode);
-    //these methods are used to scramble the execution of index space elements to
-    // catch concurrent programming errors.
-    /*
-    void DivideIndexSpaceRecursive(const int maxPartition,
-                                   const int currentDim,
-                                   int& partitionCount,
-                                   IndexSpace input,
-                                   std::vector<IndexSpace>& output);
-
-    void DivideIndexSpaceByDim(const int maxPartition,
-                               const int partitionDim,
-                               const int partitionFactor,
-                               IndexSpace input,
-                               std::vector<IndexSpace>& output);
-
-    void DivideIndexSpace(const int maxPartition,
-                          const int partitionDim,
-                          const int partitionFactor,
-                          const int indexSpaceDim,
-                          IndexSpace input,
-                          std::vector<IndexSpace>& output);
-    */
     // this is a debug helper function to print glue code outputs.
     void PrintKernelOutputParams(const gcapi::HabanaKernelParams_t* gc_input,
                                  const gcapi::HabanaKernelInstantiation_t*gc_output);

@@ -18,7 +18,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "filter_2d_f32_test.hpp"
 #include "filter_fwd_2d_bf16_test.hpp"
 #include "filter_2d_i8_w33_s11_test.hpp"
-#include "printf_tests.hpp"
 #include "sparse_lengths_sum_test.hpp"
 #include "softmax_f32_test.hpp"
 #include "softmax_bf16_test.hpp"
@@ -46,7 +45,7 @@ int main(int argc, char** argv)
             "TestName:" << std::endl <<
             "Filter2DF32Test            Run Filter2DF32Test only   " << std::endl <<
             "FilterFwd2DBF16Test        Run FilterFwd2DBF16Test only   " << std::endl <<
-            "PrintTest                  Run PrintTest only   " << std::endl <<
+            "Filter2DI8W33S11Test       Run Filter2DI8W33S11Test only   " << std::endl <<
             "SparseLengthsSumTest       Run SparseLengthsSumTest only   " << std::endl <<
             "SoftMaxF32Test             Run SoftMaxF32Test only   " << std::endl <<
             "SoftMaxBF16Test            Run SoftMaxBF16Test only   " << std::endl <<
@@ -87,20 +86,6 @@ int main(int argc, char** argv)
         test_bf16.SetUp();
         result = test_bf16.runTest();
         test_bf16.TearDown();
-        if (result != 0)
-        {
-            return result;
-        }
-    }
-
-    if(argc == 1 ||
-        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
-        && (strcmp(argv[2],"PrintTest") ==0))))
-    {
-        PrintfTest testPrint;
-        testPrint.SetUp();
-        result = testPrint.runTest();
-        testPrint.TearDown();
         if (result != 0)
         {
             return result;
