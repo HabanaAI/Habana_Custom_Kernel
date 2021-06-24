@@ -22,27 +22,27 @@ float64 reciprocal_cephes_fast_f32(float64 input)
     const float c = 4.24242f;
 
     int64 significand = 0;
-    significand = v_i32_and_b(*((int64*)&input), 0x007fffff, 0, 0, 1, 0);
-    significand = v_i32_or_b(significand, 0x3f000000, 0, 0, 1, 0);
+    significand = v_i32_and_b(*((int64*)&input), 0x007fffff);
+    significand = v_i32_or_b(significand, 0x3f000000);
     result = *((float64*)&significand);
 
     int64 exponent = 0;
-    exponent =  v_i32_shr_b(*((int64*)&input), 23, 0, 0, 1, 0);
-    exponent = v_i32_and_b(exponent, 0x000000ff, 0, 0, 1, 0);
+    exponent =  v_i32_shr_b(*((int64*)&input), 23);
+    exponent = v_i32_and_b(exponent, 0x000000ff);
     exponent -= 0x7e;
 
-    temp0 = v_f32_mac_b(result, a, b, (0) << 1, 1, 0);
-    temp1 = v_f32_mac_b(result, temp0, c, (0) << 1, 1, 0);
-    temp2 = v_f32_mac_b(-result, temp1, 2, (0) << 1, 1, 0);
+    temp0 = v_f32_mac_b(result, a, b);
+    temp1 = v_f32_mac_b(result, temp0, c);
+    temp2 = v_f32_mac_b(-result, temp1, 2);
     temp2 *= temp1;
-    temp0 = v_f32_mac_b(-result, temp2, 2, (0) << 1, 1, 0);
+    temp0 = v_f32_mac_b(-result, temp2, 2);
     temp0 *= temp2;
 
-    int64 exp =  v_i32_shr_b(*((int64*)&temp0), 23, 0, 0, 1, 0);
-    exp = v_i32_and_b(exp, 0x000000ff, 0, 0, 1, 0);
-    exp = v_i32_add_b(exp, -exponent, 0, 0, 1, 0);
-    exp = v_i32_and_b(exp, 0xff, 0, 0, 1, 0);
-    result = v_f32_form_fp_num_ie_b((char256)exp, input, temp0, SW_EXP_IS_NUM, 0, 1, 0);
+    int64 exp =  v_i32_shr_b(*((int64*)&temp0), 23);
+    exp = v_i32_and_b(exp, 0x000000ff);
+    exp = v_i32_add_b(exp, -exponent);
+    exp = v_i32_and_b(exp, 0xff);
+    result = v_f32_form_fp_num_ie_b((char256)exp, input, temp0, SW_EXP_IS_NUM);
 
     return result;
 }
@@ -55,14 +55,14 @@ float64 reciprocal_cephes_f32(float64 input)
 
 // ====================================
 //  Processing special values: denorm, +-0. +-inf, nan
-    float64 abs_x = v_f32_abs_b(input, 0, 0, 1, 0);
+    float64 abs_x = v_f32_abs_b(input);
 
     const uint64 flt_max = 0x7f7fffff;
     const float64 flt_max_fp32 = *((float64*)&flt_max);
 
-    float64 fclass = v_f32_fclass_b(input, 0, 0, 1, 0);
-    result = v_f32_calc_fp_special_b(fclass, fclass, e_fp_recip, result, 1, 0);
-    result = v_f32_sel_geq_f32_b(abs_x, flt_max_fp32, 0.0f, result, 0, 0, 1, 0);
+    float64 fclass = v_f32_fclass_b(input);
+    result = v_f32_calc_fp_special_b(fclass, fclass, e_fp_recip, result);
+    result = v_f32_sel_geq_f32_b(abs_x, flt_max_fp32, 0.0f, result);
 // ====================================
 
     return result;
@@ -114,12 +114,12 @@ void main(tensor input0, tensor input1, tensor output)
                 {
                     coords[width] = w;
 
-                    float64 x = v_f32_ld_tnsr_b(coords, input0, 0, 0, 1, 0);
-                    float64 y = v_f32_ld_tnsr_b(coords, input1, 0, 0, 1, 0);
+                    float64 x = v_f32_ld_tnsr_b(coords, input0);
+                    float64 y = v_f32_ld_tnsr_b(coords, input1);
 
                     float64 div_x_y = x * reciprocal_cephes_fast_f32(y);
 
-                    v_f32_st_tnsr(coords, output, div_x_y, 0, 1, 0);
+                    v_f32_st_tnsr(coords, output, div_x_y);
                 }
             }
         }

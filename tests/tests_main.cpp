@@ -314,6 +314,6 @@ int main(int argc, char** argv)
         }
     }
 
-    std::cout << "All tests passs!" <<std::endl;
+    std::cout << "All tests pass!" <<std::endl;
     return 0;
 }

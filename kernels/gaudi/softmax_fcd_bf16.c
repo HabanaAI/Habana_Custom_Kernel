@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2020 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -75,16 +75,16 @@ void main(
                     ifmCoords[depth] = d;
 
                     // load input tensors
-                    x = v_bf16_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);
+                    x = v_bf16_ld_tnsr_b(ifmCoords, ifm);
                     float64_pair_t  xf32, yf32;
-                    xf32 = v_convert_bf16_to_f32_all_b(x, 0, (float128){0}, 1, 0);
+                    xf32 = v_convert_bf16_to_f32_all_b(x);
                     // exp_bf16(bfloat128 input)
                     yf32.v1 = v_exp_cephes_f32(xf32.v1);
                     yf32.v2 = v_exp_cephes_f32(xf32.v2);
-                    y = v_convert_f32_to_bf16_all_b(yf32, (0 <<16), 0, 1, 0);
+                    y = v_convert_f32_to_bf16_all_b(yf32);
 
                     // Move zero for out of bound co-ordinates
-                    bool256 pred = from_bool128(v_u16_cmp_geq_b(d + V_LANE_ID_16, (unsigned)depthEnd, 0, to_bool128((bool256){0}), 1, 0));
+                    bool256 pred = from_bool128(v_u16_cmp_geq_b(d + V_LANE_ID_16, (unsigned)depthEnd, 0, to_bool128((bool256){0})));
                     y = v_bf16_mov_vb(zero_bf16, 0, y, to_bool128(pred), 0);
 
                     // Sum up the values in a vector
@@ -98,28 +98,28 @@ void main(
                 ifmCoords[width] = w;
                 float64_pair_t sumf32;
                 // calculate 1/sum by using float
-                sumf32 = v_convert_bf16_to_f32_all_b(sum, 0, (float128){0}, 1, 0);
+                sumf32 = v_convert_bf16_to_f32_all_b(sum);
                 sumf32.v1 = v_reciprocal_f32(sumf32.v1);
                 sumf32.v2 = v_reciprocal_f32(sumf32.v2);
-                sum = v_convert_f32_to_bf16_all_b(sumf32, (0 <<16), 0, 1, 0);
+                sum = v_convert_f32_to_bf16_all_b(sumf32);
 
 
                 for (int d = depthStart; d < depthEnd; d += depthStep)
                 {
                     ifmCoords[depth] = d;
 
-                    x = v_bf16_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);
+                    x = v_bf16_ld_tnsr_b(ifmCoords, ifm);
                     float64_pair_t xf32, yf32;
-                    xf32 = v_convert_bf16_to_f32_all_b(x, 0, (float128){0}, 1, 0);
+                    xf32 = v_convert_bf16_to_f32_all_b(x);
                     // exp_bf16(bfloat128 input)
                     yf32.v1 = v_exp_cephes_f32(xf32.v1);
                     yf32.v2 = v_exp_cephes_f32(xf32.v2);
-                    y = v_convert_f32_to_bf16_all_b(yf32, (0 <<16), 0, 1, 0);
+                    y = v_convert_f32_to_bf16_all_b(yf32);
 
                     // Multiply exp(x) * 1/(sum_of_exponents)
                     x = y * sum;
 
-                    v_bf16_st_tnsr(ifmCoords, ofm, x, 0, 1, 0);
+                    v_bf16_st_tnsr(ifmCoords, ofm, x);
                 }
             }
         }

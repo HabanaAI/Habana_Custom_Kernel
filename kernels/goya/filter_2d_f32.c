@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2018 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -55,12 +55,12 @@ void main(tensor ifm,
                                               (stride_h*h) - padh + (kh*dilation_h) ,
                                                b,
                                                0};
-                            float64 filterVector = v_f32_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);
-                            float64 ifmVector = v_f32_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);
-                            accum = v_f32_mac_b(filterVector, ifmVector, accum, (e_no_negation) << 1, 1, 0);
+                            float64 filterVector = v_f32_ld_tnsr_b(filterCoords, filter);
+                            float64 ifmVector = v_f32_ld_tnsr_b(ifmCoords, ifm);
+                            accum = v_f32_mac_b(filterVector, ifmVector, accum, (e_no_negation) << 1);
                         }
                     }
-                    v_f32_st_tnsr(output_coords, ofm, accum, 0, 1, 0);
+                    v_f32_st_tnsr(output_coords, ofm, accum);
                 }
             }
         }

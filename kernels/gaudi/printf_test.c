@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2018 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -23,7 +23,7 @@ void main(  tensor input,
 {
 
     int5 coord = {0};
-    float64 inp_vector = v_f32_ld_tnsr_b(coord, input, 0, 0, 1, 0);
+    float64 inp_vector = v_f32_ld_tnsr_b(coord, input);
 
     printf("Test string!\n");
     printf("int value is %hd\n", int_val);

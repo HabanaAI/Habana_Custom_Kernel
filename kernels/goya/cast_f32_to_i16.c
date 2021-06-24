@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2018 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -74,8 +74,8 @@ void main(tensor ifm,
                     ofmCoords[1] = w;
 
                     // Load input elements
-                    x.v1 = v_f32_ld_tnsr_b(ifmCoords0, ifm, 0, 0, 1, 0);
-                    x.v2 = v_f32_ld_tnsr_b(ifmCoords1, ifm, 0, 0, 1, 0);
+                    x.v1 = v_f32_ld_tnsr_b(ifmCoords0, ifm);
+                    x.v2 = v_f32_ld_tnsr_b(ifmCoords1, ifm);
 
                     // Multiply by scale
                     x.v1 = x.v1 * scaleToI16;
@@ -83,11 +83,11 @@ void main(tensor ifm,
 
                     // Convert f32 to i16 in two non-contiguous vectors
                     short128 t0 = 0, t1 = 0;
-                    y_i32 = v_convert_f32_to_i32_b(x.v1, (e_round_half_ne <<16), 0, 1, 0);
+                    y_i32 = v_convert_f32_to_i32_b(x.v1, (e_round_half_ne <<16));
                     // Store converted elements in lane 0 of t0
                     t0 = v_convert_int32_to_i16_v_v(y_i32, 0, t0, e_round_half_ne, 0);
                     // Store converted elements in lane 0 of t1
-                    y_i32 = v_convert_f32_to_i32_b(x.v2, (e_round_half_ne <<16), 0, 1, 0);
+                    y_i32 = v_convert_f32_to_i32_b(x.v2, (e_round_half_ne <<16));
                     t1 = v_convert_int32_to_i16_v_v(y_i32, 0, t1, e_round_half_ne, 0);
 
                     short128 t = 0, y = 0;
@@ -96,37 +96,37 @@ void main(tensor ifm,
 
                     /* Packs group0 in lower half of groups and group1 in upper half of groups
                     for all 4 dual groups */
-                    y = v_i16_pack_b(t0, ((e_group_0) << 8) | ((e_every_second_element) << 9), y, 1, 0);
-                    y = v_i16_pack_b(t0, ((e_group_1) << 8) | ((e_every_second_element) << 9), y, 1, 0);
+                    y = v_i16_pack_b(t0, ((e_group_0) << 8) | ((e_every_second_element) << 9), y);
+                    y = v_i16_pack_b(t0, ((e_group_1) << 8) | ((e_every_second_element) << 9), y);
 
                     // Note: int128 vector contains 4 dual groups and each group has 16 elements
                     // Move elements from dualgroup1 of y to upper half of dualgroup0 of y
                     // 0..15, 16..31
-                    y = v_i16_mov_dual_group_b(y, 0xFFFFFFFF, 1, 0, MkWr(0, 1), y, 1, 0);
+                    y = v_i16_mov_dual_group_b(y, 0xFFFFFFFF, 1, 0, MkWr(0, 1), y);
                     // Move elements from dualgroup2 of y to lower half of dualgroup1 of y
                     // 0..15, 16..31, 32..47
-                    y = v_i16_mov_dual_group_b(y, 0xFFFFFFFF, 2, 1, MkWr(1, 0), y, 1, 0);
+                    y = v_i16_mov_dual_group_b(y, 0xFFFFFFFF, 2, 1, MkWr(1, 0), y);
                     // Move elements from dualgroup3 of y to upper half of dualgroup1 of y
                     // 0..15, 16..31, 32..47, 48..63
-                    y = v_i16_mov_dual_group_b(y, 0xFFFFFFFF, 3, 1, MkWr(0, 1), y, 1, 0);
+                    y = v_i16_mov_dual_group_b(y, 0xFFFFFFFF, 3, 1, MkWr(0, 1), y);
 
-                    t = v_i16_pack_b(t1, ((e_group_0) << 8) | ((e_every_second_element) << 9), t, 1, 0);
-                    t = v_i16_pack_b(t1, ((e_group_1) << 8) | ((e_every_second_element) << 9), t, 1, 0);
+                    t = v_i16_pack_b(t1, ((e_group_0) << 8) | ((e_every_second_element) << 9), t);
+                    t = v_i16_pack_b(t1, ((e_group_1) << 8) | ((e_every_second_element) << 9), t);
                     // Move elements from dualgroup0 of t to lower half of dualgroup2 of y
                     // 0..15, 16..31, 32..47, 48..63, 64..79
-                    y = v_i16_mov_dual_group_b(t, 0xFFFFFFFF, 0, 2, MkWr(1, 0), y, 1, 0);
+                    y = v_i16_mov_dual_group_b(t, 0xFFFFFFFF, 0, 2, MkWr(1, 0), y);
                     // Move elements from dualgroup1 of t to upper half of dualgroup2 of y
                     // 0..15, 16..31, 32..47, 48..63, 64..79, 80..95
-                    y = v_i16_mov_dual_group_b(t, 0xFFFFFFFF, 1, 2, MkWr(0, 1), y, 1, 0);
+                    y = v_i16_mov_dual_group_b(t, 0xFFFFFFFF, 1, 2, MkWr(0, 1), y);
                     // Move elements from dualgroup2 of t to lower half of dualgroup3 of y
                     // 0..15, 16..31, 32..47, 48..63, 64..79, 80..95, 96..111
-                    y = v_i16_mov_dual_group_b(t, 0xFFFFFFFF, 2, 3, MkWr(1, 0), y, 1, 0);
+                    y = v_i16_mov_dual_group_b(t, 0xFFFFFFFF, 2, 3, MkWr(1, 0), y);
                     // Move elements from dualgroup3 of t to upper half of dualgroup3 of y
                     // 0..15, 16..31, 32..47, 48..63, 64..79, 80..95, 96..111, 112..127
-                    y = v_i16_mov_dual_group_b(t, 0xFFFFFFFF, 3, 3, MkWr(0, 1), y, 1, 0); 
+                    y = v_i16_mov_dual_group_b(t, 0xFFFFFFFF, 3, 3, MkWr(0, 1), y); 
 
                     // Store output data
-                    v_i16_st_tnsr(ofmCoords, ofm, y, 0, 1, 0);
+                    v_i16_st_tnsr(ofmCoords, ofm, y);
                 }
             }
         }

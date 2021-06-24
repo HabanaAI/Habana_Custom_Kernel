@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2019 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -91,10 +91,10 @@ void main(
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
                     // Loading input values
-                    x0 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
-                    x1 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
-                    x2 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
-                    x3 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
+                    x0 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
+                    x1 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
+                    x2 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
+                    x3 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
 
                     mean_v_0 = mean_v_0 + x0;
                     mean_v_1 = mean_v_1 + x1;
@@ -126,10 +126,10 @@ void main(
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
 
-                    x0 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
-                    x1 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
-                    x2 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
-                    x3 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
+                    x0 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
+                    x1 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
+                    x2 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
+                    x3 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
 
                     float64 tmp0, tmp1, tmp2, tmp3;
                     tmp0 = x0 - mean_v;
@@ -137,10 +137,10 @@ void main(
                     tmp2 = x2 - mean_v;
                     tmp3 = x3 - mean_v;
 
-                    var_v_0 = v_f32_mac_b(tmp0, tmp0, var_v_0, (e_no_negation) << 1, 1, 0);
-                    var_v_1 = v_f32_mac_b(tmp1, tmp1, var_v_1, (e_no_negation) << 1, w < widthEnd-1, 0);
-                    var_v_2 = v_f32_mac_b(tmp2, tmp2, var_v_2, (e_no_negation) << 1, w < widthEnd-2, 0);
-                    var_v_3 = v_f32_mac_b(tmp3, tmp3, var_v_3, (e_no_negation) << 1, w < widthEnd-3, 0);
+                    var_v_0 = v_f32_mac_b(tmp0, tmp0, var_v_0, (e_no_negation) << 1);
+                    var_v_1 = v_f32_mac_b(tmp1, tmp1, var_v_1, (e_no_negation) << 1, w < widthEnd-1);
+                    var_v_2 = v_f32_mac_b(tmp2, tmp2, var_v_2, (e_no_negation) << 1, w < widthEnd-2);
+                    var_v_3 = v_f32_mac_b(tmp3, tmp3, var_v_3, (e_no_negation) << 1, w < widthEnd-3);
                 }
             }
         }
@@ -154,8 +154,8 @@ void main(
         var_v = var_v * vN;
 
         // Loading gamma and beta
-        beta  = v_f32_ld_tnsr_b(depthCoords, beta_tr, 0, 0, 1, 0);
-        gamma = v_f32_ld_tnsr_b(depthCoords, gamma_tr, 0, 0, 1, 0);
+        beta  = v_f32_ld_tnsr_b(depthCoords, beta_tr);
+        gamma = v_f32_ld_tnsr_b(depthCoords, gamma_tr);
 
         // Normalized Value = ((x-mean) * gamma / sqrt(variance + epsilon)) + beta
         // Normalized Value = x * (gamma / sqrt(variance + eps))
@@ -167,10 +167,10 @@ void main(
         float64 var_tmp = var_v + 1e-5;
         float64 istd = v_rsqrt_f32(var_tmp);
         float64 scale = gamma * istd;
-        float64 bias = v_f32_mac_b(scale, mean_v, beta, (e_with_negation) << 1, 1, 0);
+        float64 bias = v_f32_mac_b(scale, mean_v, beta, (e_with_negation) << 1);
 
-        v_f32_st_tnsr(depthCoords, istd_tr, istd, 0, 1, 0);
-        v_f32_st_tnsr(depthCoords, mean_tr, mean_v, 0, 1, 0);
+        v_f32_st_tnsr(depthCoords, istd_tr, istd);
+        v_f32_st_tnsr(depthCoords, mean_tr, mean_v);
 
         depthCoords[depth] += depthStep;
 
@@ -191,21 +191,21 @@ void main(
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
                     // Loading input values
-                    x0 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
-                    x1 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
-                    x2 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
-                    x3 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr, 0, 0, 1, 0); ifmCoords[width] += 1;
+                    x0 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
+                    x1 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
+                    x2 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
+                    x3 = v_f32_ld_tnsr_b(ifmCoords, ifm_tr); ifmCoords[width] += 1;
 
                     // y = x * scale + bias
-                    y0 = v_f32_mac_b(x0, scale, bias, (e_no_negation) << 1, 1, 0);
-                    y1 = v_f32_mac_b(x1, scale, bias, (e_no_negation) << 1, 1, 0);
-                    y2 = v_f32_mac_b(x2, scale, bias, (e_no_negation) << 1, 1, 0);
-                    y3 = v_f32_mac_b(x3, scale, bias, (e_no_negation) << 1, 1, 0);
+                    y0 = v_f32_mac_b(x0, scale, bias, (e_no_negation) << 1);
+                    y1 = v_f32_mac_b(x1, scale, bias, (e_no_negation) << 1);
+                    y2 = v_f32_mac_b(x2, scale, bias, (e_no_negation) << 1);
+                    y3 = v_f32_mac_b(x3, scale, bias, (e_no_negation) << 1);
 
-                    v_f32_st_tnsr(ofmCoords, ofm_tr, y0, 0, 1, 0); ofmCoords[width] += 1;
-                    v_f32_st_tnsr(ofmCoords, ofm_tr, y1, 0, 1, 0); ofmCoords[width] += 1;
-                    v_f32_st_tnsr(ofmCoords, ofm_tr, y2, 0, 1, 0); ofmCoords[width] += 1;
-                    v_f32_st_tnsr(ofmCoords, ofm_tr, y3, 0, 1, 0); ofmCoords[width] += 1;
+                    v_f32_st_tnsr(ofmCoords, ofm_tr, y0); ofmCoords[width] += 1;
+                    v_f32_st_tnsr(ofmCoords, ofm_tr, y1); ofmCoords[width] += 1;
+                    v_f32_st_tnsr(ofmCoords, ofm_tr, y2); ofmCoords[width] += 1;
+                    v_f32_st_tnsr(ofmCoords, ofm_tr, y3); ofmCoords[width] += 1;
                 }
             }
         }

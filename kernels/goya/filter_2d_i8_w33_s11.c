@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2018 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -89,10 +89,10 @@ void main(tensor ifm,
         ifmCoords[depth] = d; ofmCoords[depth] = d;
 
         // Load bias values into accumalator
-        acc0.v1 = v_i32_ld_tnsr_b(biasCoords, bias, 0, 0, 1, 0); biasCoords[depth] += 64;
-        acc0.v2 = v_i32_ld_tnsr_b(biasCoords, bias, 0, 0, 1, 0); biasCoords[depth] += 64;
-        acc0.v3 = v_i32_ld_tnsr_b(biasCoords, bias, 0, 0, 1, 0); biasCoords[depth] += 64;
-        acc0.v4 = v_i32_ld_tnsr_b(biasCoords, bias, 0, 0, 1, 0); biasCoords[depth] += 64;
+        acc0.v1 = v_i32_ld_tnsr_b(biasCoords, bias); biasCoords[depth] += 64;
+        acc0.v2 = v_i32_ld_tnsr_b(biasCoords, bias); biasCoords[depth] += 64;
+        acc0.v3 = v_i32_ld_tnsr_b(biasCoords, bias); biasCoords[depth] += 64;
+        acc0.v4 = v_i32_ld_tnsr_b(biasCoords, bias); biasCoords[depth] += 64;
 
         // Replicate the same bias values in all the accumalator
         acc1.v1 = acc0.v1;
@@ -117,15 +117,15 @@ void main(tensor ifm,
         biasVector[3] = acc0.v4;
 
         // Load 3X3 filter which has to be multiplied across the input
-        h00 = v_i8_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);   filterCoords[width] += 1;
-        h01 = v_i8_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);   filterCoords[width] += 1;
-        h02 = v_i8_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);   filterCoords[height] += 1;
-        h12 = v_i8_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);   filterCoords[width] -= 1;
-        h11 = v_i8_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);   filterCoords[width] -= 1;
-        h10 = v_i8_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);   filterCoords[height] += 1;
-        h20 = v_i8_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);   filterCoords[width] += 1;
-        h21 = v_i8_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);   filterCoords[width] += 1;
-        h22 = v_i8_ld_tnsr_b(filterCoords, filter, 0, 0, 1, 0);
+        h00 = v_i8_ld_tnsr_b(filterCoords, filter);   filterCoords[width] += 1;
+        h01 = v_i8_ld_tnsr_b(filterCoords, filter);   filterCoords[width] += 1;
+        h02 = v_i8_ld_tnsr_b(filterCoords, filter);   filterCoords[height] += 1;
+        h12 = v_i8_ld_tnsr_b(filterCoords, filter);   filterCoords[width] -= 1;
+        h11 = v_i8_ld_tnsr_b(filterCoords, filter);   filterCoords[width] -= 1;
+        h10 = v_i8_ld_tnsr_b(filterCoords, filter);   filterCoords[height] += 1;
+        h20 = v_i8_ld_tnsr_b(filterCoords, filter);   filterCoords[width] += 1;
+        h21 = v_i8_ld_tnsr_b(filterCoords, filter);   filterCoords[width] += 1;
+        h22 = v_i8_ld_tnsr_b(filterCoords, filter);
 
         // Set the filter pointer to the start for next channel
         filterCoords = i_i32_add(-2, filterCoords, width_mask | height_mask, 0, filterCoords, 1, 0);
@@ -142,18 +142,18 @@ void main(tensor ifm,
                           20 21 22 23 24 25]
                    Load first two rows of input elements x00-x05 x10-15*/
                 // Loop unrolled for 4 elements
-                x00 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
-                x01 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
-                x02 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
-                x03 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
-                x04 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
-                x05 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[height] += 1;
-                x15 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] -= 1;
-                x14 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] -= 1;
-                x13 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] -= 1;
-                x12 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] -= 1;
-                x11 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] -= 1;
-                x10 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[height] += 1;
+                x00 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
+                x01 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
+                x02 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
+                x03 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
+                x04 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
+                x05 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[height] += 1;
+                x15 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] -= 1;
+                x14 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] -= 1;
+                x13 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] -= 1;
+                x12 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] -= 1;
+                x11 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] -= 1;
+                x10 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[height] += 1;
 
                 for (int h = heightStart; h < heightEnd; h += heightStep)
                 {
@@ -162,76 +162,76 @@ void main(tensor ifm,
                     ofmCoords[width] = w;
 
                     // Load the third row of input elements x20-x23
-                    x20 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
-                    x21 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
-                    x22 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
-                    x23 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
+                    x20 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
+                    x21 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
+                    x22 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
+                    x23 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
 
                     // Multiply inputs with first column of filter
                     // proces hw = 00
-                    acc0 = v_i8_mac_b(x00, h00, acc0, 1, 1, 0);
-                    acc1 = v_i8_mac_b(x01, h00, acc1, 1, 1, 0);
-                    acc2 = v_i8_mac_b(x02, h00, acc2, 1, 1, 0);
-                    acc3 = v_i8_mac_b(x03, h00, acc3, 1, 1, 0);
+                    acc0 = v_i8_mac_b(x00, h00, acc0, 1);
+                    acc1 = v_i8_mac_b(x01, h00, acc1, 1);
+                    acc2 = v_i8_mac_b(x02, h00, acc2, 1);
+                    acc3 = v_i8_mac_b(x03, h00, acc3, 1);
 
                     // proces hw = 10
-                    acc0 = v_i8_mac_b(x10, h10, acc0, 1, 1, 0);
-                    acc1 = v_i8_mac_b(x11, h10, acc1, 1, 1, 0);
-                    acc2 = v_i8_mac_b(x12, h10, acc2, 1, 1, 0);
-                    acc3 = v_i8_mac_b(x13, h10, acc3, 1, 1, 0);
+                    acc0 = v_i8_mac_b(x10, h10, acc0, 1);
+                    acc1 = v_i8_mac_b(x11, h10, acc1, 1);
+                    acc2 = v_i8_mac_b(x12, h10, acc2, 1);
+                    acc3 = v_i8_mac_b(x13, h10, acc3, 1);
 
                     // proces hw = 20
-                    acc0 = v_i8_mac_b(x20, h20, acc0, 1, 1, 0);
-                    acc1 = v_i8_mac_b(x21, h20, acc1, 1, 1, 0);
-                    acc2 = v_i8_mac_b(x22, h20, acc2, 1, 1, 0);
-                    acc3 = v_i8_mac_b(x23, h20, acc3, 1, 1, 0);
+                    acc0 = v_i8_mac_b(x20, h20, acc0, 1);
+                    acc1 = v_i8_mac_b(x21, h20, acc1, 1);
+                    acc2 = v_i8_mac_b(x22, h20, acc2, 1);
+                    acc3 = v_i8_mac_b(x23, h20, acc3, 1);
 
                     x00 = x10; x10 = x20;
                     // Load x24
-                    x20 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[width] += 1;
+                    x20 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[width] += 1;
 
                     // Multiply inputs with second column of filter
                     // proces hw = 01
-                    acc0 = v_i8_mac_b(x01, h01, acc0, 1, 1, 0);
-                    acc1 = v_i8_mac_b(x02, h01, acc1, 1, 1, 0);
-                    acc2 = v_i8_mac_b(x03, h01, acc2, 1, 1, 0);
-                    acc3 = v_i8_mac_b(x04, h01, acc3, 1, 1, 0);
+                    acc0 = v_i8_mac_b(x01, h01, acc0, 1);
+                    acc1 = v_i8_mac_b(x02, h01, acc1, 1);
+                    acc2 = v_i8_mac_b(x03, h01, acc2, 1);
+                    acc3 = v_i8_mac_b(x04, h01, acc3, 1);
 
                     // proces hw = 11
-                    acc0 = v_i8_mac_b(x11, h11, acc0, 1, 1, 0);
-                    acc1 = v_i8_mac_b(x12, h11, acc1, 1, 1, 0);
-                    acc2 = v_i8_mac_b(x13, h11, acc2, 1, 1, 0);
-                    acc3 = v_i8_mac_b(x14, h11, acc3, 1, 1, 0);
+                    acc0 = v_i8_mac_b(x11, h11, acc0, 1);
+                    acc1 = v_i8_mac_b(x12, h11, acc1, 1);
+                    acc2 = v_i8_mac_b(x13, h11, acc2, 1);
+                    acc3 = v_i8_mac_b(x14, h11, acc3, 1);
 
                     // proces hw = 21
-                    acc0 = v_i8_mac_b(x21, h21, acc0, 1, 1, 0);
-                    acc1 = v_i8_mac_b(x22, h21, acc1, 1, 1, 0);
-                    acc2 = v_i8_mac_b(x23, h21, acc2, 1, 1, 0);
-                    acc3 = v_i8_mac_b(x20, h21, acc3, 1, 1, 0);
+                    acc0 = v_i8_mac_b(x21, h21, acc0, 1);
+                    acc1 = v_i8_mac_b(x22, h21, acc1, 1);
+                    acc2 = v_i8_mac_b(x23, h21, acc2, 1);
+                    acc3 = v_i8_mac_b(x20, h21, acc3, 1);
 
                     x01 = x11; x11 = x21;
                     // Load x25
-                    x21 = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);   ifmCoords[height] += 1;
+                    x21 = v_i8_ld_tnsr_b(ifmCoords, ifm);   ifmCoords[height] += 1;
                     ifmCoords[width] -= 5;
 
                     // Multiply inputs with third column of filter
                     // proces hw = 02
-                    acc0 = v_i8_mac_b(x02, h02, acc0, 1, 1, 0);
-                    acc1 = v_i8_mac_b(x03, h02, acc1, 1, 1, 0);
-                    acc2 = v_i8_mac_b(x04, h02, acc2, 1, 1, 0);
-                    acc3 = v_i8_mac_b(x05, h02, acc3, 1, 1, 0);
+                    acc0 = v_i8_mac_b(x02, h02, acc0, 1);
+                    acc1 = v_i8_mac_b(x03, h02, acc1, 1);
+                    acc2 = v_i8_mac_b(x04, h02, acc2, 1);
+                    acc3 = v_i8_mac_b(x05, h02, acc3, 1);
 
                     // proces hw = 12
-                    acc0 = v_i8_mac_b(x12, h12, acc0, 1, 1, 0);
-                    acc1 = v_i8_mac_b(x13, h12, acc1, 1, 1, 0);
-                    acc2 = v_i8_mac_b(x14, h12, acc2, 1, 1, 0);
-                    acc3 = v_i8_mac_b(x15, h12, acc3, 1, 1, 0);
+                    acc0 = v_i8_mac_b(x12, h12, acc0, 1);
+                    acc1 = v_i8_mac_b(x13, h12, acc1, 1);
+                    acc2 = v_i8_mac_b(x14, h12, acc2, 1);
+                    acc3 = v_i8_mac_b(x15, h12, acc3, 1);
 
                     // proces hw = 22
-                    acc0 = v_i8_mac_b(x22, h22, acc0, 1, 1, 0);
-                    acc1 = v_i8_mac_b(x23, h22, acc1, 1, 1, 0);
-                    acc2 = v_i8_mac_b(x20, h22, acc2, 1, 1, 0);
-                    acc3 = v_i8_mac_b(x21, h22, acc3, 1, 1, 0);
+                    acc0 = v_i8_mac_b(x22, h22, acc0, 1);
+                    acc1 = v_i8_mac_b(x23, h22, acc1, 1);
+                    acc2 = v_i8_mac_b(x20, h22, acc2, 1);
+                    acc3 = v_i8_mac_b(x21, h22, acc3, 1);
 
 
                     /* Copy last two rows of input values to first two rows
@@ -247,25 +247,25 @@ void main(tensor ifm,
                     x22 = v_convert_int32_to_i8_v_s(acc0.v3, scale_factor, x22, 0, 2);
                     x22 = v_convert_int32_to_i8_v_s(acc0.v4, scale_factor, x22, 0, 3);                    
                     //Store the result
-                    v_i8_st_tnsr(ofmCoords, ofm, x22, 0, 1, 0);          ofmCoords[width] += 1;
+                    v_i8_st_tnsr(ofmCoords, ofm, x22);          ofmCoords[width] += 1;
 
                     x22 = v_convert_int32_to_i8_v_s(acc1.v1, scale_factor, x22, 0, 0);
                     x22 = v_convert_int32_to_i8_v_s(acc1.v2, scale_factor, x22, 0, 1);
                     x22 = v_convert_int32_to_i8_v_s(acc1.v3, scale_factor, x22, 0, 2);
                     x22 = v_convert_int32_to_i8_v_s(acc1.v4, scale_factor, x22, 0, 3);
-                    v_i8_st_tnsr(ofmCoords, ofm, x22, 0, 1, 0);          ofmCoords[width] += 1;
+                    v_i8_st_tnsr(ofmCoords, ofm, x22);          ofmCoords[width] += 1;
 
                     x22 = v_convert_int32_to_i8_v_s(acc2.v1, scale_factor, x22, 0, 0);
                     x22 = v_convert_int32_to_i8_v_s(acc2.v2, scale_factor, x22, 0, 1);
                     x22 = v_convert_int32_to_i8_v_s(acc2.v3, scale_factor, x22, 0, 2);
                     x22 = v_convert_int32_to_i8_v_s(acc2.v4, scale_factor, x22, 0, 3);
-                    v_i8_st_tnsr(ofmCoords, ofm, x22, 0, 1, 0);          ofmCoords[width] += 1;
+                    v_i8_st_tnsr(ofmCoords, ofm, x22);          ofmCoords[width] += 1;
 
                     x22 = v_convert_int32_to_i8_v_s(acc3.v1, scale_factor, x22, 0, 0);
                     x22 = v_convert_int32_to_i8_v_s(acc3.v2, scale_factor, x22, 0, 1);
                     x22 = v_convert_int32_to_i8_v_s(acc3.v3, scale_factor, x22, 0, 2);
                     x22 = v_convert_int32_to_i8_v_s(acc3.v4, scale_factor, x22, 0, 3);
-                    v_i8_st_tnsr(ofmCoords, ofm, x22, 0, 1, 0);          ofmCoords[width] += 1;
+                    v_i8_st_tnsr(ofmCoords, ofm, x22);          ofmCoords[width] += 1;
 
                     // Initialize all the accumalators with bias values from vlm
                     acc0.v1 = biasVector[0];
