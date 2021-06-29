@@ -19,11 +19,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include "TPC.h" //TPC simulator header
 #include "test_base.hpp"
-#include "tpc_elf_api.hpp"
 #include "tpc_test_core_api.h"
-
-int c_divide_by_all_indices        = 5;
-bool TestBase::s_printfIsUsed = false;
 
 void TestBase::SetUp()
 {
@@ -43,28 +39,23 @@ void TestBase::TearDown()
     m_out_defs.elfSize = 0;
 }
 
-TensorDescriptorGaudi TestBase::DaliTensorDescToGaudiDesc(const TensorDescriptor * desc)
-{
-    TensorDescriptorGaudi gaudiDesc = {};
-    gaudiDesc.paddingValue = desc->paddingValue;
-    gaudiDesc.configuration = desc->configuration;
-    gaudiDesc.baseAddrUnion.baseAddr = desc->baseAddrUnion.baseAddr;
-    for (int i =0 ; i < TestBase::num_dims_in_irf; i++)
-    {
-        gaudiDesc.dimDescriptors[i].size = desc->dimDescriptors[i].size;
-        gaudiDesc.dimDescriptors[i].stride = desc->dimDescriptors[i].stride;
-    }
-    return gaudiDesc;
-}
-
-
 unsigned int TestBase::RunSimulation(   std::vector<TensorDescriptor>& descriptors,
                                         const gcapi::HabanaKernelParams_t& gc_input,
                                         const gcapi::HabanaKernelInstantiation_t& gc_output,
                                         IndexSpaceMappingTest_t testMode)
 {
-    
-   return tpc_tests::RunSimulation(gc_input, gc_output, descriptors);
+   unsigned  retVal= 0;
+   //debug prints of glue code input and output.
+   PrintKernelInputParams(&gc_input);
+   PrintKernelOutputParams(&gc_input,&gc_output);    
+
+   retVal = tpc_tests::RunSimulation(gc_input, gc_output, descriptors);
+   const char* env = getenv("TPC_RUNNER");
+   if(env != nullptr && strcmp(env, "1") == 0)
+      printf("Program executed in %u cycles using Habana device\n", retVal);
+   else
+      printf("Program executed in %u cycles using simulation\n", retVal);
+   return retVal;
 
 }
 

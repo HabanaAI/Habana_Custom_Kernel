@@ -21,7 +21,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include "tensor.h"
 #include "gc_interface.h"
-#include "tpc_elf_api.hpp"
 
 class TestBase
 {
@@ -60,10 +59,7 @@ public:
         }
     }
 
-    static TensorDescriptorGaudi DaliTensorDescToGaudiDesc(const TensorDescriptor * desc);
-    static const int num_dims_in_irf = 5;
-    static bool s_printfIsUsed;
-    
+       
     void ReleaseKernelNames(char** kernelNames, unsigned kernelCount)
     {
         // release memory
@@ -77,11 +73,6 @@ public:
     gcapi::HabanaKernelParams_t         m_in_defs;
     gcapi::HabanaKernelInstantiation_t  m_out_defs;
 private:
-    unsigned int RunSimulationInternal(const std::vector<TensorDescriptor>& descriptors,
-                                    const gcapi::HabanaKernelParams_t& gc_input,
-                                    const gcapi::HabanaKernelInstantiation_t& gc_output,
-                                    int offsets [5],
-                                    IndexSpaceMappingTest_t testMode = e_defaultMode);
     // this is a debug helper function to print glue code outputs.
     void PrintKernelOutputParams(const gcapi::HabanaKernelParams_t* gc_input,
                                  const gcapi::HabanaKernelInstantiation_t*gc_output);

@@ -1,5 +1,5 @@
 ###################################################################################
-# Copyright (c) 2018 Habana Labs.
+# Copyright (c) 2021 Habana Labs.
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 #
@@ -19,7 +19,7 @@ project(tpc_kernels_db)
 set(TPC_COMPILER_PATH "/usr/bin/tpc-clang" CACHE STRING "Path to TPC C/C++ compiler")
 set(TPC_DISASSEMBLER_PATH "/usr/bin/tpc-llvm-objdump" CACHE STRING "Path to TPC disassembler")
 set(TPCSIM_SHARED_LIBRARY "/usr/lib/habanatools/libtpcsim_shared.so" CACHE STRING "Path to TPC simulator shared object")
-#set(TPC_TEST_CORE_LIBRARY "/usr/lib/habanatools/libtpc_tests_core.so" CACHE STRING "Path to TPC test core shared object")
+#set(TPC_TEST_CORE_LIBRARY "/usr/lib/habanatools/libtpc_tests_core_ext.so" CACHE STRING "Path to TPC test core shared object")
 set(TPC_TEST_CORE_LIBRARY "~/builds/tpc_kernels_release_build/tests/tests_core/libtpc_tests_core_ext.so" CACHE STRING "Path to TPC test core shared object")
 set(TPC_ELF_READER_LIBRARY "/usr/lib/habanatools/libTpcElfReader.so" CACHE STRING "Path to Elf Reader shared object")
 set(TPC_INCLUDE_DIR "/usr/lib/habanatools/include" CACHE STRING "Path to TPC includes")
@@ -29,7 +29,10 @@ set(TPC_TESTS_CORE_INCLUDE_DIR "~/trees/npu-stack/tpc_kernels/tests/tests_core/t
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -fno-strict-aliasing")
 set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-ggdb -O2")
-if (NOT CMAKE_BUILD_TYPE)
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    message(STATUS "Build type selected for Debug")
+    set(CMAKE_BUILD_TYPE "Debug")
+else()
     message(STATUS "No build type selected, defaulting to Release")
     set(CMAKE_BUILD_TYPE "Release")
 endif()
