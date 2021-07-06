@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2018 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -75,13 +75,13 @@ void main(
                     ifmCoords[width] = w;
 
                     // load input pixel
-                    x = v_f32_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);
+                    x = v_f32_ld_tnsr_b(ifmCoords, ifm);
                     // exp_f32(float64 input)
                     y = v_exp_cephes_f32(x);
 
                     // Move zero for out of bound co-ordinates
-                    bool256 pred = from_bool64(v_u32_cmp_geq_b(d + V_LANE_ID_32, (unsigned)depthEnd, 0, to_bool64((bool256){0}), 1, 0));
-                    y = v_f32_mov_vb(zero, 0, y, to_bool64(pred), 0);
+                    bool256 pred = from_bool64(v_u32_cmp_geq_b(d + V_LANE_ID_32, (unsigned)depthEnd, 0, to_bool64((bool256){0})));
+                    y = v_f32_mov_vb(zero, 0, y, to_bool64(pred));
 
                     // Sum up the values in a vector
                     sum = sum + y;
@@ -95,13 +95,13 @@ void main(
                 {
                     ifmCoords[width] = w;
 
-                    x = v_f32_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);
+                    x = v_f32_ld_tnsr_b(ifmCoords, ifm);
                     y = v_exp_cephes_f32(x);
 
                     // Multiply exp(x) * 1/(sum_of_exponents)
                     x = y * sum;
 
-                    v_f32_st_tnsr(ifmCoords, ofm, x, 0, 1, 0);
+                    v_f32_st_tnsr(ifmCoords, ofm, x);
                }
             }
         }

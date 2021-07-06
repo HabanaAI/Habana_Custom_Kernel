@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2020 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -73,13 +73,13 @@ void main(tensor ifm,
                     ofmCoords[1] = w;
 
                     // Load input elements
-                    x.v1 = v_f32_ld_tnsr_b(ifmCoords0, ifm, 0, 0, 1, 0);
-                    x.v2 = v_f32_ld_tnsr_b(ifmCoords1, ifm, 0, 0, 1, 0);
+                    x.v1 = v_f32_ld_tnsr_b(ifmCoords0, ifm);
+                    x.v2 = v_f32_ld_tnsr_b(ifmCoords1, ifm);
 
                     bfloat128 y = 0;
-                    y = v_convert_f32_to_bf16_all_b(x, SW_RHNE, y, 1, 0);
+                    y = v_convert_f32_to_bf16_all_b(x, SW_RHNE, y);
                     // Store and pack output data directly
-                    v_bf16_st_tnsr(ofmCoords, ofm, y, SW_PACK, 1, 0);
+                    v_bf16_st_tnsr(ofmCoords, ofm, y, SW_PACK);
                 }
             }
         }

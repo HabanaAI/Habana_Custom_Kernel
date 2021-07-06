@@ -48,12 +48,10 @@ separate_arguments(OPT_FLAG)
 
 # This routine does the following:
 # 1. Copies the TPC-C source file to 'bin' for reference.
-# 2. Prints some debug data.
-# 3. Compiles sources using TPC-C compiler (two times - one is for testing of compiler regression).
-# 4. Extracts raw binary from the TPC-C elf.
-# 5. Wraps raw binary in X86 elf.
-# 6. Links the X86 elf into the executable
-# 7. Disassemble the file for debug purposes
+# 2. Compiles sources using TPC-C compiler (two times - one is for testing of compiler regression).
+# 3. Wraps compiler output in X86 elf.
+# 4. Links the X86 elf into the executable
+# 5. Disassemble the file for debug purposes
 function(CompileTPCCWithClang TPC_C_SOURCES_TO_EMBED TPC_HEADERS deviceName)
     foreach(SOURCE_FILE  ${TPC_C_SOURCES_TO_EMBED})
         get_filename_component(SOURCE_NAME_NO_PATH_NO_SUFFIX ${SOURCE_FILE} NAME_WE)

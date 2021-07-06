@@ -14,7 +14,7 @@ TPC is designed for workloads that do not map to MME (Matrix Multiplication Engi
 ## Install Habanatools For Ubuntu
 To retrieve the package please visit [Habana Vault](https://vault.habana.ai/ui/repos/tree/General/debian%2Fbionic%2Fpool%2Fmain%2Fh%2Fhabanatools) and download the latest release package for Ubuntu 18.04. You can find different packages for different OS you used. 
 ```  
-  sudo dpkg -i ./habanatools_0.14.0-420_amd64.deb 
+  sudo dpkg -i ./habanatools_0.15.0-547_amd64.deb 
 ```
 - Once installed the following files will be added to your machine 
   
@@ -70,4 +70,4 @@ After build, you can find libcustom_tpc_perf_lib.so in build/src directory, whic
 For more details about TPC kernel writing, please refer to the [TPC User Guide](https://docs.habana.ai/en/latest/TPC_User_Guide/TPC_User_Guide.html) for more information.
 
 ## Tensorflow Custom Ops
-The user also can develop their own TF custom ops using their own TPC kernels. Please visit [TensorFlow Custom OPs Examples](https://github.com/HabanaAI/Model-References/tree/master/TensorFlow/examples/custom_op) for more details and make sure add your custom kernel path to environment variable GC_KERNEL_PATH, like export GC_KERNEL_PATH=/path/to/your_so/libcustom_tpc_perf_lib.so:/usr/lib/habanalabs/libtpc_kernels.so.
+The user also can develop their own TF custom ops using their own TPC kernels. In this custom kernel project, we provide several custom kernel examples, such as custom_div (division), relu6_fwd (relu6 forward path) and relu6_bwd (relu6 backward path). Please visit [TensorFlow Custom OPs Examples](https://github.com/HabanaAI/Model-References/tree/master/TensorFlow/examples/custom_op) for more details and make sure add your custom kernel path to environment variable GC_KERNEL_PATH, like export GC_KERNEL_PATH=/path/to/your_so/libcustom_tpc_perf_lib.so:/usr/lib/habanalabs/libtpc_kernels.so.

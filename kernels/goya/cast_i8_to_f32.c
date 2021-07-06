@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2018 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -77,91 +77,91 @@ void main(tensor ifm,
 
                     ifmCoords[1] = w;
                     ofmCoords0[1] =ofmCoords1[1] = ofmCoords2[1] = ofmCoords3[1] = w;
-                    x = v_i8_ld_tnsr_b(ifmCoords, ifm, 0, 0, 1, 0);
+                    x = v_i8_ld_tnsr_b(ifmCoords, ifm);
 
                     // Cast char256 into int256
                     // Note: char256 vector contains 4 dual groups and each group has 32 elements
                     // Unpacks lower half of first group of all 4 dual gorups
                     // 0..15, 64..79, 128..143, 192..207
-                    y.v1 = (int64) v_i8_unpack_b(x, ((e_group_0) << 8) | ((e_every_forth_element) << 9) | ((e_lower_half_group) << 10), 0, 1, 0);
+                    y.v1 = (int64) v_i8_unpack_b(x, ((e_group_0) << 8) | ((e_every_forth_element) << 9) | ((e_lower_half_group) << 10), 0);
                     // Unpacks upper half of first group of all 4 dual gorups
                     // 16..31, 80..95, 144..159, 208..223
-                    t1 = (int64) v_i8_unpack_b(x, ((e_group_0) << 8) | ((e_every_forth_element) << 9) | ((e_higher_half_group) << 10), 0, 1, 0);
+                    t1 = (int64) v_i8_unpack_b(x, ((e_group_0) << 8) | ((e_every_forth_element) << 9) | ((e_higher_half_group) << 10), 0);
                     // Unpacks lower half of second group of all 4 dual gorups
                     // 32..47, 96..111, 160..175, 224..239
-                    t2 = (int64) v_i8_unpack_b(x, ((e_group_1) << 8) | ((e_every_forth_element) << 9) | ((e_lower_half_group) << 10), 0, 1, 0);
+                    t2 = (int64) v_i8_unpack_b(x, ((e_group_1) << 8) | ((e_every_forth_element) << 9) | ((e_lower_half_group) << 10), 0);
                     // Unpacks upper half of second group of all 4 dual gorups
                     // 48..63, 112..127, 176..191, 240..255
-                    y.v4 = (int64) v_i8_unpack_b(x, ((e_group_1) << 8) | ((e_every_forth_element) << 9) | ((e_higher_half_group) << 10), 0, 1, 0);
+                    y.v4 = (int64) v_i8_unpack_b(x, ((e_group_1) << 8) | ((e_every_forth_element) << 9) | ((e_higher_half_group) << 10), 0);
 
                     // Rearranges the vector in correct order
                     // 0..15
                     t0 = y.v1;
                     // Move dualgroup0 of t1 to dualgroup1 of y.v1
                     // 0..15, 16..31
-                    y.v1 = v_i32_mov_dual_group_b(t1, 0xFFFFFFFF, 0, 1, MkWr(1, 1), y.v1, 1, 0);
+                    y.v1 = v_i32_mov_dual_group_b(t1, 0xFFFFFFFF, 0, 1, MkWr(1, 1), y.v1);
                     // Move dualgroup0 of t2 to dualgroup2 of y.v1
                     // 0..15, 16..31, 32..47
-                    y.v1 = v_i32_mov_dual_group_b(t2, 0xFFFFFFFF, 0, 2, MkWr(1, 1), y.v1, 1, 0);
+                    y.v1 = v_i32_mov_dual_group_b(t2, 0xFFFFFFFF, 0, 2, MkWr(1, 1), y.v1);
                     // Move dualgroup0 of y.v4 to dualgroup3 of y.v1
                     // 0..15, 16..31, 32..47, 48..63
-                    y.v1 = v_i32_mov_dual_group_b(y.v4, 0xFFFFFFFF, 0, 3, MkWr(1, 1), y.v1, 1, 0);
+                    y.v1 = v_i32_mov_dual_group_b(y.v4, 0xFFFFFFFF, 0, 3, MkWr(1, 1), y.v1);
 
                     // Move dualgroup1 of t0 to dualgroup0 of y.v2
                     // 64..79
-                    y.v2 = v_i32_mov_dual_group_b(t0, 0xFFFFFFFF, 1, 0, MkWr(1, 1), y.v2, 1, 0);
+                    y.v2 = v_i32_mov_dual_group_b(t0, 0xFFFFFFFF, 1, 0, MkWr(1, 1), y.v2);
                     // Move dualgroup1 of t1 to dualgroup1 of y.v2
                     // 64..79, 80..95
-                    y.v2 = v_i32_mov_dual_group_b(t1, 0xFFFFFFFF, 1, 1, MkWr(1, 1), y.v2, 1, 0);
+                    y.v2 = v_i32_mov_dual_group_b(t1, 0xFFFFFFFF, 1, 1, MkWr(1, 1), y.v2);
                     // Move dualgroup1 of t2 to dualgroup2 of y.v2
                     // 64..79, 80..95, 96..111
-                    y.v2 = v_i32_mov_dual_group_b(t2, 0xFFFFFFFF, 1, 2, MkWr(1, 1), y.v2, 1, 0);
+                    y.v2 = v_i32_mov_dual_group_b(t2, 0xFFFFFFFF, 1, 2, MkWr(1, 1), y.v2);
                     // Move dualgroup1 of y.v4 to dualgroup3 of y.v2
                     // 64..79, 80..95, 96..111, 112..127
-                    y.v2 = v_i32_mov_dual_group_b(y.v4, 0xFFFFFFFF, 1, 3, MkWr(1, 1), y.v2, 1, 0);
+                    y.v2 = v_i32_mov_dual_group_b(y.v4, 0xFFFFFFFF, 1, 3, MkWr(1, 1), y.v2);
 
                     // Move dualgroup2 of t0 to dualgroup0 of y.v3
                     // 128..143
-                    y.v3 = v_i32_mov_dual_group_b(t0, 0xFFFFFFFF, 2, 0, MkWr(1, 1), y.v3, 1, 0);
+                    y.v3 = v_i32_mov_dual_group_b(t0, 0xFFFFFFFF, 2, 0, MkWr(1, 1), y.v3);
                     // Move dualgroup2 of t1 to dualgroup1 of y.v3
                     // 128..143, 144..159
-                    y.v3 = v_i32_mov_dual_group_b(t1, 0xFFFFFFFF, 2, 1, MkWr(1, 1), y.v3, 1, 0);
+                    y.v3 = v_i32_mov_dual_group_b(t1, 0xFFFFFFFF, 2, 1, MkWr(1, 1), y.v3);
                     // Move dualgroup2 of t2 to dualgroup2 of y.v3
                     // 128..143, 144..159, 160..175
-                    y.v3 = v_i32_mov_dual_group_b(t2, 0xFFFFFFFF, 2, 2, MkWr(1, 1), y.v3, 1, 0);
+                    y.v3 = v_i32_mov_dual_group_b(t2, 0xFFFFFFFF, 2, 2, MkWr(1, 1), y.v3);
                     // Move dualgroup2 of y.v4 to dualgroup3 of y.v3
                     // 128..143, 144..159, 160..175, 176..191
-                    y.v3 = v_i32_mov_dual_group_b(y.v4, 0xFFFFFFFF, 2, 3, MkWr(1, 1), y.v3, 1, 0);
+                    y.v3 = v_i32_mov_dual_group_b(y.v4, 0xFFFFFFFF, 2, 3, MkWr(1, 1), y.v3);
 
                     // Move dualgroup3 of t0 to dualgroup0 of y.v4
                     // 192..207
-                    y.v4 = v_i32_mov_dual_group_b(t0, 0xFFFFFFFF, 3, 0, MkWr(1, 1), y.v4, 1, 0);
+                    y.v4 = v_i32_mov_dual_group_b(t0, 0xFFFFFFFF, 3, 0, MkWr(1, 1), y.v4);
                     // Move dualgroup3 of t1 to dualgroup1 of y.v4
                     // 192..207, 208..223
-                    y.v4 = v_i32_mov_dual_group_b(t1, 0xFFFFFFFF, 3, 1, MkWr(1, 1), y.v4, 1, 0);
+                    y.v4 = v_i32_mov_dual_group_b(t1, 0xFFFFFFFF, 3, 1, MkWr(1, 1), y.v4);
                     // Move dualgroup3 of t2 to dualgroup2 of y.v4
                     // 192..207, 208..223, 224..239
-                    y.v4 = v_i32_mov_dual_group_b(t2, 0xFFFFFFFF, 3, 2, MkWr(1, 1), y.v4, 1, 0);
+                    y.v4 = v_i32_mov_dual_group_b(t2, 0xFFFFFFFF, 3, 2, MkWr(1, 1), y.v4);
 
                     // 0..15, 16..31, 32..47, 48..63
-                    y0 = v_convert_i8_to_f32_b((char256)y.v1, 0, 0, 1, 0);
+                    y0 = v_convert_i8_to_f32_b((char256)y.v1);
                     y0 = y0 * scaleToF32;
-                    v_f32_st_tnsr(ofmCoords0, ofm, y0, 0, 1, 0);
+                    v_f32_st_tnsr(ofmCoords0, ofm, y0);
 
                     // 64..79, 80..95, 96..111, 112..127
-                    y1 = v_convert_i8_to_f32_b((char256)y.v2, 0, 0, 1, 0);
+                    y1 = v_convert_i8_to_f32_b((char256)y.v2);
                     y1 = y1 * scaleToF32;
-                    v_f32_st_tnsr(ofmCoords1, ofm, y1, 0, 1, 0);
+                    v_f32_st_tnsr(ofmCoords1, ofm, y1);
 
                     // 128..143, 144..159, 160..175, 176..191
-                    y2 = v_convert_i8_to_f32_b((char256)y.v3, 0, 0, 1, 0);
+                    y2 = v_convert_i8_to_f32_b((char256)y.v3);
                     y2 = y2 * scaleToF32;
-                    v_f32_st_tnsr(ofmCoords2, ofm, y2, 0, 1, 0);
+                    v_f32_st_tnsr(ofmCoords2, ofm, y2);
 
                     // 192..207, 208..223, 224..239, 240..255
-                    y3 = v_convert_i8_to_f32_b((char256)y.v4, 0, 0, 1, 0);
+                    y3 = v_convert_i8_to_f32_b((char256)y.v4);
                     y3 = y3 * scaleToF32;
-                    v_f32_st_tnsr(ofmCoords3, ofm, y3, 0, 1, 0);
+                    v_f32_st_tnsr(ofmCoords3, ofm, y3);
                 }
             }
         }
