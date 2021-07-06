@@ -41,7 +41,11 @@ int main(int argc, char** argv)
             "Options:" << std::endl <<
             "N/A                        Run all test cases" << std::endl <<
             "-h | --help                Print this help" << std::endl <<
+            "-d | --device <DeviceName> Run only kernels for the DeviceName" << std::endl <<
             "-t | --test  <TestName>    Run <TestName>> only   " << std::endl <<
+            "DeviceName:" << std::endl <<
+            "Goya                       Run all Goya kernels only   " << std::endl <<
+            "Gaudi                      Run all Gaudi kernels only   " << std::endl <<
             "TestName:" << std::endl <<
             "Filter2DF32Test            Run Filter2DF32Test only   " << std::endl <<
             "FilterFwd2DBF16Test        Run FilterFwd2DBF16Test only   " << std::endl <<
@@ -65,6 +69,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Goya") ==0)))  ||
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"Filter2DF32Test") ==0))))
     {
@@ -79,6 +85,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"FilterFwd2DBF16Test") ==0))))
     {
@@ -93,6 +101,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Goya") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"SparseLengthsSumTest") ==0))))
     {
@@ -107,6 +117,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Goya") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"Filter2DI8W33S11Test") ==0))))
     {
@@ -121,6 +133,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Goya") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"SoftMaxF32Test") ==0))))
     {
@@ -135,6 +149,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"SoftMaxBF16Test") ==0)))) 
     {   
@@ -149,6 +165,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Goya") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"CastTest") ==0))))
     {
@@ -163,6 +181,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"CastGaudiTest") ==0))))
     {
@@ -177,6 +197,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Goya") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"LeakyReluF32Test") ==0))))
     {
@@ -191,6 +213,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"BatchNormF32Test") ==0))))
     {
@@ -205,6 +229,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"LeakyReluF32GaudiTest") ==0))))
     {
@@ -219,6 +245,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"SparseLengthsBF16Test") ==0))))
     {
@@ -233,6 +261,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"CustomdivFwdF32Test") ==0))))
     {
@@ -248,6 +278,8 @@ int main(int argc, char** argv)
 
     Relu6AllTest testRelu6;
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"Relu6FwdF32") ==0))))
     {
@@ -261,6 +293,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"Relu6BwdF32") ==0))))
     {
@@ -274,6 +308,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"Relu6FwdBF16") ==0))))
     {
@@ -287,6 +323,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
         && (strcmp(argv[2],"Relu6BwdBF16") ==0))))
     {
