@@ -16,6 +16,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #if defined(FLOAT32)
 #define VECTOR                      float64
+#define VECTOR_SIZE                 64
 #define v_ld_tnsr_i(a,b)            v_f32_ld_tnsr_i(a,b)
 #define v_sel_less_v_s_v_v(a,b,c,d) v_f32_sel_less_f32_b(a,b,c,d)
 #define v_sel_geq_v_s_v_v(a,b,c,d)    v_f32_sel_geq_f32_b(a,b,c,d)
@@ -25,6 +26,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #if defined(BFLOAT16)
 #define VECTOR                      bfloat128
+#define VECTOR_SIZE                 128
 #define v_ld_tnsr_i(a,b)            v_bf16_ld_tnsr_i(a,b)
 #define v_sel_less_v_s_v_v(a,b,c,d) v_bf16_sel_less_bf16_b(a,b,c,d)
 #define v_sel_geq_v_s_v_v(a,b,c,d)    v_bf16_sel_geq_bf16_b(a,b,c,d)
