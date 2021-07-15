@@ -67,7 +67,7 @@ void main(
     int5 depthCoords = { depthStart, 0, 0, 0, 0 };
 
     float64 vN = v_f32_mov_s(N_reciprocal);
-    #pragma loop_taken
+
     for (int d = depthStart; d < depthEnd; d += depthStep)
     {
         ifmCoords[depth] = d;   ofmCoords[depth] = d;
@@ -77,17 +77,14 @@ void main(
         float64 var_v_0 = 0, var_v_1 = 0, var_v_2 = 0, var_v_3 = 0;
 
         // Calculate mean across batch for each feature
-        #pragma loop_taken
         for (int b = batchStart; b < batchEnd; b += batchStep)
         {
             ifmCoords[batch] = b;   ofmCoords[batch] = b;
-            #pragma loop_taken
             for (int h = heightStart; h < heightEnd; h += heightStep)
             {
                 ifmCoords[height] = h;   ofmCoords[height] = h;
                 ifmCoords[width] = widthStart;   ofmCoords[width] = widthStart;
 
-                #pragma loop_taken
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
                     // Loading input values
@@ -112,17 +109,14 @@ void main(
         mean_v = mean_v * vN;
 
         // Calculate variance across batch for each feature
-        #pragma loop_taken
         for (int b = batchStart; b < batchEnd; b += batchStep)
         {
             ifmCoords[batch] = b;   ofmCoords[batch] = b;
-            #pragma loop_taken
             for (int h = heightStart; h < heightEnd; h += heightStep)
             {
                 ifmCoords[height] = h;   ofmCoords[height] = h;
                 ifmCoords[width] = widthStart;   ofmCoords[width] = widthStart;
 
-                #pragma loop_taken
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
 
@@ -174,11 +168,9 @@ void main(
 
         depthCoords[depth] += depthStep;
 
-        #pragma loop_taken
         for (int b = batchStart; b < batchEnd; b += batchStep)
         {
             ifmCoords[batch] = b;   ofmCoords[batch] = b;
-            #pragma loop_taken
             for (int h = heightStart; h < heightEnd; h += heightStep)
             {
                 ifmCoords[height] = h;   ofmCoords[height] = h;
@@ -186,8 +178,6 @@ void main(
                 ifmCoords[width] = widthStart; ofmCoords[width] = widthStart;
 
                 // Loading input values
-
-                #pragma loop_taken
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
                     // Loading input values
