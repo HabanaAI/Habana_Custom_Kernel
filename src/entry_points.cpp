@@ -30,6 +30,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "sparse_lengths_sum_bf16.hpp"
 #include "customdiv_fwd_f32.hpp"
 #include "relu6_all.hpp"
+#include "matrix_mul_fwd_f32.hpp"
 
 #include "entry_points.hpp"
 
@@ -98,7 +99,8 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            Relu6FwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_BF16], Relu6All::fwd_bf16);
            Relu6All Relu6BwdBF16Instance(Relu6All::bwd_bf16);
            Relu6BwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_BF16], Relu6All::bwd_bf16);
-
+           MatrixMulFwdF32 MatrixMulFwdF32Instance;
+           MatrixMulFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_MATRIXMUL_FWD_F32]);
         }
 
         if (kernelCount != nullptr)
@@ -262,6 +264,13 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return Relu6BwdBF16Instance.GetGcDefinitions(params,instance);
+    }
+
+    MatrixMulFwdF32 MatrixMulFwdF32Instance;
+    MatrixMulFwdF32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return MatrixMulFwdF32Instance.GetGcDefinitions(params,instance);
     }
 
     return gcapi::GLUE_NODE_NOT_FOUND;

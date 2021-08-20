@@ -30,6 +30,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "sparse_lengths_sum_bf16_test.hpp"
 #include "customdiv_fwd_f32_test.hpp"
 #include "relu6_all_test.hpp"
+#include "matrix_mul_fwd_f32_test.hpp"
 
 
 int main(int argc, char** argv)
@@ -60,7 +61,8 @@ int main(int argc, char** argv)
             "Relu6FwdF32                Run Relu6FwdF32 only   " << std::endl <<
             "Relu6BwdF32                Run Relu6BwdF32 only   " << std::endl <<
             "Relu6FwdBF16               Run Relu6FwdBF16 only   " << std::endl <<
-            "Relu6BwdBF16               Run Relu6BwdBF16 only   " << std::endl;
+            "Relu6BwdBF16               Run Relu6BwdBF16 only   " << std::endl <<
+            "MatrixMulFwdF32Test        Run MatrixMulFwdF32Test only   " << std::endl;
 
         exit(0);
     }
@@ -308,6 +310,20 @@ int main(int argc, char** argv)
         testRelu6.SetUp();
         result = testRelu6.runTest(GAUDI_KERNEL_RELU6_BWD_BF16);
         testRelu6.TearDown();
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
+        && (strcmp(argv[2],"MatrixMulFwdF32Test") ==0))))
+    {
+        MatrixMulFwdF32Test testMatrixMulFwdF32;
+        testMatrixMulFwdF32.SetUp();
+        result = testMatrixMulFwdF32.runTest();
+        testMatrixMulFwdF32.TearDown();
         if (result != 0)
         {
             return result;
