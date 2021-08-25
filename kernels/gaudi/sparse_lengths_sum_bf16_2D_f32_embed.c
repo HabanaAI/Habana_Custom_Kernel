@@ -88,7 +88,6 @@ void main(tensor input_tensor,
     int index_offset = 0;
 
     //finding the sum of length tensor upto the current element
-    #pragma loop_taken
     for(int segment_no = 0; segment_no < width_start; segment_no++)
     {
         lengths_coord_1[0] = segment_no;
@@ -98,7 +97,6 @@ void main(tensor input_tensor,
     //this is the index tensor offset
     const int index_offset_orig = index_offset;
 
-    #pragma loop_taken
     for (int depth = depth_start; depth < depth_end; depth += depth_step)
     {
         in_coord_1[0] = out_coord_1[0] = depth;
@@ -108,7 +106,6 @@ void main(tensor input_tensor,
         int index_offset_2;
 
         //iterating along the length tensor (i.e. the width of the output)
-        #pragma loop_taken
         for (int segment_no = width_start; segment_no < width_end; segment_no += width_step)
         {
             //processing two length elements at a time
