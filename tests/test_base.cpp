@@ -52,7 +52,7 @@ unsigned int TestBase::RunSimulation(   std::vector<TensorDescriptor>& descripto
    retVal = tpc_tests::RunSimulation(gc_input, gc_output, descriptors);
    const char* env = getenv("TPC_RUNNER");
    if(env != nullptr && strcmp(env, "1") == 0)
-      printf("Program executed using Habana device\n", retVal);
+      printf("Program executed using Habana device\n");
    else
       printf("Program executed in %u cycles using simulation\n", retVal);
    return retVal;
