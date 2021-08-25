@@ -23,6 +23,7 @@ include_directories(../src/gaudi_src                          # include headers 
                     ../src
                     ./gaudi_test
                     ./goya_test
+                    /usr/lib/habanatools/include
                     .
                     )
 
@@ -37,6 +38,7 @@ target_link_libraries(
     ${TEST_TARGET}
     rt
     pthread
+    ${TPC_TEST_CORE_LIBRARY} 
     ${TPCSIM_SHARED_LIBRARY}
     ${TPC_ELF_READER_LIBRARY}
     custom_tpc_perf_lib)

@@ -14,7 +14,7 @@ TPC is designed for workloads that do not map to MME (Matrix Multiplication Engi
 ## Install Habanatools For Ubuntu
 To retrieve the package please visit [Habana Vault](https://vault.habana.ai/ui/repos/tree/General/debian%2Fbionic%2Fpool%2Fmain%2Fh%2Fhabanatools) and download the latest release package for Ubuntu 18.04. You can find different packages for different OS you used. 
 ```  
-  sudo dpkg -i ./habanatools_0.15.0-547_amd64.deb 
+  sudo dpkg -i ./habanatools_1.0.0-532_amd64.deb
 ```
 - Once installed the following files will be added to your machine 
   
@@ -26,8 +26,7 @@ To retrieve the package please visit [Habana Vault](https://vault.habana.ai/ui/r
   |4 | /usr/lib/habanatools/libtpc_tests_core.so | Test core library |  
   |5 | /usr/lib/habanatools/include/TPC.h |Simulator headers |
   |6 | /usr/lib/habanatools/include/gc_interface.h | Glue code interface header |
-  |7 | /usr/lib/habanatools/include/tpc-intrinsics.h | Available TPC-C intrinsics |
-  |8 | /usr/lib/habanatools/include/tpc_test_core_api.h | Test core API |
+  |7 | /usr/lib/habanatools/include/tpc-intrinsics.h | Available TPC-C intrinsics |  
       
 - Compiler usage example
 The compiler supports a single translation unit, hence ‘-c’ argument should be defined.
@@ -40,7 +39,7 @@ The output of the compilation session will be an elf file named ‘batch_norm_fw
 ```  
 Using CMAKE tool shown in the following template examples.
     
-For other OS, please refer to the [TPC Tools Installation Guide](https://docs.habana.ai/en/latest/TPC_Tools_Installation/TPC_Tools_Installation_Guide.html) for more details.
+For other OS, please refer to the [TPC Tools Installation Guide](https://docs.habana.ai/en/latest/TPC_Tools_Installation/TPC_Tools_Installation_Guide.html) for more details. If you get error like can't find libTpcElfReader.so etc, make sure you add /usr/lib/habanatools path to LD_LIBRARY_PATH environment variable.
 
 ## Template Examples
 The template examples show users how to create and build the custom kernels, which can be used in Tensorflow (**TF**) custom ops later.
