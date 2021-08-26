@@ -68,5 +68,8 @@ make
 After build, you can find libcustom_tpc_perf_lib.so in build/src directory, which is your custom kernel library, and tpc_kernel_tests in build/tests, which contains all the unit tests.
 For more details about TPC kernel writing, please refer to the [TPC User Guide](https://docs.habana.ai/en/latest/TPC_User_Guide/TPC_User_Guide.html) for more information.
 
+## Kernels Performance Measure
+The new test core feature can be used to measure the custom kernels performance when set env variable TPC_RUNNER (make sure hardware and driver are installed correctly). A json file will be created after running the test. You can load the json file to https://hltv.habana.ai/ and visually check the performance. We also provide a script (run_kernel_perf_test.py) to measure and report the TPC custom kernel performance numbers. Please check the scripts/ in this repo to find more details how to use the script.
+
 ## Tensorflow Custom Ops
 The user also can develop their own TF custom ops using their own TPC kernels. In this custom kernel project, we provide several custom kernel examples, such as custom_div (division), relu6_fwd (relu6 forward path) and relu6_bwd (relu6 backward path). Please visit [TensorFlow Custom OPs Examples](https://github.com/HabanaAI/Model-References/tree/master/TensorFlow/examples/custom_op) for more details and make sure add your custom kernel path to environment variable GC_KERNEL_PATH, like export GC_KERNEL_PATH=/path/to/your_so/libcustom_tpc_perf_lib.so:/usr/lib/habanalabs/libtpc_kernels.so.
