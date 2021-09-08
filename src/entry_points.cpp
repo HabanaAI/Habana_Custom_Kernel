@@ -30,6 +30,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "sparse_lengths_sum_bf16.hpp"
 #include "customdiv_fwd_f32.hpp"
 #include "relu6_all.hpp"
+#include "kl_div_all.hpp"
 
 #include "entry_points.hpp"
 
@@ -98,6 +99,15 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            Relu6FwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_BF16], Relu6All::fwd_bf16);
            Relu6All Relu6BwdBF16Instance(Relu6All::bwd_bf16);
            Relu6BwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_BF16], Relu6All::bwd_bf16);
+
+           KLDivAll KLDivFwdF32Instance(KLDivAll::fwd_f32);
+           KLDivFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_KL_DIV_FWD_F32]);
+           KLDivAll KLDivBwdF32Instance(KLDivAll::bwd_f32);
+           KLDivBwdF32Instance.GetKernelName(names[GAUDI_KERNEL_KL_DIV_BWD_F32]);
+           KLDivAll KLDivFwdBF16Instance(KLDivAll::fwd_bf16);
+           KLDivFwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_KL_DIV_FWD_BF16]);
+           KLDivAll KLDivBwdBF16Instance(KLDivAll::bwd_bf16);
+           KLDivBwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_KL_DIV_BWD_BF16]);
 
         }
 
@@ -262,6 +272,34 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return Relu6BwdBF16Instance.GetGcDefinitions(params,instance);
+    }
+
+    KLDivAll KLDivFwdF32Instance(KLDivAll::fwd_f32);
+    KLDivFwdF32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return KLDivFwdF32Instance.GetGcDefinitions(params,instance);
+    }
+
+    KLDivAll KLDivBwdF32Instance(KLDivAll::bwd_f32);
+    KLDivBwdF32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return KLDivBwdF32Instance.GetGcDefinitions(params,instance);
+    }
+
+    KLDivAll KLDivFwdBF16Instance(KLDivAll::fwd_bf16);
+    KLDivFwdBF16Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return KLDivFwdBF16Instance.GetGcDefinitions(params,instance);
+    }
+
+    KLDivAll KLDivBwdBF16Instance(KLDivAll::bwd_bf16);
+    KLDivBwdBF16Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return KLDivBwdBF16Instance.GetGcDefinitions(params,instance);
     }
 
     return gcapi::GLUE_NODE_NOT_FOUND;

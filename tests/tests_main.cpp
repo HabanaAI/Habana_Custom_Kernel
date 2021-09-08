@@ -29,6 +29,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "sparse_lengths_sum_bf16_test.hpp"
 #include "customdiv_fwd_f32_test.hpp"
 #include "relu6_all_test.hpp"
+#include "kl_div_all_test.hpp"
 
 
 int main(int argc, char** argv)
@@ -63,7 +64,11 @@ int main(int argc, char** argv)
             "Relu6FwdF32                Run Relu6FwdF32 only   " << std::endl <<
             "Relu6BwdF32                Run Relu6BwdF32 only   " << std::endl <<
             "Relu6FwdBF16               Run Relu6FwdBF16 only   " << std::endl <<
-            "Relu6BwdBF16               Run Relu6BwdBF16 only   " << std::endl;
+            "Relu6BwdBF16               Run Relu6BwdBF16 only   " << std::endl <<
+            "KLDivFwdF32                Run KLDivFwdF32 only   " << std::endl <<
+            "KLDivBwdF32                Run KLDivBwdF32 only   " << std::endl <<
+            "KLDivFwdBF16               Run KLDivFwdBF16 only   " << std::endl <<
+            "KLDivBwdBF16               Run KLDivBwdBF16 only   " << std::endl;
 
         exit(0);
     }
@@ -331,6 +336,67 @@ int main(int argc, char** argv)
         testRelu6.SetUp();
         result = testRelu6.runTest(GAUDI_KERNEL_RELU6_BWD_BF16);
         testRelu6.TearDown();
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    KLDivAllTest testKLDiv;
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
+        && (strcmp(argv[2],"KLDivFwdF32") ==0))))
+    {
+        testKLDiv.SetUp();
+        result = testKLDiv.runTest(GAUDI_KERNEL_KL_DIV_FWD_F32);
+        testKLDiv.TearDown();
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
+        && (strcmp(argv[2],"KLDivBwdF32") ==0))))
+    {
+        testKLDiv.SetUp();
+        result = testKLDiv.runTest(GAUDI_KERNEL_KL_DIV_BWD_F32);
+        testKLDiv.TearDown();
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
+        && (strcmp(argv[2],"KLDivFwdBF16") ==0))))
+    {
+        testKLDiv.SetUp();
+        result = testKLDiv.runTest(GAUDI_KERNEL_KL_DIV_FWD_BF16);
+        testKLDiv.TearDown();
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
+        && (strcmp(argv[2],"KLDivBwdBF16") ==0))))
+    {
+        testKLDiv.SetUp();
+        result = testKLDiv.runTest(GAUDI_KERNEL_KL_DIV_BWD_BF16);
+        testKLDiv.TearDown();
         if (result != 0)
         {
             return result;
