@@ -31,6 +31,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #define v_add_v_v_b(a, b, c, d, e)  v_f32_add_b(a, b, 0, c, d, e)
 #define v_mul_v_s(a, b)             v_f32_mul_b(a, b)
 #define v_mul_v_v(a,b)              v_f32_mul_b(a, b)
+#define s_ld_g_a(a)         s_f32_ld_g(a)
+#define v_mov_s(a)                  v_f32_mov_b(a)
 #define log(a)                      log_f32(a)
 
 float64 log_f32(float64 input)
@@ -103,6 +105,8 @@ float64 log_f32(float64 input)
 #define v_add_v_v_b(a, b, c, d, e)  v_bf16_add_b(a, b, 0, c, d, e)
 #define v_mul_v_s(a, b)             v_bf16_mul_b(a, b)
 #define v_mul_v_v(a,b)              v_bf16_mul_b(a, b)
+#define s_ld_g_a(a)         s_bf16_ld_g(a)
+#define v_mov_s(a)                  v_bf16_mov_b(a)
 #define log(a)                      log_bf16(a)
 // the following only for BF16
 #define av_mac_acc32_b(a, b, acc, neg, c, d) v_bf16_mac_acc32_b(a, b, acc, (neg) << 1, c, d)

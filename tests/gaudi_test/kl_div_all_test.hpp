@@ -29,19 +29,31 @@ public:
     ~KLDivAllTest() {}
     int runTest(Gaudi_Kernel_Name_e NameofKernel);
 
-    inline static void kldiv_f32_reference_implementation(
-            const float_4DTensor& gradIn,
+    inline static void kldiv_f32_fwd_reference_implementation(
+            const float_4DTensor& inputX,
+            const float_4DTensor& inputY,
+            float_1DTensor& output,
+            const float invLen);
+
+    inline static void kldiv_f32_bwd_reference_implementation(
+            const float_1DTensor& gradIn,
             const float_4DTensor& inputX,
             const float_4DTensor& inputY,
             float_4DTensor& output,
-            const float invLen, KLDivAll::KLDiv_mode_t);
+            const float invLen);
 
-    inline static void kldiv_bf16_reference_implementation(
-            const bfloat16_4DTensor& gradIn,
+    inline static void kldiv_bf16_fwd_reference_implementation(
+            const bfloat16_4DTensor& inputX,
+            const bfloat16_4DTensor& inputY,
+            bfloat16_1DTensor& output,
+            const float invLen);
+
+    inline static void kldiv_bf16_bwd_reference_implementation(
+            const bfloat16_1DTensor& gradIn,
             const bfloat16_4DTensor& inputX,
             const bfloat16_4DTensor& inputY,
             bfloat16_4DTensor& output,
-            const float invLen, KLDivAll::KLDiv_mode_t);
+            const float invLen);
 
 private:
     KLDivAllTest(const KLDivAllTest& other) = delete;

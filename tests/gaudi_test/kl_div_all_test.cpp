@@ -16,15 +16,14 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include "kl_div_all_test.hpp"
 
-void KLDivAllTest::kldiv_f32_reference_implementation(
-        const float_4DTensor& gradIn,
+void KLDivAllTest::kldiv_f32_fwd_reference_implementation(
         const float_4DTensor& inputX,
         const float_4DTensor& inputY,
-        float_4DTensor& output,
-        const float invLen, KLDivAll::KLDiv_mode_t mode)
+        float_1DTensor& output,
+        const float invLen)
 {
     int coords[4] = {0};
-    int coords0[4] = {0};
+    int coords0[1] = {0};
     float loss = 0.0f;
     for (unsigned d = 0; d < inputX.Size(0); d += 1) {
         coords[0] = d;
@@ -34,34 +33,53 @@ void KLDivAllTest::kldiv_f32_reference_implementation(
                 coords[2] = h;
                 for (unsigned w = 0; w < inputX.Size(1); w += 1) {
                     coords[1] = w;
-                    if(mode == KLDivAll::fwd_f32) {
-                        float x = inputX.ElementAt(coords);
-                        float y = inputY.ElementAt(coords);
-                        float out = invLen * (y * (log(y) - x));
-                        loss += out;
-                        output.SetElement(coords0, loss);
-                    }
-                    else if (mode == KLDivAll::bwd_f32) {
-                        float grad = gradIn.ElementAt(coords);
-                        float y = inputY.ElementAt(coords);
-                        float out = grad * invLen * (0 - y);
-                        output.SetElement(coords, out);
-                    }
+                    float x = inputX.ElementAt(coords);
+                    float y = inputY.ElementAt(coords);
+                    float out = invLen * (y * (log(y) - x));
+                    loss += out;
+                    output.SetElement(coords0, loss);
                 }
             }
         }
     }
 }
 
-void KLDivAllTest::kldiv_bf16_reference_implementation(
-        const bfloat16_4DTensor& gradIn,
-        const bfloat16_4DTensor& inputX,
-        const bfloat16_4DTensor& inputY,
-        bfloat16_4DTensor& output,
-        const float invLen, KLDivAll::KLDiv_mode_t mode)
+void KLDivAllTest::kldiv_f32_bwd_reference_implementation(
+        const float_1DTensor& gradIn,
+        const float_4DTensor& inputX,
+        const float_4DTensor& inputY,
+        float_4DTensor& output,
+        const float invLen)
 {
     int coords[4] = {0};
-    int coords0[4] = {0};
+    int coords0[1] = {0};
+    //float loss = 0.0f;
+    for (unsigned d = 0; d < inputX.Size(0); d += 1) {
+        coords[0] = d;
+        for (unsigned b = 0; b < inputX.Size(3); b += 1) {
+            coords[3] = b;
+            for (unsigned h = 0; h < inputX.Size(2); h += 1) {
+                coords[2] = h;
+                for (unsigned w = 0; w < inputX.Size(1); w += 1) {
+                    coords[1] = w;
+                    float grad = gradIn.ElementAt(coords0);
+                    float y = inputY.ElementAt(coords);
+                    float out = grad * invLen * (0 - y);
+                    output.SetElement(coords, out);
+                }
+            }
+        }
+    }
+}
+
+void KLDivAllTest::kldiv_bf16_fwd_reference_implementation(
+        const bfloat16_4DTensor& inputX,
+        const bfloat16_4DTensor& inputY,
+        bfloat16_1DTensor& output,
+        const float invLen)
+{
+    int coords[4] = {0};
+    int coords0[1] = {0};
     float loss = 0.0f;
     for (unsigned d = 0; d < inputX.Size(0); d += 1) {
         coords[0] = d;
@@ -71,26 +89,46 @@ void KLDivAllTest::kldiv_bf16_reference_implementation(
                 coords[2] = h;
                 for (unsigned w = 0; w < inputX.Size(1); w += 1) {
                     coords[1] = w;
-                    if(mode == KLDivAll::fwd_bf16) {
-                        float x = (float)inputX.ElementAt(coords);
-                        float tmp_x = floatTobf16ToFloat(x);
-                        float y = (float)inputY.ElementAt(coords);
-                        float tmp_y = floatTobf16ToFloat(y);
-                        y = floatTobf16ToFloat(log(tmp_y)) - tmp_x;
-                        x = floatTobf16ToFloat(tmp_y * y);
-                        float out = floatTobf16ToFloat(invLen * x);
-                        loss += out;
-                        output.SetElement(coords0, loss);
-                    }
-                    else if (mode == KLDivAll::bwd_bf16) {
-                        float grad = gradIn.ElementAt(coords);
-                        float tmp_grad = floatTobf16ToFloat(grad);
-                        float y = inputY.ElementAt(coords);
-                        float tmp_y = floatTobf16ToFloat(y);
-                        y = floatTobf16ToFloat(tmp_grad * (0 - tmp_y));
-                        float out = floatTobf16ToFloat(invLen * y);
-                        output.SetElement(coords, out);
-                    }
+                    float x = (float)inputX.ElementAt(coords);
+                    float tmp_x = floatTobf16ToFloat(x);
+                    float y = (float)inputY.ElementAt(coords);
+                    float tmp_y = floatTobf16ToFloat(y);
+                    y = floatTobf16ToFloat(log(tmp_y)) - tmp_x;
+                    x = floatTobf16ToFloat(tmp_y * y);
+                    float out = floatTobf16ToFloat(invLen * x);
+                    loss += out;
+                    output.SetElement(coords0, loss);
+                }
+            }
+        }
+    }
+}
+
+void KLDivAllTest::kldiv_bf16_bwd_reference_implementation(
+        const bfloat16_1DTensor& gradIn,
+        const bfloat16_4DTensor& inputX,
+        const bfloat16_4DTensor& inputY,
+        bfloat16_4DTensor& output,
+        const float invLen)
+{
+    int coords[4] = {0};
+    int coords0[1] = {0};
+    //float loss = 0.0f;
+    for (unsigned d = 0; d < inputX.Size(0); d += 1) {
+        coords[0] = d;
+        for (unsigned b = 0; b < inputX.Size(3); b += 1) {
+            coords[3] = b;
+            for (unsigned h = 0; h < inputX.Size(2); h += 1) {
+                coords[2] = h;
+                for (unsigned w = 0; w < inputX.Size(1); w += 1) {
+                    coords[1] = w;
+                    float grad = gradIn.ElementAt(coords0);
+                    float tmp_grad = floatTobf16ToFloat(grad);
+                    float y = inputY.ElementAt(coords);
+                    float tmp_y = floatTobf16ToFloat(y);
+                    y = floatTobf16ToFloat(tmp_grad * (0 - tmp_y));
+                    float out = floatTobf16ToFloat(invLen * y);
+                    output.SetElement(coords, out);
                 }
             }
         }
@@ -99,23 +137,29 @@ void KLDivAllTest::kldiv_bf16_reference_implementation(
 
 int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
 {
-    const int height = 8;
-    const int width  = 8;
+    const int height = 5;
+    const int width  = 5;
     const int depth  = 60;
     const int batch  = 2;
 
     unsigned int fmInitializer[] = {depth, width, height, batch};
+    unsigned int ofmInitializer[] = {1};
 
     if((NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_F32) || (NameofKernel == GAUDI_KERNEL_KL_DIV_BWD_F32))
     {    
-        float_4DTensor gradIn(fmInitializer);
+        float_1DTensor gradIn(ofmInitializer);
         gradIn.InitRand(-2.0f, 2.0f);
+
         float_4DTensor inputX(fmInitializer);
         inputX.InitRand(0.0f, 1.0f);
         float_4DTensor inputY(fmInitializer);
         inputY.InitRand(0.0f, 1.0f);
-        float_4DTensor output(fmInitializer);
-        float_4DTensor output_ref(fmInitializer);
+
+        float_1DTensor output1D(ofmInitializer);
+        float_1DTensor output1D_ref(ofmInitializer);
+
+        float_4DTensor output4D(fmInitializer);
+        float_4DTensor output4D_ref(fmInitializer);
 
         KLDivAll::KLDivAllParams param;
         // mean
@@ -129,20 +173,23 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
        if(NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_F32)
         {
             m_in_defs.inputTensorNr = 2;        
-            kldiv_f32_reference_implementation(gradIn, inputX, inputY, output_ref, param.invLen, KLDivAll::fwd_f32);
+            kldiv_f32_fwd_reference_implementation(inputX, inputY, output1D_ref, param.invLen);
             LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), inputX);
             LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), inputY);
         }
         else {
             m_in_defs.inputTensorNr = 3;        
-            kldiv_f32_reference_implementation(gradIn, inputX, inputY, output_ref, param.invLen, KLDivAll::bwd_f32);
-            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), gradIn);
-            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), inputX);
-            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[2]), inputY);            
+            kldiv_f32_bwd_reference_implementation(gradIn, inputX, inputY, output4D_ref, param.invLen);
+            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), inputX);
+            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), inputY);
+            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[2]), gradIn);            
         }
 
         m_in_defs.outputTensorNr = 1;
-        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
+        if(NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_F32)
+            LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output1D);
+        else
+            LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output4D);
 
         char**   kernelNames = nullptr;
         unsigned kernelCount = 0;
@@ -171,30 +218,37 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
 
         // generate and load tensor descriptors
         std::vector<TensorDescriptor> vec;
-        if(NameofKernel == GAUDI_KERNEL_KL_DIV_BWD_F32)
-            vec.push_back(gradIn.GetTensorDescriptor());        
         vec.push_back(inputX.GetTensorDescriptor());
         vec.push_back(inputY.GetTensorDescriptor());
-        vec.push_back(output.GetTensorDescriptor());
+        if(NameofKernel == GAUDI_KERNEL_KL_DIV_BWD_F32)
+        {
+            vec.push_back(gradIn.GetTensorDescriptor());        
+            vec.push_back(output4D.GetTensorDescriptor());
+        }
+        if(NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_F32)
+            vec.push_back(output1D.GetTensorDescriptor());
+                    
         // execute a simulation of the kernel using TPC simulator,
         TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
         ReleaseKernelNames(kernelNames, kernelCount);
-        output.Print(0);
-        output_ref.Print(0);        
 
         if(NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_F32)
         {
+            output1D.Print(0);
+            output1D_ref.Print(0);             
             // scalar output, only check first element
-            if (abs(output.Data()[0] - output_ref.Data()[0]) > 1e-2)
+            if (abs(output1D.Data()[0] - output1D_ref.Data()[0]) > 1e-2)
             {
                 std::cout << "KL_Div FWD F32 test failed!!" << std::endl;
                 return -1;
             }
         }
         else{
-            for (int element = 0 ; element <  output_ref.ElementCount() ; element++)
+            output4D.Print(0);
+            output4D_ref.Print(0);             
+            for (int element = 0 ; element <  output4D_ref.ElementCount() ; element++)
             {
-                if (abs(output.Data()[element] - output_ref.Data()[element]) > 1e-1)
+                if (abs(output4D.Data()[element] - output4D_ref.Data()[element]) > 1e-2)
                 {
                      std::cout << "KL_Div BWD F32 test failed!!" << std::endl;
                     return -1;
@@ -210,14 +264,18 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
     }
     else {
 
-        bfloat16_4DTensor gradIn(fmInitializer);
+        bfloat16_1DTensor gradIn(ofmInitializer);
         gradIn.InitRand(-1.0f, 1.0f);
+
         bfloat16_4DTensor inputX(fmInitializer);
         inputX.InitRand(0.0f, 1.0f);
         bfloat16_4DTensor inputY(fmInitializer);
         inputY.InitRand(0.0f, 1.0f);
-        bfloat16_4DTensor output(fmInitializer);
-        bfloat16_4DTensor output_ref(fmInitializer);
+
+        bfloat16_1DTensor output1D(ofmInitializer);
+        bfloat16_1DTensor output1D_ref(ofmInitializer);
+        bfloat16_4DTensor output4D(fmInitializer);
+        bfloat16_4DTensor output4D_ref(fmInitializer);
 
         KLDivAll::KLDivAllParams param;
         // sum
@@ -230,20 +288,23 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         // execute reference implementation of the kernel.
        if(NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_BF16) {
             m_in_defs.inputTensorNr = 2;        
-            kldiv_bf16_reference_implementation(gradIn, inputX, inputY, output_ref, param.invLen, KLDivAll::fwd_bf16);
+            kldiv_bf16_fwd_reference_implementation(inputX, inputY, output1D_ref, param.invLen);
             LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), inputX);
             LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), inputY);
         }
         else {
             m_in_defs.inputTensorNr = 3;        
-            kldiv_bf16_reference_implementation(gradIn, inputX, inputY, output_ref, param.invLen, KLDivAll::bwd_bf16);
-            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), gradIn);
-            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), inputX);
-            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[2]), inputY);            
+            kldiv_bf16_bwd_reference_implementation(gradIn, inputX, inputY, output4D_ref, param.invLen);
+            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), inputX);
+            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), inputY);
+            LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[2]), gradIn);            
         }
 
         m_in_defs.outputTensorNr = 1;
-        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
+        if(NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_BF16) 
+            LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output1D);
+        else
+            LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output4D);
 
         char**   kernelNames = nullptr;
         unsigned kernelCount = 0;
@@ -272,30 +333,38 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
 
         // generate and load tensor descriptors
         std::vector<TensorDescriptor> vec;
-        if(NameofKernel == GAUDI_KERNEL_KL_DIV_BWD_BF16)
-            vec.push_back(gradIn.GetTensorDescriptor());        
         vec.push_back(inputX.GetTensorDescriptor());
         vec.push_back(inputY.GetTensorDescriptor());
-        vec.push_back(output.GetTensorDescriptor());
+        if(NameofKernel == GAUDI_KERNEL_KL_DIV_BWD_BF16)
+        {
+            vec.push_back(gradIn.GetTensorDescriptor());        
+            vec.push_back(output4D.GetTensorDescriptor());
+        }
+        if(NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_BF16) 
+            vec.push_back(output1D.GetTensorDescriptor());
+            
         // execute a simulation of the kernel using TPC simulator,
         TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
         ReleaseKernelNames(kernelNames, kernelCount);
-        output.Print(0);
-        output_ref.Print(0);
+
         bfloat16 tmp;
         if(NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_BF16)
         {
+            output1D.Print(0);
+            output1D_ref.Print(0);            
             // scalar output, only check first element
-            if (tmp.abs(output.Data()[0] - output_ref.Data()[0]) > 1e-2)
+            if (tmp.abs(output1D.Data()[0] - output1D_ref.Data()[0]) > 1e-2)
             {
                 std::cout << "KL_Div FWD BF16 test failed!!" << std::endl;
                 return -1;
             }
         }
         else{
-            for (int element = 0 ; element <  output_ref.ElementCount() ; element++)
+            output4D.Print(0);
+            output4D_ref.Print(0);
+            for (int element = 0 ; element <  output4D_ref.ElementCount() ; element++)
             {
-                if (tmp.abs(output.Data()[element] - output_ref.Data()[element]) > 1e-1)
+                if (tmp.abs(output4D.Data()[element] - output4D_ref.Data()[element]) > 1e-2)
                 {
                      std::cout << "KL_Div BWD BF16 test failed!!" << std::endl;
                     return -1;

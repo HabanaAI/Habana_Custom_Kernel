@@ -43,6 +43,11 @@ public:
     virtual gcapi::GlueCodeReturn_t GetKernelName(
             char kernelName [gcapi::MAX_NODE_NAME]);
 
+    void SetGeometryAlongAxis(  gcapi::HabanaKernelParams_t* in_defs,
+                                gcapi::HabanaKernelInstantiation_t* out_defs, int axis,
+                                int pixels_per_loop, uint32_t inpTensorMask,
+                                uint32_t outTensorMask);
+
     gcapi::GlueCodeReturn_t  ValidateTensorsDataType(
                                 gcapi::Tensor_t* pTensors,
                                 int tensorCount);

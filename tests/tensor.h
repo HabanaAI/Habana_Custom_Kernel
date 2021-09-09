@@ -416,6 +416,7 @@ typedef test::Tensor<float,2>   float_2DTensor;
 typedef test::Tensor<float,3>   float_3DTensor;
 typedef test::Tensor<float,4>   float_4DTensor;
 typedef test::Tensor<float,5>   float_5DTensor;
+typedef test::Tensor<bfloat16,1>   bfloat16_1DTensor;
 typedef test::Tensor<bfloat16,2>   bfloat16_2DTensor;
 typedef test::Tensor<bfloat16,3>   bfloat16_3DTensor;
 typedef test::Tensor<bfloat16,4>   bfloat16_4DTensor;

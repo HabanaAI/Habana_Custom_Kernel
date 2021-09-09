@@ -67,6 +67,58 @@ gcapi::GlueCodeReturn_t  KLDivAll::ValidateTensorsDataType(
     return retVal;
 }
 
+void KLDivAll::SetGeometryAlongAxis(gcapi::HabanaKernelParams_t*      in_defs,
+                                          gcapi::HabanaKernelInstantiation_t* out_defs, int axis,
+                                          int pixels_per_loop, uint32_t inpTensorMask,
+                                          uint32_t outTensorMask)
+{
+    if ((0 != in_defs->inputTensorNr) && (axis != 0))
+    {
+        out_defs->indexSpaceGeometry.sizes[axis] =
+            (std::max(in_defs->inputTensors[0].geometry.sizes[axis], 1u) + pixels_per_loop - 1) /
+            pixels_per_loop;
+    }
+    else
+    {
+        out_defs->indexSpaceGeometry.sizes[axis] =
+            (out_defs->indexSpaceGeometry.sizes[axis] + pixels_per_loop - 1) / pixels_per_loop;
+    }
+
+    if (0u != inpTensorMask)
+    {
+        for (unsigned k = 0; (k < in_defs->inputTensorNr); k++)
+        {
+            if ((inpTensorMask & (1u << k)))
+            {
+                out_defs->inputTensorAccessPattern[k].dim[axis].dim = axis;
+                out_defs->inputTensorAccessPattern[k].dim[axis].start_a *= pixels_per_loop;
+                out_defs->inputTensorAccessPattern[k].dim[axis].end_a *= pixels_per_loop;
+                out_defs->inputTensorAccessPattern[k].dim[axis].start_b = 0;
+                out_defs->inputTensorAccessPattern[k].dim[axis].end_b =
+                    (out_defs->inputTensorAccessPattern[k].dim[axis].end_b + 1) * pixels_per_loop -
+                    1;
+            }
+        }
+    }
+
+    if (0u != outTensorMask)
+    {
+        for (unsigned k = 0; (k < in_defs->outputTensorNr); k++)
+        {
+            if ((outTensorMask & (1u << k)))
+            {
+                out_defs->outputTensorAccessPattern[k].dim[axis].dim = axis;
+                out_defs->outputTensorAccessPattern[k].dim[axis].start_a *= pixels_per_loop;
+                out_defs->outputTensorAccessPattern[k].dim[axis].end_a *= pixels_per_loop;
+                out_defs->outputTensorAccessPattern[k].dim[axis].start_b = 0;
+                out_defs->outputTensorAccessPattern[k].dim[axis].end_b =
+                    (out_defs->outputTensorAccessPattern[k].dim[axis].end_b + 1) * pixels_per_loop -
+                    1;
+            }
+        }
+    }
+}
+
 gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
             gcapi::HabanaKernelParams_t* in_defs,
             gcapi::HabanaKernelInstantiation_t* out_defs)
@@ -114,46 +166,64 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
     }
 
    // Validate input and output tensor sizes are same
-   unsigned int * inputTensorSizes = in_defs->inputTensors[0].geometry.sizes;
-   bool SizesAreEqual = true;
+    unsigned int * inputTensorSizes = in_defs->inputTensors[0].geometry.sizes;
+    bool SizesAreEqual = true;
 
-   for(unsigned int dim = 0; dim < 4; dim++)
-   {
-      SizesAreEqual &= (in_defs->outputTensors[0].geometry.sizes[dim]
-              == inputTensorSizes[dim]);
-   }
+    if(m_mode == fwd_f32 || m_mode == fwd_bf16) 
+    {
+        SizesAreEqual &= in_defs->outputTensors[0].geometry.sizes[0] == 1;
+    }
+    else
+    {
+        SizesAreEqual &= in_defs->inputTensors[2].geometry.sizes[0] == 1;
+        inputTensorSizes = in_defs->inputTensors[1].geometry.sizes;
+        for(unsigned int dim = 0; dim < 2; dim++)
+        {
+            SizesAreEqual &= (in_defs->outputTensors[0].geometry.sizes[dim]
+                    == inputTensorSizes[dim]);
+        }
+    }
 
-   if(!SizesAreEqual)
-   {
-      return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
-   }
+    if(!SizesAreEqual)
+    {
+        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
+    }
 
-   // Validate dim0 of all input tensors are equal
-   for(unsigned int tns = 1; tns < in_defs->inputTensorNr; tns++)
-   {
-      SizesAreEqual &= (in_defs->inputTensors[tns].geometry.sizes[0] == inputTensorSizes[0]);
-   }
+    // Validate dim0 of all input tensors are equal
+    for(unsigned int tns = 0; tns < in_defs->inputTensorNr; tns++)
+    {
+        if(tns != 2) // #2 tensor is 1D
+            SizesAreEqual &= (in_defs->inputTensors[tns].geometry.sizes[0] == inputTensorSizes[0]);
+    }
 
-   if(!SizesAreEqual)
-   {
-      return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
-   }
+    if(!SizesAreEqual)
+    {
+        return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
+    }
 
     /*************************************************************************************
     *    Stage II -  Define index space geometry.
     **************************************************************************************/
-    out_defs->indexSpaceGeometry.dims = 4;
-
     int elementsInVec;
+    unsigned depthIndex, elements;
     if(m_mode == fwd_f32 || m_mode == bwd_f32)
         elementsInVec = 64;
     else
         elementsInVec = 128;
-    unsigned depthIndex = (inputTensorSizes[0] + (elementsInVec - 1)) / elementsInVec;
-    out_defs->indexSpaceGeometry.sizes[0] = depthIndex;
-    out_defs->indexSpaceGeometry.sizes[1] = inputTensorSizes[1];
-    out_defs->indexSpaceGeometry.sizes[2] = inputTensorSizes[2];
-    out_defs->indexSpaceGeometry.sizes[3] = inputTensorSizes[3];
+
+    depthIndex = (inputTensorSizes[0] + (elementsInVec - 1)) / elementsInVec;
+    elements   = elementsInVec * depthIndex;
+    if(m_mode == fwd_f32 || m_mode == fwd_bf16) 
+    {
+        out_defs->indexSpaceGeometry.dims = 1;
+        out_defs->indexSpaceGeometry.sizes[0] = 1;
+    }
+    else{
+        out_defs->indexSpaceGeometry.sizes[0] = depthIndex;
+        out_defs->indexSpaceGeometry.sizes[1] = inputTensorSizes[1];
+        out_defs->indexSpaceGeometry.sizes[2] = inputTensorSizes[2];
+        out_defs->indexSpaceGeometry.sizes[3] = inputTensorSizes[3];        
+    }
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping
@@ -161,61 +231,117 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
     // f_start(i) = elementsInVec*i + 0;
     // f_end f(i) = elementsInVec*i + (elementsInVec - 1);
     // Resource 0-4 (IFM) dim 0
-    for(unsigned int ii = 0;ii < in_defs->inputTensorNr; ii++) {
-        out_defs->inputTensorAccessPattern[ii].allRequired = true;
-        out_defs->inputTensorAccessPattern[ii].dim[0].dim      = 0;
-        out_defs->inputTensorAccessPattern[ii].dim[0].start_a  = elementsInVec;
-        out_defs->inputTensorAccessPattern[ii].dim[0].end_a    = elementsInVec;
-        out_defs->inputTensorAccessPattern[ii].dim[0].start_b  = 0;
-        out_defs->inputTensorAccessPattern[ii].dim[0].end_b    = elementsInVec - 1;
+    if(m_mode == fwd_f32 || m_mode == fwd_bf16)    
+    {
+        for(unsigned int ii = 0;ii < in_defs->inputTensorNr; ii++) {
+            out_defs->inputTensorAccessPattern[ii].allRequired = true;
+            out_defs->inputTensorAccessPattern[ii].dim[0].dim      = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[0].start_a  = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[0].end_a    = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[0].start_b  = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[0].end_b    = elements - 1;
 
-        out_defs->inputTensorAccessPattern[ii].dim[1].dim      = 1;
-        out_defs->inputTensorAccessPattern[ii].dim[1].start_a  = c_unrollCount;
-        out_defs->inputTensorAccessPattern[ii].dim[1].end_a    = c_unrollCount;
-        out_defs->inputTensorAccessPattern[ii].dim[1].start_b  = 0;
-        out_defs->inputTensorAccessPattern[ii].dim[1].end_b    = c_unrollCount - 1;
+            for (int dims = 1; dims < 4; dims++)
+            {
+                out_defs->inputTensorAccessPattern[ii].dim[dims].dim      = dims;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].start_a  = 0;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].end_a    = 0;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].start_b  = 0;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].end_b    = inputTensorSizes[dims] - 1;
+            }
+        }
+
+
+        out_defs->outputTensorAccessPattern[0].dim[0].dim      = 0;
+        out_defs->outputTensorAccessPattern[0].dim[0].start_a  = 0;
+        out_defs->outputTensorAccessPattern[0].dim[0].end_a    = 0;
+        out_defs->outputTensorAccessPattern[0].dim[0].start_b  = 0;
+        out_defs->outputTensorAccessPattern[0].dim[0].end_b    = elements - 1;
         
-        // f_start f(i) = 1*i + 0;
-        // f_end   f(i) = 1*i + 0;
-        // Resource 0 (IFM) dim 1-4
+        out_defs->outputTensorAccessPattern[0].dim[1].dim      = 1;
+        out_defs->outputTensorAccessPattern[0].dim[1].start_a  = 0;
+        out_defs->outputTensorAccessPattern[0].dim[1].end_a    = 0;
+        out_defs->outputTensorAccessPattern[0].dim[1].start_b  = 0;
+        out_defs->outputTensorAccessPattern[0].dim[1].end_b    = 
+                    ((inputTensorSizes[1] + (c_unrollCount - 1)) / c_unrollCount) *
+                    c_unrollCount - 1;
+
         for (int dims = 2; dims < 4; dims++)
         {
-            out_defs->inputTensorAccessPattern[ii].dim[dims].dim      = dims;
-            out_defs->inputTensorAccessPattern[ii].dim[dims].start_a  = 1;
-            out_defs->inputTensorAccessPattern[ii].dim[dims].end_a    = 1;
-            out_defs->inputTensorAccessPattern[ii].dim[dims].start_b  = 0;
-            out_defs->inputTensorAccessPattern[ii].dim[dims].end_b    = 1 - 1;
+            out_defs->outputTensorAccessPattern[0].dim[dims].dim      = dims;
+            out_defs->outputTensorAccessPattern[0].dim[dims].start_a  = 0;
+            out_defs->outputTensorAccessPattern[0].dim[dims].end_a    = 0;
+            out_defs->outputTensorAccessPattern[0].dim[dims].start_b  = 0;
+            out_defs->outputTensorAccessPattern[0].dim[dims].end_b    = inputTensorSizes[dims] - 1;
         }
     }
-
-
-    // f_start f(i) = elementsInVec*i + 0;
-    // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
-    // Resource 0 (OFM) dim 0
-    out_defs->outputTensorAccessPattern[0].dim[0].dim      = 0;
-    out_defs->outputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
-    out_defs->outputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
-    out_defs->outputTensorAccessPattern[0].dim[0].start_b  = 0;
-    out_defs->outputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
-	
-	out_defs->outputTensorAccessPattern[0].dim[1].dim      = 1;
-    out_defs->outputTensorAccessPattern[0].dim[1].start_a  = c_unrollCount;
-    out_defs->outputTensorAccessPattern[0].dim[1].end_a    = c_unrollCount;
-    out_defs->outputTensorAccessPattern[0].dim[1].start_b  = 0;
-    out_defs->outputTensorAccessPattern[0].dim[1].end_b    = c_unrollCount - 1;
-
-    // f_start f(i) = 1*i + 0;
-    // f_end   f(i) = 1*i + 0;
-    // Resource 0 (OFM) dim 1-4
-    for (int dims = 2; dims < 4; dims++)
+    else 
     {
-        out_defs->outputTensorAccessPattern[0].dim[dims].dim      = dims;
-        out_defs->outputTensorAccessPattern[0].dim[dims].start_a  = 1;
-        out_defs->outputTensorAccessPattern[0].dim[dims].end_a    = 1;
-        out_defs->outputTensorAccessPattern[0].dim[dims].start_b  = 0;
-        out_defs->outputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
-    }
+        out_defs->indexSpaceGeometry.dims = 4;
+        out_defs->indexSpaceGeometry.sizes[0] =
+            ceilf((float)in_defs->outputTensors[0].geometry.sizes[0] / elementsInVec);
+        out_defs->indexSpaceGeometry.sizes[1] =
+            (in_defs->inputTensors[0].geometry.sizes[1] + (c_unrollCount - 1)) / c_unrollCount;
 
+        for (int i = 2; i < 4; i++)
+        {
+            out_defs->indexSpaceGeometry.sizes[i] =
+                std::max(in_defs->outputTensors[0].geometry.sizes[i], 1u);
+        }
+
+        for(unsigned int ii = 0; ii < in_defs->inputTensorNr; ii++) {
+            out_defs->inputTensorAccessPattern[ii].allRequired = true;
+            out_defs->inputTensorAccessPattern[ii].dim[0].dim      = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[0].start_a  = elementsInVec;
+            out_defs->inputTensorAccessPattern[ii].dim[0].end_a    = elementsInVec;
+            out_defs->inputTensorAccessPattern[ii].dim[0].start_b  = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[0].end_b    = elementsInVec - 1;
+
+            out_defs->inputTensorAccessPattern[ii].dim[1].dim      = 1;
+            out_defs->inputTensorAccessPattern[ii].dim[1].start_a  = 1;
+            out_defs->inputTensorAccessPattern[ii].dim[1].end_a    = 1;
+            out_defs->inputTensorAccessPattern[ii].dim[1].start_b  = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[1].end_b    = 1 - 1;
+            
+            for (int dims = 2; dims < 4; dims++)
+            {
+                out_defs->inputTensorAccessPattern[ii].dim[dims].dim      = dims;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].start_a  = 1;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].end_a    = 1;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].start_b  = 0;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].end_b    = 1 - 1;
+            }
+        }
+
+        out_defs->outputTensorAccessPattern[0].dim[0].dim      = 0;
+        out_defs->outputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
+        out_defs->outputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
+        out_defs->outputTensorAccessPattern[0].dim[0].start_b  = 0;
+        out_defs->outputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
+        
+        out_defs->outputTensorAccessPattern[0].dim[1].dim      = 1;
+        out_defs->outputTensorAccessPattern[0].dim[1].start_a  = 1;
+        out_defs->outputTensorAccessPattern[0].dim[1].end_a    = 1;
+        out_defs->outputTensorAccessPattern[0].dim[1].start_b  = 0;
+        out_defs->outputTensorAccessPattern[0].dim[1].end_b    = 1 - 1;
+
+        for (int dims = 2; dims < 4; dims++)
+        {
+            out_defs->outputTensorAccessPattern[0].dim[dims].dim      = dims;
+            out_defs->outputTensorAccessPattern[0].dim[dims].start_a  = 1;
+            out_defs->outputTensorAccessPattern[0].dim[dims].end_a    = 1;
+            out_defs->outputTensorAccessPattern[0].dim[dims].start_b  = 0;
+            out_defs->outputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
+        }
+
+        SetGeometryAlongAxis(in_defs, out_defs, 1, c_unrollCount, 7, 1);
+
+        //#2 (start with #0) tensor is 1D
+        out_defs->inputTensorAccessPattern[2].dim[0].start_a = 0;
+        out_defs->inputTensorAccessPattern[2].dim[0].end_a = 0;
+        out_defs->inputTensorAccessPattern[2].dim[0].start_b = 0;
+        out_defs->inputTensorAccessPattern[2].dim[0].end_b = 0;
+    }
     /*************************************************************************************
     *    Stage IV -  define scalar parameters
     **************************************************************************************/

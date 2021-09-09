@@ -19,8 +19,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 // invLen is 1, reduction is 'sum'.
 // invLen is actual 1/len, reduction is 'mean'
-void main(tensor gradin, tensor input,
-          tensor target, tensor outTensor,
+void main(tensor input, tensor target, 
+          tensor gradin, tensor outTensor,
           float invLen)
 {
     const int depth     = 0;
@@ -32,6 +32,7 @@ void main(tensor gradin, tensor input,
     const int5 index_space_end = get_index_space_size() + index_space_start;
 
     int5 coords = { 0, 0, 0, 0, 0 };
+    int5 gradCoords = { 0 };
 
     // DEPTH
     const int depthStep     = VECTOR_SIZE;
@@ -53,6 +54,10 @@ void main(tensor gradin, tensor input,
     const int batchStart    = index_space_start[batch];
     const int batchtEnd     = index_space_end[batch];
 
+    __global__ float* addr = (__global__ float*)gen_addr(gradCoords, gradin);
+    float val = s_ld_g_a(addr);
+    VECTOR g = v_mov_s(val);
+
     for (int b = batchStart; b < batchtEnd; b += batchStep)
     {
         coords[batch] = b;
@@ -63,13 +68,11 @@ void main(tensor gradin, tensor input,
             for (int d = depthStart; d < depthEnd; d += depthStep)
             {
                 coords[depth] = d;
-                //#pragma loop_unroll(4)
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
                     coords[width] = w;
 
                     VECTOR t = v_ld_tnsr_i(coords, target);
-                    VECTOR g = v_ld_tnsr_i(coords, gradin);
 
 #ifdef FLOAT32
                     VECTOR out = (-t);
