@@ -370,7 +370,6 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
                     return -1;
                 }
             }
-
         }
 
         if(NameofKernel == GAUDI_KERNEL_KL_DIV_FWD_BF16)
