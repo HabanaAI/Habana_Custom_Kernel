@@ -29,7 +29,7 @@ void main(tensor grad, tensor input, tensor output)
     int5 coords = { 0, 0, 0, 0, 0 };
 
     // DEPTH
-    const int depthStep     = 64;
+    const int depthStep     = VECTOR_SIZE;
     const int depthStart    = index_space_start[depth] * depthStep;
     const int depthEnd      = index_space_end[depth] * depthStep;
 

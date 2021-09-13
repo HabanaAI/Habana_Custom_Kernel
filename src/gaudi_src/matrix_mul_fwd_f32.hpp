@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs. All rights reserved.
+Copyright (c) 2020 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -14,23 +14,28 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#if defined(FLOAT32)
-#define VECTOR                      float64
-#define VECTOR_SIZE                 64
-#define v_ld_tnsr_i(a,b)            v_f32_ld_tnsr_i(a,b)
-#define v_sel_less_v_s_v_v(a,b,c,d) v_f32_sel_less_f32_b(a,b,c,d)
-#define v_sel_geq_v_s_v_v(a,b,c,d)    v_f32_sel_geq_f32_b(a,b,c,d)
-#define v_sel_grt_v_s_v_v(a,b,c,d)    v_f32_sel_grt_f32_b(a,b,c,d)
-#define st_tnsr_i_v(a,b,c)          f32_st_tnsr_i_v(a,b,c)
+#ifndef _MATRIX_MUL_FWD_F32_HPP
+#define _MATRIX_MUL_FWD_F32_HPP
+
+#include "gc_interface.h"
+
+class MatrixMulFwdF32
+{
+    public:
+        MatrixMulFwdF32() {}
+        virtual ~MatrixMulFwdF32() {}
+
+        virtual gcapi::GlueCodeReturn_t
+        GetGcDefinitions(gcapi::HabanaKernelParams_t*      in_defs,
+                     gcapi::HabanaKernelInstantiation_t* out_defs);
+
+        virtual gcapi::GlueCodeReturn_t GetKernelName(
+                char kernelName [gcapi::MAX_NODE_NAME]);                            
+
+    private:
+        MatrixMulFwdF32(const MatrixMulFwdF32& other) = delete;
+        MatrixMulFwdF32& operator=(const MatrixMulFwdF32& other) = delete;
+};
+
 #endif
 
-#if defined(BFLOAT16)
-#define VECTOR                      bfloat128
-#define VECTOR_SIZE                 128
-#define v_ld_tnsr_i(a,b)            v_bf16_ld_tnsr_i(a,b)
-#define v_sel_less_v_s_v_v(a,b,c,d) v_bf16_sel_less_bf16_b(a,b,c,d)
-#define v_sel_geq_v_s_v_v(a,b,c,d)    v_bf16_sel_geq_bf16_b(a,b,c,d)
-#define v_sel_grt_v_s_v_v(a,b,c,d)    v_bf16_sel_grt_bf16_b(a,b,c,d)
-#define st_tnsr_i_v(a,b,c)          bf16_st_tnsr_i_v(a,b,c)
-
-#endif

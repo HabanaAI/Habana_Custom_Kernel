@@ -25,6 +25,7 @@ set(TPC_INCLUDE_DIR "/usr/lib/habanatools/include" CACHE STRING "Path to TPC inc
 set(TPC_CURRENT_LIST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/kernels/include" CACHE STRING "Path to current includes")
 set(TPC_TESTS_CORE_INCLUDE_DIR "/usr/lib/habanatools/include" CACHE STRING "Path to tests_core includes")
 
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -fno-strict-aliasing")
 set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-ggdb -O2")
