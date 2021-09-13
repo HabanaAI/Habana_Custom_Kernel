@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2018 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -19,12 +19,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include "TPC.h" //TPC simulator header
 #include "test_base.hpp"
-#include "test_base_tpc_callback.hpp"
-#include "tpc_elf_api.hpp"
-
-int c_divide_by_all_indices        = 5;
-bool TestBase::s_printfIsUsed = false;
-std::shared_ptr<test::PrintfTensor> TestBase::s_ptr_printfTensor;
+#include "tpc_test_core_api.h"
 
 void TestBase::SetUp()
 {
@@ -44,260 +39,24 @@ void TestBase::TearDown()
     m_out_defs.elfSize = 0;
 }
 
-TensorDescriptorGaudi TestBase::DaliTensorDescToGaudiDesc(const TensorDescriptor * desc)
-{
-    TensorDescriptorGaudi gaudiDesc = {};
-    gaudiDesc.paddingValue = desc->paddingValue;
-    gaudiDesc.configuration = desc->configuration;
-    gaudiDesc.baseAddrUnion.baseAddr = desc->baseAddrUnion.baseAddr;
-    for (int i =0 ; i < TestBase::num_dims_in_irf; i++)
-    {
-        gaudiDesc.dimDescriptors[i].size = desc->dimDescriptors[i].size;
-        gaudiDesc.dimDescriptors[i].stride = desc->dimDescriptors[i].stride;
-    }
-    return gaudiDesc;
-}
-
-
-#define PRINTF_SIZE_BYTES (32*1024) /* 32kB */
-
-void TestBase::AllocatePrintfTensor( std::vector<TensorDescriptor>& descriptors,
-                                     const gcapi::HabanaKernelParams_t& in_defs,
-                                     const gcapi::HabanaKernelInstantiation_t& out_defs,
-                                     const TpcElfTools::TPCProgramHeader & programHeader)
-{
-    /* first, turn off s_printfIsUsed flag for cases of consecutive tests execution. */
-    TestBase::s_printfIsUsed = false;
-
-    if (programHeader.printfUsed)
-    {
-        /* in case of repeated call of AllocatePrintfTensor function and reinitialization of
-           s_ptr_printfTensor, the previous PrintfTensor will be automatically correctly destroyed
-           due to functionality of smart pointers.*/
-        TestBase::s_ptr_printfTensor = std::make_shared<test::PrintfTensor>(PRINTF_SIZE_BYTES);
-
-        descriptors.push_back(TestBase::s_ptr_printfTensor->GetTensorDescriptor());
-        TestBase::s_printfIsUsed = true;
-    }
-}
-
-void TestBase::ShowMessageFromPrintfTensor(std::string title)
-{
-    if (TestBase::s_printfIsUsed)
-    {
-        if(title != "")
-        {
-            std::cout << "\n" << title << ":\n";
-        }
-
-        std::cout << TestBase::s_ptr_printfTensor->GetAllMessages();
-    }
-}
-
 unsigned int TestBase::RunSimulation(   std::vector<TensorDescriptor>& descriptors,
                                         const gcapi::HabanaKernelParams_t& gc_input,
                                         const gcapi::HabanaKernelInstantiation_t& gc_output,
                                         IndexSpaceMappingTest_t testMode)
 {
+   unsigned  retVal= 0;
+   //debug prints of glue code input and output.
+   PrintKernelInputParams(&gc_input);
+   PrintKernelOutputParams(&gc_input,&gc_output);    
 
-    TpcElfTools::TPCProgramHeader programHeader = {};
+   retVal = tpc_tests::RunSimulation(gc_input, gc_output, descriptors);
+   const char* env = getenv("TPC_RUNNER");
+   if(env != nullptr && strcmp(env, "1") == 0)
+      printf("Program executed using Habana device\n");
+   else
+      printf("Program executed in %u cycles using simulation\n", retVal);
+   return retVal;
 
-    TpcElfTools::ExtractTpcProgramHeaderFromElf(gc_output.kernelElf,
-                                                    gc_output.elfSize,
-                                                    programHeader);
-    TestBase::AllocatePrintfTensor(descriptors, gc_input, gc_output, programHeader);
-
-    //debug prints of glue code input and output.
-    PrintKernelInputParams(&gc_input);
-    PrintKernelOutputParams(&gc_input,&gc_output);
-
-    unsigned retVal = 0;
-    gcapi::HabanaKernelInstantiation_t gcOutputInternal;
-    memcpy(&gcOutputInternal, &gc_output, sizeof(gc_output));
-    memcpy(&gcOutputInternal, &gc_output, sizeof(gc_output));
-
-    const int c_maxPartition = 32;
-    const int c_partitionFactor = 2;
-
-    IndexSpace indexSpace = {{0}};
-    memcpy(&(indexSpace.size[0]),
-            &(gcOutputInternal.indexSpaceGeometry.sizes[0]),
-            gcOutputInternal.indexSpaceGeometry.dims * sizeof(uint32_t));
-
-    // here we partition the index space to simulate un-predictable execution
-    // order of the index space members.
-    std::vector<IndexSpace> partition;
-    DivideIndexSpace(c_maxPartition,
-                     5,
-                     c_partitionFactor,
-                     gcOutputInternal.indexSpaceGeometry.dims,
-                     indexSpace,
-                     partition);
-
-    printf("Program will be executed in %lu chunks\n",partition.size());
-    for (unsigned i = 0; i < partition.size(); i++)
-    {
-        memcpy(&(gcOutputInternal.indexSpaceGeometry.sizes[0]),
-                &(partition[i].size[0]),
-                gcOutputInternal.indexSpaceGeometry.dims * sizeof(uint32_t));
-
-        retVal += RunSimulationInternal(descriptors, gc_input, gcOutputInternal, partition[i].offset);
-
-        ShowMessageFromPrintfTensor("instance "+ std::to_string(i));
-    }
-
-    printf("Program executed in %u cycles\n", retVal);
-
-    return retVal;
-}
-
-unsigned int TestBase::RunSimulationInternal(const std::vector<TensorDescriptor>& descriptors,
-                                    const gcapi::HabanaKernelParams_t& gc_input,
-                                    const gcapi::HabanaKernelInstantiation_t& gc_output,
-                                    int offsets [5],
-                                    IndexSpaceMappingTest_t testMode)
-{
-    std::shared_ptr<TPCCallbackInterface> pCallbackInterface
-                    = std::make_shared<TestBaseTPCCallback>(&gc_input, &gc_output, offsets);
-
-    TPCGenerations generation = TPCGenerations::DALI;
-    if (gc_input.deviceId == gcapi::DEVICE_ID_GAUDI)
-    {
-        generation = TPCGenerations::GAUDI;
-    }
-
-    TPC tpcSim(0,0,
-               pCallbackInterface,
-               gc_output.flags.specialFunctionsUsed, //false == large VLM
-               generation);
-
-    // generate and load tensor descriptors
-    if (gc_input.deviceId == gcapi::DEVICE_ID_GOYA)
-    {
-        for (unsigned i =0  ; i < descriptors.size(); i++)
-        {
-            tpcSim.loadTensorDescriptor(i,(TensorDescriptor*) &(descriptors[i]));
-        }
-    }
-    else if (gc_input.deviceId == gcapi::DEVICE_ID_GAUDI)
-    {
-        // generate and load tensor descriptors
-        for (unsigned i = 0 ; i < descriptors.size(); i++)
-        {
-            TensorDescriptorGaudi gaudi = DaliTensorDescToGaudiDesc(&(descriptors[i]));
-            tpcSim.loadTensorDescriptor(i, &gaudi);
-        }
-    }
-
-
-    memcpy (tpcSim.getSRF().data(),
-            gc_output.kernel.scalarParams,
-            sizeof(uint32_t)* gc_output.kernel.paramsNr);
-    // load IRF offsets
-    memcpy (&(tpcSim.getIRF()[0][0]),
-            offsets,
-            gc_output.indexSpaceGeometry.dims * sizeof(uint32_t));
-
-   // load IRF sizes
-    memcpy (&(tpcSim.getIRF()[1][0]),
-            gc_output.indexSpaceGeometry.sizes,
-            gc_output.indexSpaceGeometry.dims * sizeof(uint32_t));
-    // set program binary.
-    tpcSim.loadVpeProgramElf( gc_output.kernelElf, gc_output.elfSize);
-
-    // execute the kernel
-    tpcSim.start();
-
-    // collect statistics.
-    VPEStats stat = tpcSim.getVpeStatistics();
-
-    std::shared_ptr<TestBaseTPCCallback> pTestBaseCallback =
-                std::dynamic_pointer_cast<TestBaseTPCCallback>(pCallbackInterface);
-    // validate the index space mapping is correct and optimized.
-    pTestBaseCallback->ValidateAccessPattern(testMode);
-
-    return stat.instructionsExecuted;
-}
-
-// Divide all dimensions of the index-space by 2.
-void TestBase::DivideIndexSpaceRecursive(const int maxPartition,
-                                         const int currentDim,
-                                         int& partitionCount,
-                                         IndexSpace input,
-                                         std::vector<IndexSpace>& output)
-{
-    if ((partitionCount == maxPartition) || (currentDim == -1))
-    {
-        output.push_back(input);
-        return;
-    }
-    // If size == 1, can't split on this dimension.
-    if (input.size[currentDim] <= 1)
-    {
-        DivideIndexSpaceRecursive(maxPartition, currentDim - 1, partitionCount, input, output);
-        return;
-    }
-
-    IndexSpace item = input;
-    item.size[currentDim] = input.size[currentDim] / 2;
-    input.size[currentDim] -=  item.size[currentDim];
-    input.offset[currentDim] = item.size[currentDim];
-    partitionCount++;
-    DivideIndexSpaceRecursive(maxPartition, currentDim - 1, partitionCount, item, output);
-    DivideIndexSpaceRecursive(maxPartition, currentDim - 1, partitionCount, input, output);
-
-}
-
-// Divide single dimension of the index-space by a given factor.
-void TestBase::DivideIndexSpaceByDim(const int maxPartition,
-                                     const int partitionDim,
-                                     const int partitionFactor,
-                                     IndexSpace input,
-                                     std::vector<IndexSpace>& output)
-{
-    int partitionCount = std::min(std::min(partitionFactor, maxPartition),
-                                    input.size[partitionDim]);
-
-    int size = input.size[partitionDim] / partitionCount;
-    int rem = input.size[partitionDim] % partitionCount;
-
-    for (int i = 0; i < partitionCount; i++)
-    {
-        IndexSpace item = input;
-        item.size[partitionDim] = size;
-        if (i == partitionCount - 1)
-        {
-            item.size[partitionDim] += rem;
-        }
-        item.offset[partitionDim] = i * size;
-        output.push_back(item);
-    }
-}
-
-void TestBase::DivideIndexSpace(const int maxPartition,
-                                const int partitionDim,
-                                const int partitionFactor,
-                                const int indexSpaceDim,
-                                IndexSpace input,
-                                std::vector<IndexSpace>& output)
-{
-    output.clear();
-    int partitionCount = 1;
-    if (partitionDim == c_divide_by_all_indices)
-    {
-        DivideIndexSpaceRecursive(maxPartition, indexSpaceDim - 1, partitionCount, input, output);
-    }
-    else if (partitionDim >= 0 && partitionDim < indexSpaceDim)
-    {
-        DivideIndexSpaceByDim(maxPartition, partitionDim, partitionFactor, input, output);
-    }
-    // For -1 or other invalid parameters, no partition
-    else
-    {
-        output.push_back(input);
-    }
-
-    std::random_shuffle(std::begin(output), std::end(output));
 }
 
 static const std::string dataType[] = {"float32", "float16", "int32", "int16", "int8", "uint8", "bfloat16"};

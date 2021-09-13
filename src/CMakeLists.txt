@@ -30,11 +30,19 @@ include_directories(.
 file(GLOB TPC_GOYA_HEADERS ../kernels/goya/*.h)
 file(GLOB TPC_GAUDI_HEADERS ../kernels/gaudi/*.h)
 
+IF( NOT CMAKE_BUILD_TYPE )
+   SET( CMAKE_BUILD_TYPE Release ... FORCE )
+ENDIF()
+
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set (COND_EXEC "echo")
-    set (OPT_FLAG "-O1 -g ")
+    set (OPT_FLAG "-O0")
+    set (DEBUG_FLAG "-g")
+    message("Debug mode is on")
 else()
     set (OPT_FLAG "-O2")
+    set (DEBUG_FLAG "")
+    message("Debug mode is off")
 endif()
 separate_arguments(OPT_FLAG)
 
@@ -48,10 +56,15 @@ function(CompileTPCCWithClang TPC_C_SOURCES_TO_EMBED TPC_HEADERS deviceName)
     foreach(SOURCE_FILE  ${TPC_C_SOURCES_TO_EMBED})
         get_filename_component(SOURCE_NAME_NO_PATH_NO_SUFFIX ${SOURCE_FILE} NAME_WE)
         get_filename_component(SOURCE_FILE_NAME_NO_PATH ${SOURCE_FILE} NAME)
+        if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND "${SOURCE_FILE_NAME_NO_PATH}" STREQUAL "filter_2d_i8_w33_s11.c")
+            set (OPT_FLAG "-O1")
+        elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+            set (OPT_FLAG "-O0")
+        endif()
         add_custom_command(OUTPUT "${SOURCE_NAME_NO_PATH_NO_SUFFIX}_x86.o"
             DEPENDS ${SOURCE_FILE} ${TPC_COMPILER_PATH} ${TPC_HEADERS}
                 COMMAND cp ${SOURCE_FILE}  ${CMAKE_CURRENT_BINARY_DIR}
-                COMMAND ${TPC_COMPILER_PATH} -Wall -Werror -march=${deviceName} ${OPT_FLAG} -I${TPC_CURRENT_LIST_DIR} ./${SOURCE_FILE_NAME_NO_PATH} -c
+                COMMAND ${TPC_COMPILER_PATH} -Wall -Werror -march=${deviceName} ${OPT_FLAG} ${DEBUG_FLAG} -I${TPC_INCLUDE_DIR}/ -I${TPC_CURRENT_LIST_DIR} ./${SOURCE_FILE_NAME_NO_PATH} -c
                 COMMAND objcopy -I binary -O elf64-x86-64 -B i386:x86-64 ./${SOURCE_NAME_NO_PATH_NO_SUFFIX}.o "${SOURCE_NAME_NO_PATH_NO_SUFFIX}_x86.o"
 				COMMAND  ${TPC_DISASSEMBLER_PATH} --triple tpc -d -j .text -no-show-raw-insn -no-leading-addr -mcpu=${deviceName} ./${RELATIVE_DIRECTORY}/${SOURCE_NAME_NO_PATH_NO_SUFFIX}.o > ${CMAKE_CURRENT_BINARY_DIR}/${RELATIVE_DIRECTORY}/${SOURCE_NAME_NO_PATH_NO_SUFFIX}.tpcasm)
         add_library(${SOURCE_NAME_NO_PATH_NO_SUFFIX} STATIC "${SOURCE_NAME_NO_PATH_NO_SUFFIX}_x86.o")
