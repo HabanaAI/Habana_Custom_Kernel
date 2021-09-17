@@ -124,7 +124,7 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
             gcapi::HabanaKernelInstantiation_t* out_defs)
 {
     gcapi::GlueCodeReturn_t retVal;
-    const int c_unrollCount = 1;
+    const int c_unrollCount = 4;
     /*************************************************************************************
     *   Stage I - validate input
     **************************************************************************************/
@@ -303,6 +303,65 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
             out_defs->inputTensorAccessPattern[ii].dim[1].start_b  = 0;
             out_defs->inputTensorAccessPattern[ii].dim[1].end_b    = 1 - 1;
             
+       //#2 (start with #0) tensor is 1D
+            if(ii ==2) {
+                out_defs->inputTensorAccessPattern[2].dim[0].start_a = 0;
+                out_defs->inputTensorAccessPattern[2].dim[0].end_a = 0;
+                out_defs->inputTensorAccessPattern[2].dim[0].start_b = 0;
+                out_defs->inputTensorAccessPattern[2].dim[0].end_b = 0;            
+                continue;
+            }
+            for (int dims = 2; dims < 4; dims++)
+            {
+                out_defs->inputTensorAccessPattern[ii].dim[dims].dim      = dims;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].start_a  = 1;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].end_a    = 1;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].start_b  = 0;
+                out_defs->inputTensorAccessPattern[ii].dim[dims].end_b    = 1 - 1;
+            }
+        }
+
+        out_defs->outputTensorAccessPattern[0].dim[0].dim      = 0;
+        out_defs->outputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
+        out_defs->outputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
+        out_defs->outputTensorAccessPattern[0].dim[0].start_b  = 0;
+        out_defs->outputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
+        
+        out_defs->outputTensorAccessPattern[0].dim[1].dim      = 1;
+        out_defs->outputTensorAccessPattern[0].dim[1].start_a  = 1;
+        out_defs->outputTensorAccessPattern[0].dim[1].end_a    = 1;
+        out_defs->outputTensorAccessPattern[0].dim[1].start_b  = 0;
+        out_defs->outputTensorAccessPattern[0].dim[1].end_b    = 1 - 1;
+
+        for (int dims = 2; dims < 4; dims++)
+        {
+            out_defs->outputTensorAccessPattern[0].dim[dims].dim      = dims;
+            out_defs->outputTensorAccessPattern[0].dim[dims].start_a  = 1;
+            out_defs->outputTensorAccessPattern[0].dim[dims].end_a    = 1;
+            out_defs->outputTensorAccessPattern[0].dim[dims].start_b  = 0;
+            out_defs->outputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
+        }
+
+        SetGeometryAlongAxis(in_defs, out_defs, 1, 1, 7, 1);
+
+ 
+
+
+/*
+        for(unsigned int ii = 0; ii < in_defs->inputTensorNr; ii++) {
+            out_defs->inputTensorAccessPattern[ii].allRequired = true;
+            out_defs->inputTensorAccessPattern[ii].dim[0].dim      = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[0].start_a  = elementsInVec;
+            out_defs->inputTensorAccessPattern[ii].dim[0].end_a    = elementsInVec;
+            out_defs->inputTensorAccessPattern[ii].dim[0].start_b  = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[0].end_b    = elementsInVec - 1;
+
+            out_defs->inputTensorAccessPattern[ii].dim[1].dim      = 1;
+            out_defs->inputTensorAccessPattern[ii].dim[1].start_a  = 1;
+            out_defs->inputTensorAccessPattern[ii].dim[1].end_a    = 1;
+            out_defs->inputTensorAccessPattern[ii].dim[1].start_b  = 0;
+            out_defs->inputTensorAccessPattern[ii].dim[1].end_b    = 1 - 1;
+            
             for (int dims = 2; dims < 4; dims++)
             {
                 out_defs->inputTensorAccessPattern[ii].dim[dims].dim      = dims;
@@ -341,6 +400,8 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
         out_defs->inputTensorAccessPattern[2].dim[0].end_a = 0;
         out_defs->inputTensorAccessPattern[2].dim[0].start_b = 0;
         out_defs->inputTensorAccessPattern[2].dim[0].end_b = 0;
+
+*/        
     }
     /*************************************************************************************
     *    Stage IV -  define scalar parameters

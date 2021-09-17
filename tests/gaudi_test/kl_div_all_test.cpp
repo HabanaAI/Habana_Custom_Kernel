@@ -137,10 +137,10 @@ void KLDivAllTest::kldiv_bf16_bwd_reference_implementation(
 
 int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
 {
-    const int height = 5;
-    const int width  = 5;
-    const int depth  = 60;
-    const int batch  = 2;
+    const int height = 2;
+    const int width  = 6;
+    const int depth  = 22;
+    const int batch  = 5;
 
     unsigned int fmInitializer[] = {depth, width, height, batch};
     unsigned int ofmInitializer[] = {1};
@@ -163,7 +163,7 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
 
         KLDivAll::KLDivAllParams param;
         // mean
-        param.invLen = (float) (1.0/(height*width*depth*batch));
+        param.invLen = 1;//(float) (1.0/(height*width*depth*batch));
 
         // generate input for query call
         m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
@@ -237,7 +237,7 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
             output1D.Print(0);
             output1D_ref.Print(0);             
             // scalar output, only check first element
-            if (abs(output1D.Data()[0] - output1D_ref.Data()[0]) > 1e-2)
+            if (abs(output1D.Data()[0] - output1D_ref.Data()[0]) > 1e-3)
             {
                 std::cout << "KL_Div FWD F32 test failed!!" << std::endl;
                 return -1;
