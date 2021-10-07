@@ -31,6 +31,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "relu6_all_test.hpp"
 #include "matrix_mul_fwd_f32_test.hpp"
 #include "spatial_conv_f32_test.hpp"
+#include "sin_f32_test.hpp"
+#include "add_f32_test.hpp"
 
 int main(int argc, char** argv)
 {
@@ -66,7 +68,9 @@ int main(int argc, char** argv)
             "Relu6FwdBF16               Run Relu6FwdBF16 only   " << std::endl <<
             "Relu6BwdBF16               Run Relu6BwdBF16 only   " << std::endl <<
             "MatrixMulFwdF32Test        Run MatrixMulFwdF32Test only   " << std::endl <<
-            "SpatialConvF32Test         Run SpatialConvF32Test only   " << std::endl;
+            "SpatialConvF32Test         Run SpatialConvF32Test only   " << std::endl <<
+            "SinF32Test                 Run SinF32Test only   " << std::endl <<
+            "AddF32Test                 Run AddF32Test only   " << std::endl;
 
         exit(0);
     }
@@ -341,6 +345,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
         && (strcmp(argv[2],"MatrixMulFwdF32Test") ==0))))
     {
@@ -355,6 +361,8 @@ int main(int argc, char** argv)
     }
 
     if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
         && (strcmp(argv[2],"SpatialConvF32Test") ==0))))
     {
@@ -368,6 +376,37 @@ int main(int argc, char** argv)
         }
     }
 
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"SinF32") ==0))))
+    {
+        SinF32Test sinf32ins;
+        sinf32ins.SetUp();
+        result = sinf32ins.runTest();
+        sinf32ins.TearDown();
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"AddF32") ==0))))
+    {
+        AddF32Test addf32ins;
+        addf32ins.SetUp();
+        result = addf32ins.runTest();
+        addf32ins.TearDown();
+        if (result != 0)
+        {
+            return result;
+        }
+    }
     std::cout << "All tests pass!" <<std::endl;
     return 0;
 }
