@@ -275,7 +275,7 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     {
         return MatrixMulFwdF32Instance.GetGcDefinitions(params,instance);
     }
-    
+
     SpatialConvF32 spatialConvInstance;
     spatialConvInstance.GetKernelName(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)

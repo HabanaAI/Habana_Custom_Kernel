@@ -31,7 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
         output_coords[3] = b;
         for (int h = indexSpace.offset[3]; h < indexSpace.offset[3]+indexSpace.size[3]; h += 1)
         {
-            output_coords[2] = h;            
+            output_coords[2] = h;
             for (int w = indexSpace.offset[2]; w < indexSpace.offset[2]+indexSpace.size[2]; w += 1)
             {
                 output_coords[1] = w;
@@ -57,11 +57,11 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
                                   float ifmVector = ifm.ElementAt(ifmCoords);
                                   accum += filterValue*ifmVector;
                              }
-                         }                    
+                         }
                          accum_all += accum;
                      }
                      ofm.SetElement(output_coords,accum_all);
-                 } 
+                 }
              }
          }
      }
@@ -90,7 +90,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
     float_4DTensor ifm(ifmInitializer);
     //ifm.FillWithValue(1);
     ifm.FillWithData();
-    
+
     //filter
     unsigned int filterInitialize[] = {(unsigned)fm_depth,
                                        (unsigned)fm_filterK,
@@ -109,10 +109,10 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
     float_4DTensor ofm_ref(ofmInitializer);
 
     IndexSpace indexSpace = {{0}};
-    indexSpace.size[0] = 1; 
+    indexSpace.size[0] = 1;
     indexSpace.size[1] = fm_filterK;
-    indexSpace.size[2] = ofm_w; 
-    indexSpace.size[3] = ofm_h; 
+    indexSpace.size[2] = ofm_w;
+    indexSpace.size[3] = ofm_h;
     indexSpace.size[4] = fm_batch;
 
     // execute reference implementation of the kernel.
@@ -122,7 +122,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
                                     layer_def,
                                     indexSpace);
 
-                         
     // generate input for query call
     m_in_defs.NodeParams = &layer_def;
     m_in_defs.inputTensorNr = 2;
@@ -164,7 +163,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
             return -1;
         }
     }
-    
+
     std::cout << "SpatialConvF32Test pass!!" << std::endl;
     std::cout << std::endl;
     return 0;

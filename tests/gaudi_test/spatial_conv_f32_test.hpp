@@ -27,7 +27,7 @@ public:
     SpatialConvF32Test() {}
     ~SpatialConvF32Test() {}
     int runTest();
-    
+
     inline static void spatial_conv_reference_implementation(
         const test::Tensor<float,4>& ifm,
         const test::Tensor<float,4>& filter,

@@ -27,11 +27,11 @@ class SpatialConvF32 : public SpatialReductionKernels
 public:
     SpatialConvF32() {}
     virtual ~SpatialConvF32() {}
-    
+
     virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
                                   gcapi::HabanaKernelParams_t* in_defs,
                                   gcapi::HabanaKernelInstantiation_t* out_defs);
-    
+
      virtual gcapi::GlueCodeReturn_t GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME]);
 

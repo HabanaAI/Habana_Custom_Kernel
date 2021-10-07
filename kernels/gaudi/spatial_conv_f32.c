@@ -73,5 +73,4 @@ void main(tensor ifm,
             }
         }
     }
-    
 }

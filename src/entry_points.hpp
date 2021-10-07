@@ -20,7 +20,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 extern "C"
 {
 
-typedef enum 
+typedef enum
 {
     GOYA_KERNEL_FILTER_2D_F32 = 0,
     GOYA_KERNEL_PRINTF_TEST,
@@ -36,7 +36,7 @@ typedef enum
 
 } Goya_Kernel_Name_e;
 
-typedef enum 
+typedef enum
 {
     GAUDI_KERNEL_BATCH_NORM_F32 = 0,
     GAUDI_KERNEL_CAST_BF16_F32,

@@ -29,7 +29,6 @@ extern unsigned char _binary___spatial_conv_f32_o_end;
      strcpy(kernelName,"spatial_conv_f32");
      return gcapi::GLUE_SUCCESS;
  }
- 
 
 gcapi::GlueCodeReturn_t SpatialConvF32::GetGcDefinitions(
             gcapi::HabanaKernelParams_t* in_defs,
@@ -53,7 +52,7 @@ gcapi::GlueCodeReturn_t SpatialConvF32::GetGcDefinitions(
         return gcapi::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
     //check that filter depth match IFM
-    if (in_defs->inputTensors[1].geometry.sizes[0] != 
+    if (in_defs->inputTensors[1].geometry.sizes[0] !=
         in_defs->inputTensors[0].geometry.sizes[0])
     {
         in_defs->inputTensors[1].geometry.sizes[0] =
@@ -76,22 +75,22 @@ gcapi::GlueCodeReturn_t SpatialConvF32::GetGcDefinitions(
     {
         return retVal;
     }
-    
+
     // Tensor 0 should be input feature map.
     // The semantics of the input tensors and their order is a convention
     // between TPC kernel writer and the write of the layer at the
     // framework level.
-    
+
     unsigned int outputSizes[gcapi::MAX_TENSOR_DIM];
-    
-    if (!GetSpatialConvOfmSize(in_defs->inputTensors[0].geometry.sizes, 
+
+    if (!GetSpatialConvOfmSize(in_defs->inputTensors[0].geometry.sizes,
                                  in_defs->inputTensors[1].geometry.sizes,
-                                 def, 
+                                 def,
                                  outputSizes))
     {
         return gcapi::GLUE_UNSUPPORTED_LAYER_CONFIGURATION;
     }
- 
+
     // verify that output feature map dimension are correct
     if (memcmp(in_defs->outputTensors[0].geometry.sizes,outputSizes,
                in_defs->outputTensors[0].geometry.dims * sizeof(unsigned) ) != 0)
@@ -99,7 +98,7 @@ gcapi::GlueCodeReturn_t SpatialConvF32::GetGcDefinitions(
         memcpy(in_defs->outputTensors[0].geometry.sizes,outputSizes,sizeof(outputSizes));
         return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
     }
-    
+
     /*************************************************************************************
     *    Stage II -  Define index space geometry. In this example the index space matches
     *    the dimensions of the output tensor, up to dim 0.
@@ -110,7 +109,7 @@ gcapi::GlueCodeReturn_t SpatialConvF32::GetGcDefinitions(
     out_defs->indexSpaceGeometry.sizes[2] = outputSizes[1]; //width
     out_defs->indexSpaceGeometry.sizes[3] = outputSizes[2]; //height
     out_defs->indexSpaceGeometry.sizes[4] = outputSizes[3]; //batch
-    
+
     /*************************************************************************************
     *    Stage III -  Define index space mapping
     **************************************************************************************/
@@ -121,7 +120,7 @@ gcapi::GlueCodeReturn_t SpatialConvF32::GetGcDefinitions(
     **************************************************************************************/
     out_defs->kernel.paramsNr = sizeof(*def)/ sizeof(int);
     memcpy(&( out_defs->kernel.scalarParams[0]),def, sizeof(*def));
-    
+
     /*************************************************************************************
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
@@ -141,7 +140,7 @@ gcapi::GlueCodeReturn_t SpatialConvF32::GetGcDefinitions(
        retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
        return retVal;
     }
-    
+
     return gcapi::GLUE_SUCCESS;
 }
 
@@ -168,7 +167,7 @@ bool SpatialConvF32::GetSpatialConvOfmSize(
     OfmSize[1] = ((IfmSize[1] + 2 * def->pad_w - def->dilation_w * (def->kernel_w-1) - 1) / def->stride_w) + 1;
     OfmSize[2] = ((IfmSize[2] + 2 * def->pad_h - def->dilation_h * (def->kernel_h-1) - 1) / def->stride_h) + 1;
     OfmSize[3] = IfmSize[3];
-    OfmSize[4] = 1; 
+    OfmSize[4] = 1;
     return true;
 }
 
@@ -185,11 +184,11 @@ void SpatialConvF32::GetSpatialConvAccessPatterns(
     // transformation. 'i' is the index space member and A/B constants to be defined.
 
     // start f(i) = 0*i + 0;
-    // end f(i) = 0*i + (channelSize - 1); 
+    // end f(i) = 0*i + (channelSize - 1);
     // Resource 0 (IFM) dim 0 (depth).
     out_defs->inputTensorAccessPattern[0].dim[0].dim = 0;
-    out_defs->inputTensorAccessPattern[0].dim[0].start_a = 0; 
-    out_defs->inputTensorAccessPattern[0].dim[0].end_a = 0; 
+    out_defs->inputTensorAccessPattern[0].dim[0].start_a = 0;
+    out_defs->inputTensorAccessPattern[0].dim[0].end_a = 0;
     out_defs->inputTensorAccessPattern[0].dim[0].start_b = 0;
     out_defs->inputTensorAccessPattern[0].dim[0].end_b = channelSize - 1;
 
@@ -212,7 +211,7 @@ void SpatialConvF32::GetSpatialConvAccessPatterns(
     out_defs->inputTensorAccessPattern[0].dim[2].end_b = -def->pad_h + (def->kernel_h - 1) * def->dilation_h;
 
     // start f(i) = 1*i + 0;
-    // end f(i) = 1*i + 0; 
+    // end f(i) = 1*i + 0;
     // Resource 0 (IFM) dim 3 (batch).
     out_defs->inputTensorAccessPattern[0].dim[3].dim = 4;
     out_defs->inputTensorAccessPattern[0].dim[3].start_a = 1;
@@ -222,27 +221,27 @@ void SpatialConvF32::GetSpatialConvAccessPatterns(
 
     ////////////////////////////////////////////////////////////////////////////
     // define how the index space maps to the filter tensor
-    
+
     // start f(i) = 0*i + 0;
-    // end f(i) = 0*i + (channelSize - 1); 
+    // end f(i) = 0*i + (channelSize - 1);
     // Resource 1 (FILTER) dim 0 (depth).
     out_defs->inputTensorAccessPattern[1].dim[0].dim = 0;
-    out_defs->inputTensorAccessPattern[1].dim[0].start_a = 0; 
-    out_defs->inputTensorAccessPattern[1].dim[0].end_a = 0; 
+    out_defs->inputTensorAccessPattern[1].dim[0].start_a = 0;
+    out_defs->inputTensorAccessPattern[1].dim[0].end_a = 0;
     out_defs->inputTensorAccessPattern[1].dim[0].start_b = 0;
     out_defs->inputTensorAccessPattern[1].dim[0].end_b = channelSize - 1;
 
     // start f(i) = 1*i + 0;
-    // end f(i) = 1*i + 0; 
+    // end f(i) = 1*i + 0;
     // Resource 0 (FILTER) dim 1 (K - num of filters).
     out_defs->inputTensorAccessPattern[1].dim[1].dim = 1;
     out_defs->inputTensorAccessPattern[1].dim[1].start_a = 1;
     out_defs->inputTensorAccessPattern[1].dim[1].end_a = 1;
     out_defs->inputTensorAccessPattern[1].dim[1].start_b =  0;
     out_defs->inputTensorAccessPattern[1].dim[1].end_b = 0;
-    
+
     // start f(i) = 0*i + 0;
-    // end f(i) = 0*i + kernel_w; 
+    // end f(i) = 0*i + kernel_w;
     // Resource 0 (FILTER) dim 2 (width).
     out_defs->inputTensorAccessPattern[1].dim[2].dim = 2;
     out_defs->inputTensorAccessPattern[1].dim[2].start_a = 0;
@@ -251,21 +250,19 @@ void SpatialConvF32::GetSpatialConvAccessPatterns(
     out_defs->inputTensorAccessPattern[1].dim[2].end_b = def->kernel_w-1;
 
     // start f(i) = 0*i + 0;
-    // end f(i) = 0*i + kernel_h; 
+    // end f(i) = 0*i + kernel_h;
     // Resource 0 (FILTER) dim 3 (height).
     out_defs->inputTensorAccessPattern[1].dim[3].dim = 3;
     out_defs->inputTensorAccessPattern[1].dim[3].start_a = 0;
     out_defs->inputTensorAccessPattern[1].dim[3].end_a = 0;
     out_defs->inputTensorAccessPattern[1].dim[3].start_b =  0;
     out_defs->inputTensorAccessPattern[1].dim[3].end_b = def->kernel_h-1;
-    
-    
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // define how the index space maps to the output tensor
 
     // start f(i) = 1*i + 0;
-    // end f(i) = 1*i + 0; 
+    // end f(i) = 1*i + 0;
     // Resource 0 (OFM) dim 0 (K - num of filters).
     out_defs->outputTensorAccessPattern[0].dim[0].dim = 1;
     out_defs->outputTensorAccessPattern[0].dim[0].start_a = 1;
@@ -274,7 +271,7 @@ void SpatialConvF32::GetSpatialConvAccessPatterns(
     out_defs->outputTensorAccessPattern[0].dim[0].end_b = 0;
 
     // start f(i) = 1*i + 0;
-    // end f(i) = 1*i + 0; 
+    // end f(i) = 1*i + 0;
     // Resource 0 (OFM) dim 1 (width).
     out_defs->outputTensorAccessPattern[0].dim[1].dim = 2;
     out_defs->outputTensorAccessPattern[0].dim[1].start_a = 1;
@@ -292,7 +289,7 @@ void SpatialConvF32::GetSpatialConvAccessPatterns(
     out_defs->outputTensorAccessPattern[0].dim[2].end_b = 0;
 
     // start f(i) = 1*i + 0;
-    // end f(i) = 1*i + 0; 
+    // end f(i) = 1*i + 0;
     // Resource 0 (OFM) dim 3 (batch).
     out_defs->outputTensorAccessPattern[0].dim[3].dim = 4;
     out_defs->outputTensorAccessPattern[0].dim[3].start_a = 1;
