@@ -31,6 +31,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "relu6_all.hpp"
 #include "matrix_mul_fwd_f32.hpp"
 #include "spatial_conv_f32.hpp"
+#include "sin_f32.hpp"
+#include "add_f32.hpp"
 
 #include "entry_points.hpp"
 
@@ -103,6 +105,10 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            MatrixMulFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_MATRIXMUL_FWD_F32]);
            SpatialConvF32 spatialConvInstance;
            spatialConvInstance.GetKernelName(names[GAUDI_KERNEL_SPATIAL_CONV_F32]);
+           SinF32 sinf32Instance;
+           sinf32Instance.GetKernelName(names[GAUDI_KERNEL_SIN_F32]);
+           AddF32 addf32Instance;
+           addf32Instance.GetKernelName(names[GAUDI_KERNEL_ADD_F32]);
 
         }
 
@@ -281,6 +287,20 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return spatialConvInstance.GetGcDefinitions(params, instance);
+    }
+
+    SinF32 sinf32Instance;
+    sinf32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return sinf32Instance.GetGcDefinitions(params, instance);
+    }
+
+    AddF32 addf32Instance;
+    addf32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return addf32Instance.GetGcDefinitions(params, instance);
     }
 
     return gcapi::GLUE_NODE_NOT_FOUND;
