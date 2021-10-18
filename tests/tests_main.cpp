@@ -380,11 +380,7 @@ int main(int argc, char** argv)
         (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
         && (strcmp(argv[2],"Gaudi") ==0)))  ||
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
-<<<<<<< HEAD
-        && (strcmp(argv[2],"SinF32") ==0))))
-=======
         && (strcmp(argv[2],"SinF32Test") ==0))))
->>>>>>> Added sin_f32 and add_f32 kernels.
     {
         SinF32Test sinf32ins;
         sinf32ins.SetUp();
@@ -400,11 +396,7 @@ int main(int argc, char** argv)
         (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
         && (strcmp(argv[2],"Gaudi") ==0)))  ||
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
-<<<<<<< HEAD
-        && (strcmp(argv[2],"AddF32") ==0))))
-=======
         && (strcmp(argv[2],"AddF32Test") ==0))))
->>>>>>> Added sin_f32 and add_f32 kernels.
     {
         AddF32Test addf32ins;
         addf32ins.SetUp();
