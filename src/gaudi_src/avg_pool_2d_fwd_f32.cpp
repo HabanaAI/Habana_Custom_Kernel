@@ -1,0 +1,179 @@
+/**********************************************************************
+Copyright (c) 2021 Habana Labs.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+*   Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+*   Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+********************************************************************/
+
+#include <vector>
+#include <cstring>
+#include <iostream>
+#include "avg_pool_2d_fwd_f32.hpp"
+
+
+extern unsigned char _binary___avg_pool_2d_fwd_f32_o_start;
+extern unsigned char _binary___avg_pool_2d_fwd_f32_o_end;
+
+ gcapi::GlueCodeReturn_t AvgPool2dFwdF32::GetKernelName(
+             char kernelName [gcapi::MAX_NODE_NAME])
+ {
+     strcpy(kernelName,"avg_pool_2d_fwd_f32");
+     return gcapi::GLUE_SUCCESS;
+ }
+
+
+gcapi::GlueCodeReturn_t AvgPool2dFwdF32::fill_reciprocal_table(float* reciprocal_table, int num_elements) const
+{
+    reciprocal_table[0] = 0;
+    for (int i = 1; i < num_elements; i++)
+    {
+        reciprocal_table[i] = (float)((double)1.0 / (double)i);
+    }
+
+    return gcapi::GLUE_SUCCESS;
+}
+
+gcapi::GlueCodeReturn_t AvgPool2dFwdF32::GetGcDefinitions(
+            gcapi::HabanaKernelParams_t* in_defs,
+            gcapi::HabanaKernelInstantiation_t* out_defs)
+{
+    gcapi::GlueCodeReturn_t retVal;
+    AvgPool2DFwdParam* def = static_cast<AvgPool2DFwdParam*>(in_defs->NodeParams);
+    /*************************************************************************************
+    *   Stage I - validate input
+    **************************************************************************************/
+    //validate correct amount of input tensors
+    if (in_defs->inputTensorNr != 1)
+    {
+        in_defs->inputTensorNr  = 1;
+        return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+    }
+    //validate correct amount of output tensors
+    if (in_defs->outputTensorNr !=1)
+    {
+        in_defs->outputTensorNr  = 1;
+        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
+    }
+
+    retVal = ValidateTensorsDataType(in_defs->inputTensors,
+                                        in_defs->inputTensorNr,
+                                        gcapi::DATA_F32);
+    if (retVal != gcapi::GLUE_SUCCESS)
+    {
+        return retVal;
+    }
+
+    retVal = ValidateTensorsDataType(in_defs->outputTensors,
+                                        in_defs->outputTensorNr,
+                                        gcapi::DATA_F32);
+    if (retVal != gcapi::GLUE_SUCCESS)
+    {
+        return retVal;
+    }
+
+    // Tensor 0 should be input feature map.
+    // The semantics of the input tensors and their order is a convention
+    // between TPC kernel writer and the write of the layer at the
+    // framework level.
+    /*************************************************************************************
+    *    Stage II -  Define index space geometry. In this example the index space matches
+    *    the dimensions of the output tensor, up to dim 0.
+    **************************************************************************************/
+    unsigned int outputSizes[gcapi::MAX_TENSOR_DIM];
+
+    out_defs->indexSpaceGeometry.dims = 4;
+    unsigned int* indexSpaceSizes         = in_defs->inputTensors[0].geometry.sizes;
+    outputSizes[0] = indexSpaceSizes[0];
+    outputSizes[1] = (indexSpaceSizes[1] + def->srdef.pad_w - def->srdef.kernel_w * def->srdef.dilation_w) / def->srdef.stride_w;
+    outputSizes[2] = (indexSpaceSizes[1] + def->srdef.pad_h - def->srdef.kernel_h * def->srdef.dilation_h) / def->srdef.stride_h;
+    outputSizes[3] = indexSpaceSizes[3];
+    // verify that output feature map dimension are correct
+    if (memcmp(in_defs->outputTensors[0].geometry.sizes,outputSizes,
+               in_defs->outputTensors[0].geometry.dims * sizeof(unsigned) ) != 0)
+    {
+        memcpy(in_defs->outputTensors[0].geometry.sizes,outputSizes,sizeof(outputSizes));
+        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
+    }
+
+    //round up to 64 and divide by 64.
+    out_defs->indexSpaceGeometry.sizes[0] = (outputSizes[0] + 63) /64;
+    out_defs->indexSpaceGeometry.sizes[1] = outputSizes[1];
+    out_defs->indexSpaceGeometry.sizes[2] = outputSizes[2];
+    out_defs->indexSpaceGeometry.sizes[3] = outputSizes[3];
+
+    /*************************************************************************************
+    *    Stage III -  Define index space mapping
+    **************************************************************************************/
+    GetAccessPatterns(out_defs,&(def->srdef),64);
+
+    /*************************************************************************************
+    *    Stage IV -  define scalar parameters/Set Auxiliary Tensor
+    **************************************************************************************/
+    out_defs->kernel.paramsNr = sizeof(*def)/ sizeof(int);
+    memcpy(&( out_defs->kernel.scalarParams[0]), def, sizeof(*def));
+
+    const int maxWindowSize = def->srdef.kernel_h * def->srdef.kernel_w + 1;
+    out_defs->auxiliaryTensorCount = 1;
+    out_defs->auxiliaryTensors[0].geometry.dims = 1;
+    out_defs->auxiliaryTensors[0].geometry.sizes[0] = maxWindowSize;
+    out_defs->auxiliaryTensors[0].geometry.sizes[1] = 0;
+    out_defs->auxiliaryTensors[0].geometry.sizes[2] = 0;
+    out_defs->auxiliaryTensors[0].geometry.sizes[3] = 0;
+    out_defs->auxiliaryTensors[0].geometry.sizes[4] = 0;
+
+    out_defs->auxiliaryTensors[0].dataType = gcapi::DATA_F32;
+
+    unsigned required_size = out_defs->auxiliaryTensors[0].geometry.sizes[0] * sizeof(float);
+    // Check whether required memory is allocated for auxiliary tensor
+    if (required_size > out_defs->auxiliaryTensors[0].bufferSize)
+    {
+        out_defs->auxiliaryTensors[0].bufferSize = required_size;
+        return gcapi::GLUE_INSUFICIENT_AUX_BUFFER_SIZE;
+    }
+    out_defs->auxiliaryTensors[0].bufferSize = required_size;
+    if (out_defs->auxiliaryTensors[0].bufferSize >= required_size)
+    {
+        // fill aux 0 (for 1/x) with data
+        float* reciprocalTable = (float*)malloc(required_size);
+        fill_reciprocal_table(reciprocalTable, maxWindowSize);
+        // Initialize the auxiliary tensor with reduction_fcd_tab
+        memcpy(out_defs->auxiliaryTensors[0].pData, reciprocalTable, required_size);
+        free(reciprocalTable);
+    }
+    else
+    {
+        return gcapi::GLUE_INSUFICIENT_AUX_BUFFER_SIZE;
+    }
+
+    /*************************************************************************************
+    *    Stage V -  Load ISA into the descriptor.
+    **************************************************************************************/
+    unsigned IsaSize = (&_binary___avg_pool_2d_fwd_f32_o_end - &_binary___avg_pool_2d_fwd_f32_o_start);
+    unsigned givenBinarySize = out_defs->elfSize;
+    out_defs->elfSize = IsaSize;
+
+    if (givenBinarySize >= IsaSize)
+    {
+        // copy binary out
+        memcpy (out_defs->kernelElf,
+                &_binary___avg_pool_2d_fwd_f32_o_start,
+                IsaSize);
+    }
+    else
+    {
+       retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
+       return retVal;
+    }
+
+    return gcapi::GLUE_SUCCESS;
+}
+
