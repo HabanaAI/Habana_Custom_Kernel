@@ -81,11 +81,6 @@ void AvgPool2DFwdF32Test::avg_pool_2d_fwd_reference_implementation(
                         }
                     }
 
-                    // Store the number of pixels that inside the index space of the current
-                    // area for future use when back propagating
-                    //coord_t numOfSource_coord = {w, h, 0, 0};
-                    //numOfSourcefm.SetElement((int*)&numOfSource_coord, intospacePixelsInArea);
-
                     // Divide the sum of the input pixels by the number of samples
                     int divider = def.include_pads ? (pixelsInArea) : (intospacePixelsInArea);
 
