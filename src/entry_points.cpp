@@ -33,6 +33,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "spatial_conv_f32.hpp"
 #include "sin_f32.hpp"
 #include "add_f32.hpp"
+#include "avg_pool_2d_fwd_f32.hpp"
 
 #include "entry_points.hpp"
 
@@ -109,6 +110,8 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            sinf32Instance.GetKernelName(names[GAUDI_KERNEL_SIN_F32]);
            AddF32 addf32Instance;
            addf32Instance.GetKernelName(names[GAUDI_KERNEL_ADD_F32]);
+           AvgPool2dFwdF32 avgpool2df32Instance;
+           avgpool2df32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_FWD_F32]);
 
         }
 
@@ -301,6 +304,13 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return addf32Instance.GetGcDefinitions(params, instance);
+    }
+
+    AvgPool2dFwdF32 avgpool2df32Instance;
+    avgpool2df32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return avgpool2df32Instance.GetGcDefinitions(params, instance);
     }
 
     return gcapi::GLUE_NODE_NOT_FOUND;

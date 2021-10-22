@@ -33,6 +33,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "spatial_conv_f32_test.hpp"
 #include "sin_f32_test.hpp"
 #include "add_f32_test.hpp"
+#include "avg_pool_2d_fwd_f32_test.hpp"
 
 int main(int argc, char** argv)
 {
@@ -70,7 +71,8 @@ int main(int argc, char** argv)
             "MatrixMulFwdF32Test        Run MatrixMulFwdF32Test only   " << std::endl <<
             "SpatialConvF32Test         Run SpatialConvF32Test only   " << std::endl <<
             "SinF32Test                 Run SinF32Test only   " << std::endl <<
-            "AddF32Test                 Run AddF32Test only   " << std::endl;
+            "AddF32Test                 Run AddF32Test only   " << std::endl <<
+            "AvgPool2DFwdF32Test        Run AvgPool2DFwdF32Test only   " << std::endl;
 
         exit(0);
     }
@@ -407,6 +409,23 @@ int main(int argc, char** argv)
             return result;
         }
     }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"AvgPool2DFwdF32Test") ==0))))
+    {
+        AvgPool2DFwdF32Test avgpool2df32ins;
+        avgpool2df32ins.SetUp();
+        result = avgpool2df32ins.runTest();
+        avgpool2df32ins.TearDown();
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
     std::cout << "All tests pass!" <<std::endl;
     return 0;
 }
