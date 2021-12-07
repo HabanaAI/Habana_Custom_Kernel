@@ -16,12 +16,10 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #pragma tpc_printf (enable)
 //#define PRINTF_ENABLE 1
 
-typedef char bool;
-
-const int vectorLength = 64;
-const int accumWidth = 1;
-const int partWidth = accumWidth * vectorLength;
-const int partHeight = 6;
+#define VECTORLENGTH 64
+#define ACCUMWIDTH  1
+#define PARTWIDTH  (ACCUMWIDTH * VECTORLENGTH)
+#define PARTHEIGHT  6
 
 
 void main(tensor aMatrix,
@@ -36,7 +34,7 @@ void main(tensor aMatrix,
 
     const int dim1Mask = 1 << 1;
 
-    int5 aCoords[partHeight] = {0};
+    int5 aCoords[PARTHEIGHT] = {0};
     int5 bCoords = {0};
     int5 cCoords = {0};
 
@@ -53,17 +51,17 @@ void main(tensor aMatrix,
         bCoords[2] = batch;
         cCoords[2] = batch;
 
-        for(int blockStartY = indexSpaceStart[1] * partHeight;
-                blockStartY < indexSpaceEnd[1] * partHeight;
-                blockStartY += partHeight)
+        for(int blockStartY = indexSpaceStart[1] * PARTHEIGHT;
+                blockStartY < indexSpaceEnd[1] * PARTHEIGHT;
+                blockStartY += PARTHEIGHT)
         {
-            for(int blockStartX = indexSpaceStart[0] * partWidth;
-                    blockStartX < indexSpaceEnd[0] * partWidth;
-                    blockStartX += partWidth)
+            for(int blockStartX = indexSpaceStart[0] * PARTWIDTH;
+                    blockStartX < indexSpaceEnd[0] * PARTWIDTH;
+                    blockStartX += PARTWIDTH)
             {
-                float64 accums[partHeight * accumWidth];
-                float64 bValue[accumWidth];
-                float64 aValue[partHeight];
+                float64 accums[PARTHEIGHT * ACCUMWIDTH];
+                float64 bValue[ACCUMWIDTH];
+                float64 aValue[PARTHEIGHT];
 
                 float64 bias = {0};
                 accums[0] = bias;
@@ -117,7 +115,7 @@ void main(tensor aMatrix,
                 bCoords[0] = blockStartX;
 
                 bValue[0] = v_f32_ld_tnsr_b(bCoords, bMatrix);
-                bCoords[0] += vectorLength;
+                bCoords[0] += VECTORLENGTH;
 
 #ifdef PRINTF_ENABLE
                 for (int j=0;j<4;j++)
@@ -148,12 +146,12 @@ void main(tensor aMatrix,
                         }
                     }
 #endif
-                    bool pred = s_i32_cmp_less(c, commonSizeMinusOne);
+                    char pred = s_i32_cmp_less(c, commonSizeMinusOne);
                     bCoords = i_i32_add(1, bCoords, dim1Mask, 0, bCoords, pred);
 
                     bCoords[0] = blockStartX;
                     bValue[0] = v_f32_ld_tnsr_b(bCoords, bMatrix);
-                    bCoords[0] += vectorLength;
+                    bCoords[0] += VECTORLENGTH;
 
 #ifdef PRINTF_ENABLE
                     for (int j=0;j<4;j++)
@@ -199,8 +197,8 @@ void main(tensor aMatrix,
                 }
 
                 cCoords[0] = blockStartX;
-                #pragma unroll (partHeight)
-                for(int i = 0; i < partHeight; i++)
+                #pragma unroll (PARTHEIGHT)
+                for(int i = 0; i < PARTHEIGHT; i++)
                 {
                     cCoords[1] = blockStartY + i;
                     v_f32_st_tnsr(cCoords, cMatrix, accums[i]);
