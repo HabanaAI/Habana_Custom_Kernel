@@ -14,13 +14,7 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#include "filter_2d_f32.hpp"
-#include "filter_2d_i8_w33_s11.hpp"
 #include "printf_test.hpp"
-#include "sparse_lengths_sum.hpp"
-#include "softmax_f32.hpp"
-#include "cast.hpp"
-#include "leakyrelu_f32.hpp"
 #include "batch_norm_f32.hpp"
 #include "cast_gaudi.hpp"
 #include "filter_fwd_2d_bf16.hpp"
@@ -44,36 +38,7 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
                                        unsigned*            kernelCount,
                                        gcapi::DeviceId_t    deviceId)
 {
-    if (deviceId == gcapi::DEVICE_ID_GOYA)
-    {
-        if (names != nullptr )
-        {
-           Filter2dF32 filterInstance;
-           filterInstance.GetKernelName(names[GOYA_KERNEL_FILTER_2D_F32]);
-           PrintfTestKernel printfInstance;
-           printfInstance.GetKernelName(names[GOYA_KERNEL_PRINTF_TEST]);
-           SparseLengthsSum sparseLengthsSumInstance;
-           sparseLengthsSumInstance.GetKernelName(names[GOYA_KERNEL_SPARSE_LEN_SUM_F32]);
-           Filter2dI8W33S11 filterInstance2;
-           filterInstance2.GetKernelName(names[GOYA_KERNEL_FILTER_2D_I8_W33]);
-           SoftMaxF32 softmaxInstance;
-           softmaxInstance.GetKernelName1(names[GOYA_KERNEL_SOFTMAX_FCD_F32]);
-           softmaxInstance.GetKernelName2(names[GOYA_KERNEL_SOFTMAX_NONFCD_F32]);
-           Cast castInstance(Cast::i8_to_f32);
-           castInstance.GetKernelName(names[GOYA_KERNEL_CAST_I8_F32], Cast::i8_to_f32);
-           Cast castInstance2(Cast::f32_to_i16);
-           castInstance2.GetKernelName(names[GOYA_KERNEL_CAST_F32_I16], Cast::f32_to_i16);
-           LeakyReluF32 leakyReluInstance;
-           leakyReluInstance.GetKernelName(names[GOYA_KERNEL_LEAKY_RELU_F32]);
-        }
-
-        if (kernelCount != nullptr)
-        {
-            // currently the library support 9 kernels.
-            *kernelCount = GOYA_KERNEL_MAX_EXAMPLE_KERNEL;
-        }
-    }
-    else if (deviceId == gcapi::DEVICE_ID_GAUDI)
+    if (deviceId == gcapi::DEVICE_ID_GAUDI)
     {
         if (names != nullptr )
         {
@@ -138,63 +103,12 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
              _OUT_ gcapi::HabanaKernelInstantiation_t*instance)
 {
     char kernelName [gcapi::MAX_NODE_NAME];
-    Filter2dF32 filterInstance;
-    filterInstance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
-    {
-        return filterInstance.GetGcDefinitions(params, instance);
-    }
 
     PrintfTestKernel printfInstance;
     printfInstance.GetKernelName(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return printfInstance.GetGcDefinitions(params, instance);
-    }
-
-    SparseLengthsSum sparseLengthsSumInstance;
-    sparseLengthsSumInstance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
-    {
-        return sparseLengthsSumInstance.GetGcDefinitions(params, instance);
-    }
-
-    Filter2dI8W33S11 filterInstance2;
-    filterInstance2.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
-    {
-        return filterInstance2.GetGcDefinitions(params,instance);
-    }
-
-    SoftMaxF32 softmaxInstance;
-    softmaxInstance.GetKernelName1(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
-    {
-        return softmaxInstance.GetGcDefinitions(params,instance);
-    }
-    softmaxInstance.GetKernelName2(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
-    {
-        return softmaxInstance.GetGcDefinitions(params,instance);
-    }
-
-    Cast castInstance(Cast::i8_to_f32);
-    castInstance.GetKernelName(kernelName, Cast::i8_to_f32);
-    if (strcmp(params->nodeName, kernelName) == 0)
-    {
-        return castInstance.GetGcDefinitions(params,instance);
-    }
-    Cast castInstance2(Cast::f32_to_i16);
-    castInstance.GetKernelName(kernelName, Cast::f32_to_i16);
-    if (strcmp(params->nodeName, kernelName) == 0)
-    {
-        return castInstance2.GetGcDefinitions(params,instance);
-    }
-    LeakyReluF32 leakyReluInstance;
-    leakyReluInstance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
-    {
-        return leakyReluInstance.GetGcDefinitions(params,instance);
     }
 
     BatchNormF32 batchNormInstance;
