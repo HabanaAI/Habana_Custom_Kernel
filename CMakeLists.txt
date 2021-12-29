@@ -42,10 +42,6 @@ endif()
 include_directories(${TPC_TESTS_CORE_INCLUDE_DIR} ${TPC_INCLUDE_DIR})
 
 
-# Add TPC-C source files to be compiled by TPC Goya compiler and
-# linked into tpc_kernels executable.
-file(GLOB TPC_C_GOYA_SOURCES_TO_EMBED ./kernels/goya/*.c)
-
 # Add TPC-C source files to be compiled by TPC Gaudi compiler and
 # linked into tpc_kernels executable.
 file(GLOB TPC_C_GAUDI_SOURCES_TO_EMBED ./kernels/gaudi/*.c)

@@ -16,18 +16,16 @@
 set(TARGET custom_tpc_perf_lib)
 
 # Decide which files to compile
-file(GLOB SRC *.cpp gaudi_src/*.cpp goya_src/*.cpp)
+file(GLOB SRC *.cpp gaudi_src/*.cpp)
 
 # define .so object for compiling.
 add_library(${TARGET} SHARED ${SRC})
 
 include_directories(.
                     gaudi_src
-                    goya_src
                     )
 
 # Generate a list of all TPC headers for compilation dependencies.
-file(GLOB TPC_GOYA_HEADERS ../kernels/goya/*.h)
 file(GLOB TPC_GAUDI_HEADERS ../kernels/gaudi/*.h)
 
 IF( NOT CMAKE_BUILD_TYPE )
@@ -73,5 +71,4 @@ function(CompileTPCCWithClang TPC_C_SOURCES_TO_EMBED TPC_HEADERS deviceName)
     endforeach()
 endfunction(CompileTPCCWithClang)
 
-CompileTPCCWithClang("${TPC_C_GOYA_SOURCES_TO_EMBED}" "${TPC_GOYA_HEADERS}" goya)
 CompileTPCCWithClang("${TPC_C_GAUDI_SOURCES_TO_EMBED}" "${TPC_GAUDI_HEADERS}" gaudi)
