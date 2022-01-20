@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs.
+Copyright (c) 2022 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -40,6 +40,7 @@ typedef enum
     GAUDI_KERNEL_SIN_F32,
     GAUDI_KERNEL_ADD_F32,
     GAUDI_KERNEL_AVG_POOL_2D_FWD_F32,
+    GAUDI_KERNEL_AVG_POOL_2D_BWD_F32,
 
     GAUDI_KERNEL_MAX_EXAMPLE_KERNEL
 

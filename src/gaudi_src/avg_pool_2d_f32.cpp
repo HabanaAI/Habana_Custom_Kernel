@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs.
+Copyright (c) 2022 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -17,21 +17,28 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include <vector>
 #include <cstring>
 #include <iostream>
-#include "avg_pool_2d_fwd_f32.hpp"
-
+#include "avg_pool_2d_f32.hpp"
 
 extern unsigned char _binary___avg_pool_2d_fwd_f32_o_start;
 extern unsigned char _binary___avg_pool_2d_fwd_f32_o_end;
+extern unsigned char _binary___avg_pool_2d_bwd_f32_o_start;
+extern unsigned char _binary___avg_pool_2d_bwd_f32_o_end;
 
- gcapi::GlueCodeReturn_t AvgPool2dFwdF32::GetKernelName(
+ gcapi::GlueCodeReturn_t AvgPool2dF32::GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME])
  {
-     strcpy(kernelName,"avg_pool_2d_fwd_f32");
+
+    if(m_mode == fwd)
+        strcpy(kernelName,"avg_pool_2d_fwd_f32");
+    else if(m_mode == bwd)
+        strcpy(kernelName,"avg_pool_2d_bwd_f32");
+    else
+        return gcapi::GLUE_NODE_NOT_FOUND;
      return gcapi::GLUE_SUCCESS;
  }
 
 
-gcapi::GlueCodeReturn_t AvgPool2dFwdF32::fill_reciprocal_table(float* reciprocal_table, int num_elements) const
+gcapi::GlueCodeReturn_t AvgPool2dF32::fill_reciprocal_table(float* reciprocal_table, int num_elements) const
 {
     reciprocal_table[0] = 0;
     for (int i = 1; i < num_elements; i++)
@@ -42,12 +49,12 @@ gcapi::GlueCodeReturn_t AvgPool2dFwdF32::fill_reciprocal_table(float* reciprocal
     return gcapi::GLUE_SUCCESS;
 }
 
-gcapi::GlueCodeReturn_t AvgPool2dFwdF32::GetGcDefinitions(
+gcapi::GlueCodeReturn_t AvgPool2dF32::GetGcDefinitions(
             gcapi::HabanaKernelParams_t* in_defs,
             gcapi::HabanaKernelInstantiation_t* out_defs)
 {
     gcapi::GlueCodeReturn_t retVal;
-    AvgPool2DFwdParam* def = static_cast<AvgPool2DFwdParam*>(in_defs->NodeParams);
+    AvgPool2DParam* def = static_cast<AvgPool2DParam*>(in_defs->NodeParams);
     /*************************************************************************************
     *   Stage I - validate input
     **************************************************************************************/
@@ -93,8 +100,16 @@ gcapi::GlueCodeReturn_t AvgPool2dFwdF32::GetGcDefinitions(
     out_defs->indexSpaceGeometry.dims = 4;
     unsigned int* indexSpaceSizes         = in_defs->inputTensors[0].geometry.sizes;
     outputSizes[0] = indexSpaceSizes[0];
-    outputSizes[1] = (indexSpaceSizes[1] + def->srdef.pad_w - def->srdef.kernel_w * def->srdef.dilation_w) / def->srdef.stride_w;
-    outputSizes[2] = (indexSpaceSizes[1] + def->srdef.pad_h - def->srdef.kernel_h * def->srdef.dilation_h) / def->srdef.stride_h;
+    if(m_mode == fwd)
+    {
+        outputSizes[1] = (indexSpaceSizes[1] + def->srdef.pad_w - def->srdef.kernel_w * def->srdef.dilation_w) / def->srdef.stride_w;
+        outputSizes[2] = (indexSpaceSizes[2] + def->srdef.pad_h - def->srdef.kernel_h * def->srdef.dilation_h) / def->srdef.stride_h;
+    }
+    else
+    {
+        outputSizes[1] = (indexSpaceSizes[1] * def->srdef.stride_w) - def->srdef.pad_w + (def->srdef.kernel_w * def->srdef.dilation_w);
+        outputSizes[2] = (indexSpaceSizes[2] * def->srdef.stride_h) - def->srdef.pad_h + (def->srdef.kernel_h * def->srdef.dilation_h);
+    }
     outputSizes[3] = indexSpaceSizes[3];
     // verify that output feature map dimension are correct
     if (memcmp(in_defs->outputTensors[0].geometry.sizes,outputSizes,
@@ -114,6 +129,24 @@ gcapi::GlueCodeReturn_t AvgPool2dFwdF32::GetGcDefinitions(
     *    Stage III -  Define index space mapping
     **************************************************************************************/
     GetAccessPatterns(out_defs,&(def->srdef),64);
+    if(m_mode == bwd)
+    {
+        out_defs->inputTensorAccessPattern[0].dim[1].dim = 1;
+        out_defs->inputTensorAccessPattern[0].dim[1].start_a = (1.0/def->srdef.stride_w);
+        out_defs->inputTensorAccessPattern[0].dim[1].end_a = (1.0/def->srdef.stride_w);
+        out_defs->inputTensorAccessPattern[0].dim[1].start_b = -((def->srdef.kernel_w - 1) + (def->srdef.stride_w - 1)) * def->srdef.dilation_w / def->srdef.stride_w;;
+        out_defs->inputTensorAccessPattern[0].dim[1].end_b = (def->srdef.pad_w / (float)def->srdef.stride_w);
+
+        // start f(i) = stride*i + (-padh);
+        // end f(i) = stride*i + (kernelh*dilationh - padh );
+        // Resource 0 (IFM) dim 2 (height).
+        out_defs->inputTensorAccessPattern[0].dim[2].dim = 2;
+        out_defs->inputTensorAccessPattern[0].dim[2].start_a = (1.0/def->srdef.stride_h);
+        out_defs->inputTensorAccessPattern[0].dim[2].end_a = (1.0/def->srdef.stride_h);
+        out_defs->inputTensorAccessPattern[0].dim[2].start_b =  -((def->srdef.kernel_h - 1) + (def->srdef.stride_h - 1)) * def->srdef.dilation_h / def->srdef.stride_h;
+        out_defs->inputTensorAccessPattern[0].dim[2].end_b = (def->srdef.pad_h / (float)def->srdef.stride_h);
+
+    }
 
     /*************************************************************************************
     *    Stage IV -  define scalar parameters/Set Auxiliary Tensor
@@ -158,6 +191,20 @@ gcapi::GlueCodeReturn_t AvgPool2dFwdF32::GetGcDefinitions(
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
     unsigned IsaSize = (&_binary___avg_pool_2d_fwd_f32_o_end - &_binary___avg_pool_2d_fwd_f32_o_start);
+    unsigned char *binary_kernel;
+    switch (m_mode){
+        case fwd:
+            IsaSize = (&_binary___avg_pool_2d_fwd_f32_o_end - &_binary___avg_pool_2d_fwd_f32_o_start);
+            binary_kernel = &_binary___avg_pool_2d_fwd_f32_o_start;
+            break;
+        case bwd:
+            IsaSize = (&_binary___avg_pool_2d_bwd_f32_o_end - &_binary___avg_pool_2d_bwd_f32_o_start);
+            binary_kernel = &_binary___avg_pool_2d_bwd_f32_o_start;
+            break;
+        default:
+            break;
+
+    }
     unsigned givenBinarySize = out_defs->elfSize;
     out_defs->elfSize = IsaSize;
 
@@ -165,7 +212,7 @@ gcapi::GlueCodeReturn_t AvgPool2dFwdF32::GetGcDefinitions(
     {
         // copy binary out
         memcpy (out_defs->kernelElf,
-                &_binary___avg_pool_2d_fwd_f32_o_start,
+                binary_kernel,
                 IsaSize);
     }
     else

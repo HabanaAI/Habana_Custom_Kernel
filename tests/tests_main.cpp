@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs.
+Copyright (c) 2022 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -27,7 +27,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "spatial_conv_f32_test.hpp"
 #include "sin_f32_test.hpp"
 #include "add_f32_test.hpp"
-#include "avg_pool_2d_fwd_f32_test.hpp"
+#include "avg_pool_2d_f32_test.hpp"
 
 int main(int argc, char** argv)
 {
@@ -60,7 +60,8 @@ int main(int argc, char** argv)
             "SpatialConvF32Test         Run SpatialConvF32Test only   " << std::endl <<
             "SinF32Test                 Run SinF32Test only   " << std::endl <<
             "AddF32Test                 Run AddF32Test only   " << std::endl <<
-            "AvgPool2DFwdF32Test        Run AvgPool2DFwdF32Test only   " << std::endl;
+            "AvgPool2DFwdF32Test        Run AvgPool2DFwdF32Test only   " << std::endl <<
+            "AvgPool2DBwdF32Test        Run AvgPool2DBwdF32Test only   " << std::endl;
 
         exit(0);
     }
@@ -317,16 +318,32 @@ int main(int argc, char** argv)
         }
     }
 
+    AvgPool2DF32Test avgpool2dfwdf32ins;
     if(argc == 1 ||
         (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
         && (strcmp(argv[2],"Gaudi") ==0)))  ||
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
         && (strcmp(argv[2],"AvgPool2DFwdF32Test") ==0))))
     {
-        AvgPool2DFwdF32Test avgpool2df32ins;
-        avgpool2df32ins.SetUp();
-        result = avgpool2df32ins.runTest();
-        avgpool2df32ins.TearDown();
+        avgpool2dfwdf32ins.SetUp();
+        result = avgpool2dfwdf32ins.runTest(GAUDI_KERNEL_AVG_POOL_2D_FWD_F32);
+        avgpool2dfwdf32ins.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"AvgPool2DBwdF32Test") ==0))))
+    {
+        avgpool2dfwdf32ins.SetUp();
+        result = avgpool2dfwdf32ins.runTest(GAUDI_KERNEL_AVG_POOL_2D_BWD_F32);
+        avgpool2dfwdf32ins.TearDown();
         testCount ++;
         if (result != 0)
         {

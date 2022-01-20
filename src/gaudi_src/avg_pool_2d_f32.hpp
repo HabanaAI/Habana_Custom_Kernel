@@ -14,37 +14,46 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef AVG_POOL_2D_FWD_F32_TEST_HPP
-#define AVG_POOL_2D_FWD_F32_TEST_HPP
+#ifndef _AVG_POOL_2D_F32_HPP
+#define _AVG_POOL_2D_F32_HPP
 
-#include "test_base.hpp"
-#include "tensor.h"
-#include "avg_pool_2d_fwd_f32.hpp"
+#include <vector>
+#include <cstring>
+#include "spatial_reduction_kernels.hpp"
 
-class AvgPool2DFwdF32Test : public TestBase
+
+
+class AvgPool2dF32 : public SpatialReductionKernels
 {
 public:
-    AvgPool2DFwdF32Test() {}
-    ~AvgPool2DFwdF32Test() {}
-    int runTest();
-
-    static void avg_pool_2d_fwd_reference_implementation(
-        const test::Tensor<float,4>& ifm,
-        test::Tensor<float,4>& ofm,
-        const AvgPool2dFwdF32::AvgPool2DFwdParam& def,
-        const IndexSpace& indexSpace);
-private:
-    AvgPool2DFwdF32Test(const AvgPool2DFwdF32Test& other) = delete;
-    AvgPool2DFwdF32Test& operator=(const AvgPool2DFwdF32Test& other) = delete;
-    typedef struct coord_t
+    typedef enum _AvgPool2D_mode_t
     {
-        int c;
-        int w;
-        int h;
-        int b;
-    } coord_t;    
+        fwd,
+        bwd
+    } AvgPool2D_mode_t;
 
+    AvgPool2dF32(AvgPool2D_mode_t mode = fwd) {m_mode = mode;}
+    virtual ~AvgPool2dF32() {}
+
+    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
+                                  gcapi::HabanaKernelParams_t* in_defs,
+                                  gcapi::HabanaKernelInstantiation_t* out_defs);
+
+     virtual gcapi::GlueCodeReturn_t GetKernelName(
+             char kernelName [gcapi::MAX_NODE_NAME]);
+    gcapi::GlueCodeReturn_t fill_reciprocal_table(float* table, int num_elements) const;
+
+
+    struct AvgPool2DParam
+    {
+        SpatialReduction2DDef srdef;
+        int include_pads;
+    };             
+private:
+    AvgPool2D_mode_t m_mode;
+    AvgPool2dF32(const AvgPool2dF32& other) = delete;
+    AvgPool2dF32& operator=(const AvgPool2dF32& other) = delete;
 };
 
-#endif /* AVG_POOL_2D_FWD_F32_TEST_HPP */
+#endif // _AVG_POOL_2D_F32_HPP
 

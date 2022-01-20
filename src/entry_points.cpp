@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs.
+Copyright (c) 2022 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -27,7 +27,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "spatial_conv_f32.hpp"
 #include "sin_f32.hpp"
 #include "add_f32.hpp"
-#include "avg_pool_2d_fwd_f32.hpp"
+#include "avg_pool_2d_f32.hpp"
 
 #include "entry_points.hpp"
 
@@ -75,8 +75,10 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            sinf32Instance.GetKernelName(names[GAUDI_KERNEL_SIN_F32]);
            AddF32 addf32Instance;
            addf32Instance.GetKernelName(names[GAUDI_KERNEL_ADD_F32]);
-           AvgPool2dFwdF32 avgpool2df32Instance;
-           avgpool2df32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_FWD_F32]);
+           AvgPool2dF32 avgpool2dfwdf32Instance(AvgPool2dF32::fwd);
+           avgpool2dfwdf32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_FWD_F32]);
+           AvgPool2dF32 avgpool2dbwdf32Instance(AvgPool2dF32::bwd);
+           avgpool2dbwdf32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_BWD_F32]);
 
         }
 
@@ -220,11 +222,18 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
         return addf32Instance.GetGcDefinitions(params, instance);
     }
 
-    AvgPool2dFwdF32 avgpool2df32Instance;
-    avgpool2df32Instance.GetKernelName(kernelName);
+    AvgPool2dF32 avgpool2dfwdf32Instance(AvgPool2dF32::fwd);
+    avgpool2dfwdf32Instance.GetKernelName(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
-        return avgpool2df32Instance.GetGcDefinitions(params, instance);
+        return avgpool2dfwdf32Instance.GetGcDefinitions(params, instance);
+    }
+
+    AvgPool2dF32 avgpool2dbwdf32Instance(AvgPool2dF32::bwd);
+    avgpool2dbwdf32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return avgpool2dbwdf32Instance.GetGcDefinitions(params, instance);
     }
 
     return gcapi::GLUE_NODE_NOT_FOUND;
