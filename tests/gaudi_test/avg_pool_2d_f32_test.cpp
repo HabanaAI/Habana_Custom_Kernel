@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs.
+Copyright (c) 2022 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -14,13 +14,13 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#include "avg_pool_2d_fwd_f32_test.hpp"
+#include "avg_pool_2d_f32_test.hpp"
 #include "entry_points.hpp"
 
-void AvgPool2DFwdF32Test::avg_pool_2d_fwd_reference_implementation(
+void AvgPool2DF32Test::avg_pool_2d_fwd_reference_implementation(
         const test::Tensor<float,4>& ifm,
         test::Tensor<float,4>& ofm,
-        const AvgPool2dFwdF32::AvgPool2DFwdParam& def,
+        const AvgPool2dF32::AvgPool2DParam& def,
         const IndexSpace& indexSpace)
 {
 
@@ -92,14 +92,146 @@ void AvgPool2DFwdF32Test::avg_pool_2d_fwd_reference_implementation(
     }
 }
 
-int AvgPool2DFwdF32Test::runTest()
+void AvgPool2DF32Test::avg_pool_2d_get_intospacePixelsInArea(
+        const test::Tensor<float,4>& ifm,
+        test::Tensor<int32_t,2>& numOfSourcefm,
+        const AvgPool2dF32::AvgPool2DParam& def,
+        const IndexSpace& indexSpace)
+{
+
+    const int batchStart = indexSpace.offset[3];
+    int       batchEnd   = indexSpace.offset[3] + indexSpace.size[3];
+
+    const int heightStart = indexSpace.offset[2];
+    const int heightEnd   = indexSpace.offset[2] + indexSpace.size[2];
+
+    const int widthStart = indexSpace.offset[1];
+    const int widthEnd   = indexSpace.offset[1] + indexSpace.size[1];
+
+    const int channelStart = indexSpace.offset[0];
+    const int channelEnd   = indexSpace.offset[0] + indexSpace.size[0];
+
+    const int vectorSize = 256 / sizeof(float);
+
+    // Iterate over OFM
+    int h, w;
+    for (int b = batchStart; b < batchEnd; b += 1)
+    {
+        for (int c = channelStart * vectorSize; c < channelEnd * vectorSize; c += 1)
+        {
+            for (h = heightStart; h < heightEnd; h += 1)
+            {
+                for (w = widthStart; w < widthEnd; w += 1)
+                {
+                    coord_t in_coord = {c, w, h, b};
+                    coord_t outCoord = {in_coord.c, 0, 0, in_coord.b};
+                    int intospacePixelsInArea = 0;
+                    for (int kh = 0; kh < def.srdef.kernel_h; kh++)
+                    {
+                        outCoord.h = (in_coord.h * def.srdef.stride_h) + (kh * def.srdef.dilation_h) -
+                                     def.srdef.pad_h;
+
+                        for (int kw = 0; kw < def.srdef.kernel_w; kw++)
+                        {
+                           
+                            outCoord.w = (in_coord.w * def.srdef.stride_w) + (kw * def.srdef.dilation_w) -
+                                         def.srdef.pad_w;                
+                            bool intospace = ((outCoord.w >= 0 && outCoord.w < (int)ifm.Size(1)) &&
+                                    (outCoord.h >= 0 && outCoord.h < (int)ifm.Size(2)));
+                            if (intospace)
+                            {
+                                intospacePixelsInArea++;
+                            }
+                        }
+                    }
+
+                    coord_t numOfSource_coord = {w, h, 0, 0};
+                    numOfSourcefm.SetElement((int*)&numOfSource_coord, intospacePixelsInArea);
+                }
+            }
+        }
+    }
+}
+
+void AvgPool2DF32Test::avg_pool_2d_bwd_reference_implementation(
+        const test::Tensor<float,4>& ifm,
+        test::Tensor<float,4>& ofm,
+        test::Tensor<int32_t,2>& numOfSourcefm,
+        const AvgPool2dF32::AvgPool2DParam& def,
+        const IndexSpace& indexSpace)
+{
+
+    const int batchStart = indexSpace.offset[3];
+    int       batchEnd   = indexSpace.offset[3] + indexSpace.size[3];
+
+    const int heightStart = indexSpace.offset[2];
+    const int heightEnd   = indexSpace.offset[2] + indexSpace.size[2];
+
+    const int widthStart = indexSpace.offset[1];
+    const int widthEnd   = indexSpace.offset[1] + indexSpace.size[1];
+
+    const int channelStart = indexSpace.offset[0];
+    const int channelEnd   = indexSpace.offset[0] + indexSpace.size[0];
+
+    const int vectorSize = 256 / sizeof(float);
+
+    //int pixelsInArea = def.srdef.kernel_h * def.srdef.kernel_w;
+
+    // Iterate over OFM
+    int h, w;
+    for (int b = batchStart; b < batchEnd; b += 1)
+    {
+        for (int c = channelStart * vectorSize; c < channelEnd * vectorSize; c += 1)
+        {
+            for (h = heightStart; h < heightEnd; h += 1)
+            {
+                for (w = widthStart; w < widthEnd; w += 1)
+                {
+                    coord_t in_coord = {c, w, h, b};
+                    float accum = 0;
+
+                    // calculate the value for propagation
+                    float     prop_value = ifm.ElementAt((int*)&in_coord);
+                    float out        = 0;
+                    coord_t numOfSource_coord = {w, h, 0, 0};
+                    int intospacePixelsInArea =
+                    numOfSourcefm.ElementAt((int*)&numOfSource_coord);
+
+                    coord_t outCoord;
+                    outCoord = {in_coord.c, 0, 0, in_coord.b};
+                    for (int kh = 0; kh < def.srdef.kernel_h; kh++)
+                    {
+                        outCoord.h = (in_coord.h * def.srdef.stride_h) + (kh * def.srdef.dilation_h) -
+                                     def.srdef.pad_h;
+
+                        for (int kw = 0; kw < def.srdef.kernel_w; kw++)
+                        {
+                           
+                            outCoord.w = (in_coord.w * def.srdef.stride_w) + (kw * def.srdef.dilation_w) -
+                                         def.srdef.pad_w;
+
+                            float recip = 1.0 / (float)intospacePixelsInArea;
+                            out     = prop_value * recip;
+
+                            accum = ofm.ElementAt((int*)&outCoord);
+                            accum += out;
+                            ofm.SetElement((int*)&outCoord, accum);                        
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+int AvgPool2DF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
 {
     const int ifm_height = 5;
     const int ifm_width  = 5;
     const int ifm_depth = 100;
     const int ifm_batch = 1;
 
-    AvgPool2dFwdF32::AvgPool2DFwdParam def;
+    AvgPool2dF32::AvgPool2DParam def;
     def.srdef.pad_w = 1;
     def.srdef.pad_h = 1;
     def.srdef.kernel_h = 3;
@@ -112,12 +244,23 @@ int AvgPool2DFwdF32Test::runTest()
 
 
     unsigned int ifmInitializer[] = {ifm_depth, ifm_width, ifm_height, ifm_batch};
+    unsigned int ifmInit_tmp[] = {ifm_depth, ifm_width, ifm_height, ifm_batch};
+    unsigned int tfm2dInitializer[] = {ifm_width, ifm_height, 0, 0};
     float_4DTensor ifm(ifmInitializer);
     ifm.FillWithData();
 
     int ofm_depth = ifm_depth;
-    const int ofm_width = (ifm_width + def.srdef.pad_w - def.srdef.kernel_w*def.srdef.dilation_w)/def.srdef.stride_w;
-    const int ofm_height = (ifm_height + def.srdef.pad_h - def.srdef.kernel_h*def.srdef.dilation_h)/def.srdef.stride_h;
+    int ofm_width, ofm_height;
+    if(NameofKernel == GAUDI_KERNEL_AVG_POOL_2D_FWD_F32)
+    {
+        ofm_width = (ifm_width + def.srdef.pad_w - def.srdef.kernel_w*def.srdef.dilation_w)/def.srdef.stride_w;
+        ofm_height = (ifm_height + def.srdef.pad_h - def.srdef.kernel_h*def.srdef.dilation_h)/def.srdef.stride_h;
+    }
+    else{ // bwd
+        ofm_width = (ifm_width * def.srdef.stride_w) + def.srdef.kernel_w*def.srdef.dilation_w - def.srdef.pad_w;
+        ofm_height = (ifm_height * def.srdef.stride_h) + def.srdef.kernel_h*def.srdef.dilation_h - def.srdef.pad_h;
+    }
+
     int ofm_batch = ifm_batch;
     if(ofm_width <= 0 || ofm_height <= 0)
     {
@@ -138,7 +281,22 @@ int AvgPool2DFwdF32Test::runTest()
     indexSpace.size[3] = ofm_batch;
 
     // execute reference implementation of the kernel.
-    avg_pool_2d_fwd_reference_implementation(ifm, ofm_ref, def, indexSpace);
+    if(NameofKernel == GAUDI_KERNEL_AVG_POOL_2D_FWD_F32)
+        avg_pool_2d_fwd_reference_implementation(ifm, ofm_ref, def, indexSpace);
+    else // bwd
+    {
+        ifmInit_tmp[1] = (unsigned int)ofm_width;
+        ifmInit_tmp[2] = (unsigned int)ofm_height;
+        tfm2dInitializer[0] = (unsigned int)ofm_width;
+        tfm2dInitializer[1] = (unsigned int)ofm_height;
+
+        float_4DTensor ifm_tmp(ifmInit_tmp);
+        int32_2DTensor numOfSourcefm(tfm2dInitializer);
+
+        // Get num of source for reference
+        avg_pool_2d_get_intospacePixelsInArea(ifm_tmp, numOfSourcefm, def, indexSpace);
+        avg_pool_2d_bwd_reference_implementation(ifm, ofm_ref, numOfSourcefm, def, indexSpace);
+    }
 
     // generate input for query call
     m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
@@ -165,7 +323,7 @@ int AvgPool2DFwdF32Test::runTest()
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_AVG_POOL_2D_FWD_F32]);
+    strcpy(m_in_defs.nodeName, kernelNames[NameofKernel]);
     result  = HabanaKernel(&m_in_defs,&m_out_defs);
 
     // Declaration of auxiliary tensor
@@ -214,11 +372,17 @@ int AvgPool2DFwdF32Test::runTest()
     {
         if (abs(ofm.Data()[element] - ofm_ref.Data()[element]) > 1e-6)
         {
-            std::cout << "AvgPool2DFwdF32Test failed!!" << std::endl;
+            if(NameofKernel == GAUDI_KERNEL_AVG_POOL_2D_FWD_F32)
+                std::cout << "AvgPool2DFwdF32Test failed!!" << std::endl;
+            else
+                std::cout << "AvgPool2DBwdF32Test failed!!" << std::endl;
             return -1;
         }
     }
-    std::cout << "AvgPool2DFwdF32Test pass!!" << std::endl;
+    if(NameofKernel == GAUDI_KERNEL_AVG_POOL_2D_FWD_F32)
+        std::cout << "AvgPool2DFwdF32Test pass!!" << std::endl;
+    else
+        std::cout << "AvgPool2DBwdF32Test pass!!" << std::endl;
     return 0;
 }
 

@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs.
+Copyright (c) 2022 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -14,39 +14,52 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef _AVG_POOL_2D_FWD_F32_HPP
-#define _AVG_POOL_2D_FWD_F32_HPP
+#ifndef AVG_POOL_2D_F32_TEST_HPP
+#define AVG_POOL_2D_F32_TEST_HPP
 
-#include <vector>
-#include <cstring>
-#include "spatial_reduction_kernels.hpp"
+#include "test_base.hpp"
+#include "tensor.h"
+#include "avg_pool_2d_f32.hpp"
+#include "entry_points.hpp"
 
-
-
-class AvgPool2dFwdF32 : public SpatialReductionKernels
+class AvgPool2DF32Test : public TestBase
 {
 public:
-    AvgPool2dFwdF32() {}
-    virtual ~AvgPool2dFwdF32() {}
+    AvgPool2DF32Test() {}
+    ~AvgPool2DF32Test() {}
+    int runTest(Gaudi_Kernel_Name_e NameofKernel);
 
-    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
-                                  gcapi::HabanaKernelParams_t* in_defs,
-                                  gcapi::HabanaKernelInstantiation_t* out_defs);
+    static void avg_pool_2d_fwd_reference_implementation(
+        const test::Tensor<float,4>& ifm,
+        test::Tensor<float,4>& ofm,
+        const AvgPool2dF32::AvgPool2DParam& def,
+        const IndexSpace& indexSpace);
 
-     virtual gcapi::GlueCodeReturn_t GetKernelName(
-             char kernelName [gcapi::MAX_NODE_NAME]);
-    gcapi::GlueCodeReturn_t fill_reciprocal_table(float* table, int num_elements) const;
+    static void avg_pool_2d_get_intospacePixelsInArea(
+        const test::Tensor<float,4>& ifm,
+        test::Tensor<int32_t,2>& numOfSourcefm,
+        const AvgPool2dF32::AvgPool2DParam& def,
+        const IndexSpace& indexSpace);
 
+    static void avg_pool_2d_bwd_reference_implementation(
+        const test::Tensor<float,4>& ifm,
+        test::Tensor<float,4>& ofm,
+        test::Tensor<int32_t,2>& numOfSourcefm,
+        const AvgPool2dF32::AvgPool2DParam& def,
+        const IndexSpace& indexSpace);
 
-    struct AvgPool2DFwdParam
-    {
-        SpatialReduction2DDef srdef;
-        int include_pads;
-    };             
 private:
-    AvgPool2dFwdF32(const AvgPool2dFwdF32& other) = delete;
-    AvgPool2dFwdF32& operator=(const AvgPool2dFwdF32& other) = delete;
+    AvgPool2DF32Test(const AvgPool2DF32Test& other) = delete;
+    AvgPool2DF32Test& operator=(const AvgPool2DF32Test& other) = delete;
+    typedef struct coord_t
+    {
+        int c;
+        int w;
+        int h;
+        int b;
+    } coord_t;    
+
 };
 
-#endif // _AVG_POOL_2D_FWD_F32_HPP
+#endif /* AVG_POOL_2D_F32_TEST_HPP */
 
