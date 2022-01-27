@@ -22,7 +22,7 @@ extern unsigned char _binary___batch_norm_fwd_f32_o_end;
 gcapi::GlueCodeReturn_t BatchNormF32::GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME])
 {
-    strcpy(kernelName, "my_batch_norm_fwd_f32");
+    strcpy(kernelName, "custom_batch_norm_fwd_f32");
     return gcapi::GLUE_SUCCESS;
 }
 

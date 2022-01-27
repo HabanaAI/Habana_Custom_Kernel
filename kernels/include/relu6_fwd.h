@@ -17,61 +17,78 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 void main(tensor input, tensor output)
 {
-    const int depth     = 0;
-    const int width     = 1;
-    const int height    = 2;
-    const int batch     = 3;
+  const int depth = 0;
+  const int width = 1;
+  const int height = 2;
+  const int batch = 3;
+  const int fifthDim = 4;
 
-    const int5 index_space_start = get_index_space_offset();
-    const int5 index_space_end = get_index_space_size() + index_space_start;
+  SCALAR inputZeroPoint = 0.f;
+  SCALAR threshold = 0.f;
 
-    int5 coords = { 0, 0, 0, 0, 0 };
+  const int5 indexSpaceStart = get_index_space_offset();
+  const int5 indexSpaceEnd = get_index_space_size() + indexSpaceStart;
 
-    // DEPTH
-    const int depthStep     = VECTOR_SIZE;
-    const int depthStart    = index_space_start[depth] * depthStep;
-    const int depthEnd      = index_space_end[depth] * depthStep;
+  int5 ifmCoords = {0, 0, 0, 0, 0};
 
-    // WIDTH
-    const int widthStep     = 4;
-    const int widthStart    = index_space_start[width] * widthStep;
-    const int widthEnd      = index_space_end[width] * widthStep;
+  // DEPTH
+  const int depthStep = VECTOR_SIZE;
+  const int depthStart = indexSpaceStart[depth] * depthStep;
+  const int depthEnd = indexSpaceEnd[depth] * depthStep;
 
-    // HEIGHT
-    const int heightStep    = 1;
-    const int heightStart   = index_space_start[height];
-    const int heightEnd     = index_space_end[height];
+  // WIDTH
+  const int widthStep = 4;
+  const int widthStart = indexSpaceStart[width] * widthStep;
+  const int widthEnd = indexSpaceEnd[width] * widthStep;
 
-    // BATCH
-    const int batchStep     = 1;
-    const int batchStart    = index_space_start[batch];
-    const int batchtEnd     = index_space_end[batch];
+  // HEIGHT
+  const int heightStep = 1;
+  const int heightStart = indexSpaceStart[height];
+  const int heightEnd = indexSpaceEnd[height];
 
-    for (int b = batchStart; b < batchtEnd; b += batchStep)
-    {
-        coords[batch] = b;
+  // BATCH
+  const int batchStep = 1;
+  const int batchStart = indexSpaceStart[batch];
+  const int batchEnd = indexSpaceEnd[batch];
 
-        for (int h = heightStart; h < heightEnd; h += heightStep)
-        {
-            coords[height] = h;
-            for (int d = depthStart; d < depthEnd; d += depthStep)
-            {
-                coords[depth] = d;
-                #pragma loop_unroll(4)
-                for (int w = widthStart; w < widthEnd; w += 1)
-                {
-                    coords[width] = w;
+  // fifthDim
+  const int fifthDimStep = 1;
+  const int fifthDimStart = indexSpaceStart[fifthDim];
+  const int fifthDimEnd = indexSpaceEnd[fifthDim];
 
-                    VECTOR x = v_ld_tnsr_i(coords, input);
+  VECTOR x00;
+  VECTOR o00;
 
-                    VECTOR y = v_sel_grt_v_s_v_v(x, 0, x, 0);
+#pragma loop_taken
+  for (int d = depthStart; d < depthEnd; d += depthStep) {
+    ifmCoords[depth] = d;
 
-                    x = v_sel_grt_v_s_v_v(y, 6.0, 6.0, y);
-                    
-                    
-                    st_tnsr_i_v(coords, output, x);
-                }
-            }
+#pragma loop_taken
+    for (int f = fifthDimStart; f < fifthDimEnd; f += fifthDimStep) {
+      ifmCoords[fifthDim] = f;
+
+#pragma loop_taken
+      for (int b = batchStart; b < batchEnd; b += batchStep) {
+        ifmCoords[batch] = b;
+
+#pragma loop_taken
+        for (int h = heightStart; h < heightEnd; h += heightStep) {
+          ifmCoords[height] = h;
+
+#pragma loop_taken
+#pragma unroll(widthStep)
+          for (int w = widthStart; w < widthEnd; w += 1) {
+            ifmCoords[width] = w;
+
+            x00 = v_ld_tnsr_i(ifmCoords, input);
+            o00 = v_sel_leq_v_s_v_v(x00, threshold, inputZeroPoint, x00);
+            o00 = v_sel_geq_v_s_v_v_b(o00, (SCALAR)6.0, (SCALAR)6.0, o00, o00,
+                                       1, 0);
+            // store
+            st_tnsr_i_v(ifmCoords, output, o00);
+          }
         }
+      }
     }
+  }
 }

@@ -30,13 +30,13 @@ gcapi::GlueCodeReturn_t Relu6All::GetKernelName(
         char kernelName [gcapi::MAX_NODE_NAME], Relu6_mode_t mode)
 {
     if(mode == fwd_f32)
-        strcpy(kernelName,"customrelu6_fwd_f32");
+        strcpy(kernelName,"custom_relu6_fwd_f32");
     else if(mode == bwd_f32)
-        strcpy(kernelName,"customrelu6_bwd_f32");
+        strcpy(kernelName,"custom_relu6_bwd_f32");
     else if(mode == fwd_bf16)
-        strcpy(kernelName,"customrelu6_fwd_bf16");
+        strcpy(kernelName,"custom_relu6_fwd_bf16");
     else if(mode == bwd_bf16)
-        strcpy(kernelName,"customrelu6_bwd_bf16");
+        strcpy(kernelName,"custom_relu6_bwd_bf16");
     else
         return gcapi::GLUE_NODE_NOT_FOUND;
     return gcapi::GLUE_SUCCESS;
@@ -123,12 +123,13 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
 
     //round up to elementsInVec and divide by elementsInVec.
     unsigned depthIndex = (outputSizes[0] + (elementsInVec - 1)) / elementsInVec;
-    out_defs->indexSpaceGeometry.dims = 4;
+    out_defs->indexSpaceGeometry.dims = 5;
     out_defs->indexSpaceGeometry.sizes[0] = depthIndex;
 	//reduce index space due to unroll.
     out_defs->indexSpaceGeometry.sizes[1] = (outputSizes[1] +(c_unrollCount-1)) / c_unrollCount; 
     out_defs->indexSpaceGeometry.sizes[2] = outputSizes[2];
     out_defs->indexSpaceGeometry.sizes[3] = outputSizes[3];
+    out_defs->indexSpaceGeometry.sizes[4] = outputSizes[4];
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping
@@ -152,7 +153,7 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (IFM) dim 1-4
-    for (int dims = 2; dims < 4; dims++)
+    for (unsigned int dims = 2; dims < out_defs->indexSpaceGeometry.dims; dims++)
     {
         out_defs->inputTensorAccessPattern[0].dim[dims].dim      = dims;
         out_defs->inputTensorAccessPattern[0].dim[dims].start_a  = 1;
@@ -177,7 +178,7 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (IFM) dim 1-4
-    for (int dims = 2; dims < 4; dims++)
+    for (unsigned int dims = 2; dims < out_defs->indexSpaceGeometry.dims; dims++)
     {
         out_defs->inputTensorAccessPattern[1].dim[dims].dim      = dims;
         out_defs->inputTensorAccessPattern[1].dim[dims].start_a  = 1;
@@ -204,7 +205,7 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (OFM) dim 1-4
-    for (int dims = 2; dims < 4; dims++)
+    for (unsigned int dims = 2; dims < out_defs->indexSpaceGeometry.dims; dims++)
     {
         out_defs->outputTensorAccessPattern[0].dim[dims].dim      = dims;
         out_defs->outputTensorAccessPattern[0].dim[dims].start_a  = 1;

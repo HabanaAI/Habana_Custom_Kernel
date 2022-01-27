@@ -24,14 +24,14 @@ extern unsigned char _binary___softmax_non_fcd_bf16_o_end;
  gcapi::GlueCodeReturn_t SoftMaxBF16::GetKernelNameFcd(
              char kernelName [gcapi::MAX_NODE_NAME])
  {
-     strcpy(kernelName,"softmax_fcd_bf16");
+     strcpy(kernelName,"custom_softmax_fcd_bf16");
      return gcapi::GLUE_SUCCESS;
  }
 
  gcapi::GlueCodeReturn_t SoftMaxBF16::GetKernelNameNonFcd(
              char kernelName [gcapi::MAX_NODE_NAME])
  {
-     strcpy(kernelName,"softmax_non_fcd_bf16");
+     strcpy(kernelName,"custom_softmax_non_fcd_bf16");
      return gcapi::GLUE_SUCCESS;
  }
 

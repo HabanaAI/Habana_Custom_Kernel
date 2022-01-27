@@ -22,7 +22,7 @@ extern unsigned char _binary___sparse_lengths_sum_bf16_2D_f32_embed_o_end;
 gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetKernelName(
         char kernelName [gcapi::MAX_NODE_NAME])
 {
-    strcpy(kernelName,"sparse_lengths_sum_bf16_2D_embed_f32");
+    strcpy(kernelName,"custom_sparse_lengths_sum_bf16_2D_embed_f32");
     return gcapi::GLUE_SUCCESS;
 }
 

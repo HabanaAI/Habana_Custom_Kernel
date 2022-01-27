@@ -84,12 +84,13 @@ gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
 
     //round up to elementsInVec and divide by elementsInVec.
     unsigned depthIndex = (outputSizes[0] + (elementsInVec - 1)) / elementsInVec;
-    kernel->indexSpaceGeometry.dims = 4;
+    kernel->indexSpaceGeometry.dims = 5;
     kernel->indexSpaceGeometry.sizes[0] = depthIndex;
 	//reduce index space due to unroll.
     kernel->indexSpaceGeometry.sizes[1] = outputSizes[1]; 
     kernel->indexSpaceGeometry.sizes[2] = outputSizes[2];
     kernel->indexSpaceGeometry.sizes[3] = outputSizes[3];
+    kernel->indexSpaceGeometry.sizes[4] = outputSizes[4];
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping
@@ -108,7 +109,7 @@ gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
         // f_start f(i) = 1*i + 0;
         // f_end   f(i) = 1*i + 0;
         // Resource 0 (IFM) dim 1-4
-        for (int dims = 1; dims < 4; dims++)
+        for (int dims = 1; dims < 5; dims++)
         {
             kernel->inputTensorAccessPattern[i].dim[dims].dim      = dims;
             kernel->inputTensorAccessPattern[i].dim[dims].start_a  = 1;
@@ -130,7 +131,7 @@ gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (OFM) dim 1-4
-    for (int dims = 1; dims < 4; dims++)
+    for (int dims = 1; dims < 5; dims++)
     {
         kernel->outputTensorAccessPattern[0].dim[dims].dim      = dims;
         kernel->outputTensorAccessPattern[0].dim[dims].start_a  = 1;

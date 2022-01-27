@@ -26,7 +26,7 @@ extern unsigned char _binary___filter_fwd_2d_bf16_o_end;
  gcapi::GlueCodeReturn_t FilterFwd2dBF16::GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME])
  {
-     strcpy(kernelName,"filter_fwd_2d_bf16");
+     strcpy(kernelName,"custom_filter_fwd_2d_bf16");
      return gcapi::GLUE_SUCCESS;
  }
 

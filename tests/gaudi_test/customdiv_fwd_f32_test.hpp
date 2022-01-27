@@ -29,9 +29,9 @@ public:
     int runTest();
 
     inline static void customdiv_reference_implementation(
-            const float_4DTensor& input0,
-            const float_4DTensor& input1,
-            float_4DTensor& output);
+            const float_5DTensor& input0,
+            const float_5DTensor& input1,
+            float_5DTensor& output);
 private:
     CustomdivFwdF32Test(const CustomdivFwdF32Test& other) = delete;
     CustomdivFwdF32Test& operator=(const CustomdivFwdF32Test& other) = delete;

@@ -26,7 +26,7 @@ extern unsigned char _binary___add_f32_o_end;
  gcapi::GlueCodeReturn_t AddF32::GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME])
  {
-     strcpy(kernelName,"add_f32");
+     strcpy(kernelName,"custom_add_f32");
      return gcapi::GLUE_SUCCESS;
  }
 
