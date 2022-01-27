@@ -18,27 +18,31 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "entry_points.hpp"
 
 void CustomdivFwdF32Test::customdiv_reference_implementation(
-        const float_4DTensor& input0,
-        const float_4DTensor& input1,
-        float_4DTensor& output)
+        const float_5DTensor& input0,
+        const float_5DTensor& input1,
+        float_5DTensor& output)
 {
-    int coords[4] = {0};
-    for (unsigned b = 0; b < input0.Size(3); b += 1)
+    int coords[5] = {0};
+    for (unsigned f = 0; f < input0.Size(4); f += 1)
     {
-        coords[3] = b;
-        for (unsigned h = 0; h < input0.Size(2); h += 1)
+        coords[4] = f;
+        for (unsigned b = 0; b < input0.Size(3); b += 1)
         {
-            coords[2] = h;
-            for (unsigned w = 0; w < input0.Size(1); w += 1)
+            coords[3] = b;
+            for (unsigned h = 0; h < input0.Size(2); h += 1)
             {
-                coords[1] = w;
-                for (unsigned d = 0; d < input0.Size(0); d += 1)
+                coords[2] = h;
+                for (unsigned w = 0; w < input0.Size(1); w += 1)
                 {
-                    coords[0] = d;
-                    float x = input0.ElementAt(coords);
-                    float y = input1.ElementAt(coords);
-                    float z = x / y;
-                    output.SetElement(coords, z);
+                    coords[1] = w;
+                    for (unsigned d = 0; d < input0.Size(0); d += 1)
+                    {
+                        coords[0] = d;
+                        float x = input0.ElementAt(coords);
+                        float y = input1.ElementAt(coords);
+                        float z = x / y;
+                        output.SetElement(coords, z);
+                    }
                 }
             }
         }
@@ -47,21 +51,22 @@ void CustomdivFwdF32Test::customdiv_reference_implementation(
 
 int CustomdivFwdF32Test::runTest()
 {
-    const int height = 5;
-    const int width  = 5;
-    const int depth  = 100;
-    const int batch  = 1;
+    const int height    = 5;
+    const int width     = 5;
+    const int depth     = 100;
+    const int batch     = 1;
+    const int fifthdim  = 2;
 
-    unsigned int fmInitializer[] = {depth, width, height, batch};
+    unsigned int fmInitializer[] = {depth, width, height, batch, fifthdim};
 
-    float_4DTensor input0(fmInitializer);
+    float_5DTensor input0(fmInitializer);
     input0.InitRand(-10.0f, 10.0f);
 
-    float_4DTensor input1(fmInitializer);
+    float_5DTensor input1(fmInitializer);
     input1.InitRand(1.0f, 10.0f);
 
-    float_4DTensor output(fmInitializer);
-    float_4DTensor output_ref(fmInitializer);
+    float_5DTensor output(fmInitializer);
+    float_5DTensor output_ref(fmInitializer);
 
     // execute reference implementation of the kernel.
     customdiv_reference_implementation(input0, input1, output_ref);

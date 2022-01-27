@@ -30,14 +30,14 @@ public:
     int runTest(Gaudi_Kernel_Name_e NameofKernel);
 
     static void relu6_f32_reference_implementation(
-            const float_4DTensor& gradin,  
-            const float_4DTensor& input,
-            float_4DTensor& output, Relu6All::Relu6_mode_t);
+            const float_5DTensor& gradin,  
+            const float_5DTensor& input,
+            float_5DTensor& output, Relu6All::Relu6_mode_t);
 
     static void relu6_bf16_reference_implementation(
-            const bfloat16_4DTensor& gradin,        
-            const bfloat16_4DTensor& input,
-            bfloat16_4DTensor& output, Relu6All::Relu6_mode_t);
+            const bfloat16_5DTensor& gradin,        
+            const bfloat16_5DTensor& input,
+            bfloat16_5DTensor& output, Relu6All::Relu6_mode_t);
 
 private:
     Relu6AllTest(const Relu6AllTest& other) = delete;

@@ -31,7 +31,7 @@ extern unsigned char _binary___cast_f32_to_bf16_o_end;
              char kernelName [gcapi::MAX_NODE_NAME],
              CastGaudi::CastDataType_t mode)
  {
-     strcpy(kernelName, "cast_");
+     strcpy(kernelName, "custom_cast_");
      strcat(kernelName, castDataType[mode]);
      return gcapi::GLUE_SUCCESS;
  }

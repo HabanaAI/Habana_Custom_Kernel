@@ -22,7 +22,7 @@ extern unsigned char _binary___sin_f32_o_end;
  gcapi::GlueCodeReturn_t SinF32::GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME])
  {
-     strcpy(kernelName,"sin_f32");
+     strcpy(kernelName,"custom_sin_f32");
      return gcapi::GLUE_SUCCESS;
  }
 

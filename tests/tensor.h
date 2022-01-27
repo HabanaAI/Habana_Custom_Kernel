@@ -419,6 +419,7 @@ typedef test::Tensor<float,5>   float_5DTensor;
 typedef test::Tensor<bfloat16,2>   bfloat16_2DTensor;
 typedef test::Tensor<bfloat16,3>   bfloat16_3DTensor;
 typedef test::Tensor<bfloat16,4>   bfloat16_4DTensor;
+typedef test::Tensor<bfloat16,5>   bfloat16_5DTensor;
 
 
 struct IndexSpace

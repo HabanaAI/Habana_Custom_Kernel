@@ -24,7 +24,7 @@ extern unsigned char _binary___leakyrelu_f32_gaudi_o_end;
 gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::GetKernelName(
         char kernelName [gcapi::MAX_NODE_NAME])
 {
-    strcpy(kernelName,"leakyrelu_f32_gaudi");
+    strcpy(kernelName,"custom_leakyrelu_f32_gaudi");
     return gcapi::GLUE_SUCCESS;
 }
 

@@ -74,6 +74,7 @@ void main(tensor input0, tensor input1, tensor output)
     const int width     = 1;
     const int height    = 2;
     const int batch     = 3;
+    const int fifthdim  = 4;
 
     const int5 index_space_start = get_index_space_offset();
     const int5 index_space_end = get_index_space_size() + index_space_start;
@@ -98,28 +99,38 @@ void main(tensor input0, tensor input1, tensor output)
     // BATCH
     const int batchStep     = 1;
     const int batchStart    = index_space_start[batch];
-    const int batchtEnd     = index_space_end[batch];
+    const int batchEnd      = index_space_end[batch];
 
-    for (int b = batchStart; b < batchtEnd; b += batchStep)
+    // FIFTHDIM
+    const int fifthdimStep  = 1;
+    const int fifthdimStart = index_space_start[fifthdim];
+    const int fifthdimEnd   = index_space_end[fifthdim];
+
+    for (int f = fifthdimStart; f < fifthdimEnd; f += fifthdimStep)
     {
-        coords[batch] = b;
+        coords[fifthdim] = f;
 
-        for (int h = heightStart; h < heightEnd; h += heightStep)
+        for (int b = batchStart; b < batchEnd; b += batchStep)
         {
-            coords[height] = h;
-            for (int d = depthStart; d < depthEnd; d += depthStep)
+            coords[batch] = b;
+
+            for (int h = heightStart; h < heightEnd; h += heightStep)
             {
-                coords[depth] = d;
-                for (int w = widthStart; w < widthEnd; w += widthStep)
+                coords[height] = h;
+                for (int d = depthStart; d < depthEnd; d += depthStep)
                 {
-                    coords[width] = w;
+                    coords[depth] = d;
+                    for (int w = widthStart; w < widthEnd; w += widthStep)
+                    {
+                        coords[width] = w;
 
-                    float64 x = v_f32_ld_tnsr_b(coords, input0);
-                    float64 y = v_f32_ld_tnsr_b(coords, input1);
+                        float64 x = v_f32_ld_tnsr_b(coords, input0);
+                        float64 y = v_f32_ld_tnsr_b(coords, input1);
 
-                    float64 div_x_y = x * reciprocal_cephes_fast_f32(y);
+                        float64 div_x_y = x * reciprocal_cephes_fast_f32(y);
 
-                    v_f32_st_tnsr(coords, output, div_x_y);
+                        v_f32_st_tnsr(coords, output, div_x_y);
+                    }
                 }
             }
         }

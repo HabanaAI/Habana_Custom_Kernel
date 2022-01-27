@@ -29,9 +29,9 @@ extern unsigned char _binary___avg_pool_2d_bwd_f32_o_end;
  {
 
     if(m_mode == fwd)
-        strcpy(kernelName,"avg_pool_2d_fwd_f32");
+        strcpy(kernelName,"custom_avg_pool_2d_fwd_f32");
     else if(m_mode == bwd)
-        strcpy(kernelName,"avg_pool_2d_bwd_f32");
+        strcpy(kernelName,"custom_avg_pool_2d_bwd_f32");
     else
         return gcapi::GLUE_NODE_NOT_FOUND;
      return gcapi::GLUE_SUCCESS;

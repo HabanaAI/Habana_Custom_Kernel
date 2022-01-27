@@ -16,63 +16,121 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include "kernel_config.h"
 
+
+#if defined(FLOAT32)
+    #define PLUS_INF        0x7f800000
+    #define  v_sel_grt_b(grad, output) \
+                                v_i32_sel_grt_i32_b((int64)grad, PLUS_INF, (int64)grad, (int64)output);
+#elif defined(BFLOAT16)
+    #define PLUS_INF        0x7F80
+    #define  v_sel_grt_b(grad, output) \
+                        v_i16_sel_grt_i16_b((short128)grad, PLUS_INF, (short128)grad, (short128)output);
+#endif
+
 void main(tensor grad, tensor input, tensor output)
 {
-    const int depth     = 0;
-    const int width     = 1;
-    const int height    = 2;
-    const int batch     = 3;
-
-    const int5 index_space_start = get_index_space_offset();
-    const int5 index_space_end = get_index_space_size() + index_space_start;
-
-    int5 coords = { 0, 0, 0, 0, 0 };
+    const int depth = 0;
+    const int width = 1;
+    const int height = 2;
+    const int batch = 3;
+    const int fifthDim = 4;    
+    /*Special cases handled:
+      input = nan,        grad = validValue, TF output = 0
+      input = validValue, grad = nan,        TF output = nan
+      input = nan,        grad = nan,        TF output = nan*/
+    const int5 indexSpaceStart = get_index_space_offset();
+    const int5 indexSpaceEnd = get_index_space_size() + indexSpaceStart;
 
     // DEPTH
-    const int depthStep     = VECTOR_SIZE;
-    const int depthStart    = index_space_start[depth] * depthStep;
-    const int depthEnd      = index_space_end[depth] * depthStep;
+    const int depthStep = VECTOR_SIZE;
+    const int depthStart = indexSpaceStart[depth] * depthStep;
+    const int depthEnd = indexSpaceEnd[depth] * depthStep;
 
     // WIDTH
-    const int widthStep     = 4;
-    const int widthStart    = index_space_start[width] * widthStep;
-    const int widthEnd      = index_space_end[width] * widthStep;
+    const int widthStep = 4;
+    const int widthStart = indexSpaceStart[width] * widthStep;
+    const int widthEnd = indexSpaceEnd[width] * widthStep;
 
     // HEIGHT
-    const int heightStep    = 1;
-    const int heightStart   = index_space_start[height];
-    const int heightEnd     = index_space_end[height];
+    const int heightStep = 1;
+    const int heightStart = indexSpaceStart[height];
+    const int heightEnd = indexSpaceEnd[height];
 
     // BATCH
-    const int batchStep     = 1;
-    const int batchStart    = index_space_start[batch];
-    const int batchtEnd     = index_space_end[batch];
+    const int batchStep = 1;
+    const int batchStart = indexSpaceStart[batch];
+    const int batchEnd = indexSpaceEnd[batch];
 
-    for (int b = batchStart; b < batchtEnd; b += batchStep)
+    // fifthDim
+    const int fifthDimStep = 1;
+    const int fifthDimStart = indexSpaceStart[fifthDim];
+    const int fifthDimEnd = indexSpaceEnd[fifthDim];
+
+    SCALAR threshold = 0.f;
+    // bool256 pred0, pred1, pred2, pred3;
+    VECTOR threshold_v = threshold;
+    VECTOR x0, x1, x2, x3;
+    VECTOR outp0, outp1, outp2, outp3;
+    VECTOR grad0, grad1, grad2, grad3;
+
+    int5 ifmCoords = { 0, widthStart, 0, 0, 0 };
+    int5 ifmCoords1 = { 0, widthStart, 0, 0, 0 };
+    int5 ofmCoords = { 0, widthStart, 0, 0, 0 };
+
+    #pragma loop_taken
+    for (int d = depthStart; d < depthEnd; d += depthStep)
     {
-        coords[batch] = b;
-
-        for (int h = heightStart; h < heightEnd; h += heightStep)
+        ifmCoords[depth] = d;   ofmCoords[depth] = d;   ifmCoords1[depth] = d;
+        #pragma loop_taken
+        for (int f = fifthDimStart; f < fifthDimEnd; f += fifthDimStep)
         {
-            coords[height] = h;
-            for (int d = depthStart; d < depthEnd; d += depthStep)
+            ifmCoords[fifthDim] = f;   ofmCoords[fifthDim] = f;   ifmCoords1[fifthDim] = f;
+            #pragma loop_taken
+            for (int b = batchStart; b < batchEnd; b += batchStep)
             {
-                coords[depth] = d;
-                #pragma loop_unroll(4)
-                for (int w = widthStart; w < widthEnd; w += 1)
+                ifmCoords[batch] = b;   ofmCoords[batch] = b;   ifmCoords1[batch] = b;
+                #pragma loop_taken
+                for (int h = heightStart; h < heightEnd; h += heightStep)
                 {
-                    coords[width] = w;
+                    ifmCoords[height] = h;   ofmCoords[height] = h; ifmCoords1[height] = h;
 
-                    VECTOR x = v_ld_tnsr_i(coords, input);
-                    VECTOR g = v_ld_tnsr_i(coords, grad);
+                    #pragma loop_taken
+                    for (int w = widthStart; w < widthEnd; w += widthStep)
+                    {
+                        x0 = v_ld_tnsr_i(ifmCoords1, input);    ifmCoords1[width] += 1;
+                        x1 = v_ld_tnsr_i(ifmCoords1, input);    ifmCoords1[width] += 1;
+                        x2 = v_ld_tnsr_i(ifmCoords1, input);    ifmCoords1[width] += 1;
+                        x3 = v_ld_tnsr_i(ifmCoords1, input);    ifmCoords1[width] += 1;
 
-                    VECTOR y = v_sel_less_v_s_v_v(x, 0.0, 0.0, x);
-                    
-                    x = v_sel_geq_v_s_v_v(y, 6.0, 0.0, y);
+                        grad0 = v_ld_tnsr_i(ifmCoords, grad);  ifmCoords[width] += 1;
+                        grad1 = v_ld_tnsr_i(ifmCoords, grad);  ifmCoords[width] += 1;
+                        grad2 = v_ld_tnsr_i(ifmCoords, grad);  ifmCoords[width] += 1;
+                        grad3 = v_ld_tnsr_i(ifmCoords, grad);  ifmCoords[width] += 1;
 
-                    y = v_sel_grt_v_s_v_v(x, 0.0, g, 0.0);
+                        outp0 = v_sel_grt_v_s_v_v(x0, threshold_v, grad0, 0);
+                        outp1 = v_sel_grt_v_s_v_v(x1, threshold_v, grad1, 0);
+                        outp2 = v_sel_grt_v_s_v_v(x2, threshold_v, grad2, 0);
+                        outp3 = v_sel_grt_v_s_v_v(x3, threshold_v, grad3, 0);
 
-                    st_tnsr_i_v(coords, output, y);
+                        outp0 = v_sel_less_v_s_v_v_b(x0, (SCALAR)6.0, outp0, 0, outp0, 1, 0);
+                        outp1 = v_sel_less_v_s_v_v_b(x1, (SCALAR)6.0, outp1, 0, outp1, 1, 0);
+                        outp2 = v_sel_less_v_s_v_v_b(x2, (SCALAR)6.0, outp2, 0, outp2, 1, 0);
+                        outp3 = v_sel_less_v_s_v_v_b(x3, (SCALAR)6.0, outp3, 0, outp3, 1, 0);
+
+                        //return NAN if grad == NAN, checking it by comparing grad greater than INF
+                        outp0 = (VECTOR)v_sel_grt_b(grad0, outp0);
+                        outp1 = (VECTOR)v_sel_grt_b(grad1, outp1);
+                        outp2 = (VECTOR)v_sel_grt_b(grad2, outp2);
+                        outp3 = (VECTOR)v_sel_grt_b(grad3, outp3);
+
+                        st_tnsr_i_v(ofmCoords, output, outp0);    ofmCoords[width] += 1;
+                        st_tnsr_i_v(ofmCoords, output, outp1);    ofmCoords[width] += 1;
+                        st_tnsr_i_v(ofmCoords, output, outp2);    ofmCoords[width] += 1;
+                        st_tnsr_i_v(ofmCoords, output, outp3);    ofmCoords[width] += 1;
+
+                    }
+                    ifmCoords[width] = widthStart;  ofmCoords[width] = widthStart;
+                    ifmCoords1[width] = widthStart;
                 }
             }
         }

@@ -17,40 +17,44 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "relu6_all_test.hpp"
 
 void Relu6AllTest::relu6_f32_reference_implementation(
-        const float_4DTensor& gradin,    
-        const float_4DTensor& input,
-        float_4DTensor& output, Relu6All::Relu6_mode_t mode)
+        const float_5DTensor& gradin,    
+        const float_5DTensor& input,
+        float_5DTensor& output, Relu6All::Relu6_mode_t mode)
 {
-    int coords[4] = {0};
-    for (unsigned b = 0; b < input.Size(3); b += 1)
+    int coords[5] = {0};
+    for (unsigned f = 0; f < input.Size(4); f += 1)
     {
-        coords[3] = b;
-        for (unsigned h = 0; h < input.Size(2); h += 1)
+        coords[4] = f;
+        for (unsigned b = 0; b < input.Size(3); b += 1)
         {
-            coords[2] = h;
-            for (unsigned w = 0; w < input.Size(1); w += 1)
+            coords[3] = b;
+            for (unsigned h = 0; h < input.Size(2); h += 1)
             {
-                coords[1] = w;
-                for (unsigned d = 0; d < input.Size(0); d += 1)
+                coords[2] = h;
+                for (unsigned w = 0; w < input.Size(1); w += 1)
                 {
-                    coords[0] = d;
-                    if(mode == Relu6All::fwd_f32)
+                    coords[1] = w;
+                    for (unsigned d = 0; d < input.Size(0); d += 1)
                     {
-                        float x = input.ElementAt(coords);
-                        float y = (x < 0.0f) ? 0 : x;
-                        float z = (y > 6.0f) ? 6.0 : y;
-                        output.SetElement(coords, z);
-                    }
-                    else if (mode == Relu6All::bwd_f32)
-                    {
-                        float g = gradin.ElementAt(coords);
-                        float x = input.ElementAt(coords);
-                        float y = (x < 0.0f) ? 0 : x;
-                        x = (y >= 6.0f) ? 0.0 : y;
-                        y = (x > 0.0f) ? 1 : 0;
-                        y = y * g;
+                        coords[0] = d;
+                        if(mode == Relu6All::fwd_f32)
+                        {
+                            float x = input.ElementAt(coords);
+                            float y = (x < 0.0f) ? 0 : x;
+                            float z = (y > 6.0f) ? 6.0 : y;
+                            output.SetElement(coords, z);
+                        }
+                        else if (mode == Relu6All::bwd_f32)
+                        {
+                            float g = gradin.ElementAt(coords);
+                            float x = input.ElementAt(coords);
+                            float y = (x < 0.0f) ? 0 : x;
+                            x = (y >= 6.0f) ? 0.0 : y;
+                            y = (x > 0.0f) ? 1 : 0;
+                            y = y * g;
 
-                        output.SetElement(coords, y);
+                            output.SetElement(coords, y);
+                        }
                     }
                 }
             }
@@ -59,45 +63,49 @@ void Relu6AllTest::relu6_f32_reference_implementation(
 }
 
 void Relu6AllTest::relu6_bf16_reference_implementation(
-        const bfloat16_4DTensor& gradin,
-        const bfloat16_4DTensor& input,
-        bfloat16_4DTensor& output, Relu6All::Relu6_mode_t mode)
+        const bfloat16_5DTensor& gradin,
+        const bfloat16_5DTensor& input,
+        bfloat16_5DTensor& output, Relu6All::Relu6_mode_t mode)
 {
-    int coords[4] = {0};
-    for (unsigned b = 0; b < input.Size(3); b += 1)
+    int coords[5] = {0};
+    for (unsigned f = 0; f < input.Size(4); f += 1)
     {
-        coords[3] = b;
-        for (unsigned h = 0; h < input.Size(2); h += 1)
+        coords[4] = f;
+        for (unsigned b = 0; b < input.Size(3); b += 1)
         {
-            coords[2] = h;
-            for (unsigned w = 0; w < input.Size(1); w += 1)
+            coords[3] = b;
+            for (unsigned h = 0; h < input.Size(2); h += 1)
             {
-                coords[1] = w;
-                for (unsigned d = 0; d < input.Size(0); d += 1)
+                coords[2] = h;
+                for (unsigned w = 0; w < input.Size(1); w += 1)
                 {
-                    coords[0] = d;
-                    if(mode == Relu6All::fwd_bf16)
+                    coords[1] = w;
+                    for (unsigned d = 0; d < input.Size(0); d += 1)
                     {
-                        float x = (float)input.ElementAt(coords);
-                        float tmp_x = floatTobf16ToFloat(x);
-                        float y = (tmp_x < 0.0f) ? 0 : tmp_x;
-                        float z = (y > 6.0f) ? 6.0 : y;
-                        output.SetElement(coords, z);
-                    }
-                    else if (mode == Relu6All::bwd_bf16)
-                    {
+                        coords[0] = d;
+                        if(mode == Relu6All::fwd_bf16)
+                        {
+                            float x = (float)input.ElementAt(coords);
+                            float tmp_x = floatTobf16ToFloat(x);
+                            float y = (tmp_x < 0.0f) ? 0 : tmp_x;
+                            float z = (y > 6.0f) ? 6.0 : y;
+                            output.SetElement(coords, z);
+                        }
+                        else if (mode == Relu6All::bwd_bf16)
+                        {
 
-                        float g = (float)gradin.ElementAt(coords);
-                        float tmp_g = floatTobf16ToFloat(g);
-                        float x = input.ElementAt(coords);
-                        float tmp_x = floatTobf16ToFloat(x);
-                        float y = (tmp_x < 0.0f) ? 0 : tmp_x;
-                        x = (y >= 6.0f) ? 0.0 : y;
-                        y = (x > 0.0f) ? 1 : 0;
-                        y = y * tmp_g;
-                        float tmp_y = floatTobf16ToFloat(y);
+                            float g = (float)gradin.ElementAt(coords);
+                            float tmp_g = floatTobf16ToFloat(g);
+                            float x = input.ElementAt(coords);
+                            float tmp_x = floatTobf16ToFloat(x);
+                            float y = (tmp_x < 0.0f) ? 0 : tmp_x;
+                            x = (y >= 6.0f) ? 0.0 : y;
+                            y = (x > 0.0f) ? 1 : 0;
+                            y = y * tmp_g;
+                            float tmp_y = floatTobf16ToFloat(y);
 
-                        output.SetElement(coords, tmp_y);
+                            output.SetElement(coords, tmp_y);
+                        }
                     }
                 }
             }
@@ -111,20 +119,21 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
     const int width  = 5;
     const int depth  = 100;
     const int batch  = 2;
+    const int fifthdim  = 1;
 
-    unsigned int fmInitializer[] = {depth, width, height, batch};
+    unsigned int fmInitializer[] = {depth, width, height, batch, fifthdim};
     unsigned kernelCount;
     gcapi::GlueCodeReturn_t result;
     char**   kernelNames = nullptr;
 
     if((NameofKernel == GAUDI_KERNEL_RELU6_FWD_F32) || (NameofKernel == GAUDI_KERNEL_RELU6_BWD_F32))
     {
-        float_4DTensor gradin(fmInitializer);
+        float_5DTensor gradin(fmInitializer);
         gradin.InitRand(-10.0f, 10.0f);    
-        float_4DTensor input(fmInitializer);
+        float_5DTensor input(fmInitializer);
         input.InitRand(-10.0f, 10.0f);
-        float_4DTensor output(fmInitializer);
-        float_4DTensor output_ref(fmInitializer);
+        float_5DTensor output(fmInitializer);
+        float_5DTensor output_ref(fmInitializer);
 
         // generate input for query call
         m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
@@ -201,12 +210,12 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
     }
     else if ((NameofKernel == GAUDI_KERNEL_RELU6_FWD_BF16) || (NameofKernel == GAUDI_KERNEL_RELU6_BWD_BF16))
     {
-        bfloat16_4DTensor gradin(fmInitializer);
+        bfloat16_5DTensor gradin(fmInitializer);
         gradin.InitRand(-10.0f, 10.0f);    
-        bfloat16_4DTensor input(fmInitializer);
+        bfloat16_5DTensor input(fmInitializer);
         input.InitRand(-10.0f, 10.0f);
-        bfloat16_4DTensor output(fmInitializer);
-        bfloat16_4DTensor output_ref(fmInitializer);
+        bfloat16_5DTensor output(fmInitializer);
+        bfloat16_5DTensor output_ref(fmInitializer);
 
         // generate input for query call
         m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;

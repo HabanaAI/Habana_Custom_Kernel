@@ -26,7 +26,7 @@ extern unsigned char _binary___spatial_conv_f32_o_end;
  gcapi::GlueCodeReturn_t SpatialConvF32::GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME])
  {
-     strcpy(kernelName,"spatial_conv_f32");
+     strcpy(kernelName,"custom_spatial_conv_f32");
      return gcapi::GLUE_SUCCESS;
  }
 
