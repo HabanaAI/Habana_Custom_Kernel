@@ -133,12 +133,28 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
     m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
 
-    SpatialConvF32 kernelClass;
-    // make the call into the glue code.
-    gcapi::GlueCodeReturn_t result = kernelClass.GetGcDefinitions(&m_in_defs,&m_out_defs);
+    char**   kernelNames = nullptr;
+    unsigned kernelCount = 0;
+    gcapi::GlueCodeReturn_t result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    kernelNames = new char*[kernelCount];
+    for (unsigned i = 0; i < kernelCount; i++)
+    {
+        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+    }    
+    result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
     if (result != gcapi::GLUE_SUCCESS)
     {
-        std::cout << "glue test failed!! " << result << std::endl;
+        std::cout << "Can't get kernel name!! " << result << std::endl;
+        ReleaseKernelNames(kernelNames, kernelCount);
+        return -1;
+    }
+
+    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_SPATIAL_CONV_F32]);
+    result  = HabanaKernel(&m_in_defs,&m_out_defs);
+    if (result != gcapi::GLUE_SUCCESS)
+    {
+        std::cout << "Glue test failed, can't load kernel " << result << std::endl;
+        ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
@@ -149,6 +165,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
     vec.push_back(ofm.GetTensorDescriptor());
     // execute a simulation of the kernel using TPC simulator,
     TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
+    ReleaseKernelNames(kernelNames, kernelCount);
     std::cout << std::endl;
     std::cout << "ofm data shown below " << std::endl;
     ofm.Print(0);

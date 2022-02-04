@@ -93,7 +93,7 @@ int main(int argc, char** argv)
         testSoftMaxBF16.SetUp();
         result = testSoftMaxBF16.runTest();
         testSoftMaxBF16.TearDown();
-        testCount ++;
+        testCount += 2;
         if (result != 0)
         {
             return result;
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
         testCaseGaudi.SetUp();
         result = testCaseGaudi.runTest();
         testCaseGaudi.TearDown();
-        testCount ++;
+        testCount += 2;
         if (result != 0)
         {
             return result;
@@ -151,7 +151,7 @@ int main(int argc, char** argv)
         }
     }
 
-    if(argc == 1 ||
+    /*if(argc == 1 ||
         (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
         && (strcmp(argv[2],"Gaudi") ==0)))  ||
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
@@ -166,7 +166,7 @@ int main(int argc, char** argv)
         {
             return result;
         }
-    }
+    }*/
 
     if(argc == 1 ||
         (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))

@@ -379,6 +379,13 @@ int AvgPool2DF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
             return -1;
         }
     }
+
+    if (m_out_defs.auxiliaryTensors[0].pData)
+    {
+        delete [] (int8_t*)m_out_defs.auxiliaryTensors[0].pData;
+        m_out_defs.auxiliaryTensors[0].pData = NULL;
+    }
+
     if(NameofKernel == GAUDI_KERNEL_AVG_POOL_2D_FWD_F32)
         std::cout << "AvgPool2DFwdF32Test pass!!" << std::endl;
     else
