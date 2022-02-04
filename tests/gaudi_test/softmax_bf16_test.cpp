@@ -198,6 +198,12 @@ void SoftMaxBF16Test::softmax_reference_implementation(
             return -1;
         }
     }
+    if (m_out_defs.auxiliaryTensors[0].pData)
+    {
+        delete [] (int8_t*)m_out_defs.auxiliaryTensors[0].pData;
+        m_out_defs.auxiliaryTensors[0].pData = NULL;
+    }
+
     std::cout << "Softmax BF16 FCD test pass!!" << std::endl;
 
     // Test for axis 1 softmax kernel
