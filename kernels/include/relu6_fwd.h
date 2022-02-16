@@ -76,7 +76,7 @@ void main(tensor input, tensor output)
           ifmCoords[height] = h;
 
 #pragma loop_taken
-#pragma unroll(widthStep)
+#pragma unroll 4
           for (int w = widthStart; w < widthEnd; w += 1) {
             ifmCoords[width] = w;
 
