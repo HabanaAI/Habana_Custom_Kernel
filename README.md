@@ -14,7 +14,7 @@ TPC is designed for workloads that do not map to MME (Matrix Multiplication Engi
 ## Install Habanatools For Ubuntu
 To retrieve the package please visit [Habana Vault](https://vault.habana.ai/ui/repos/tree/General/debian%2Fbionic%2Fpool%2Fmain%2Fh%2Fhabanatools) and download the latest release package for Ubuntu 18.04. You can find different packages for different OS you used. 
 ```  
-  sudo dpkg -i ./habanatools_1.0.0-532_amd64.deb
+  sudo dpkg -i ./habanatools_1.3.0-415_amd64.deb
 ```
 - Once installed the following files will be added to your machine 
   
