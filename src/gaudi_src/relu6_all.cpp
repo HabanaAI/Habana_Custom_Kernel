@@ -26,17 +26,35 @@ extern unsigned char _binary___relu6_fwd_bf16_o_end;
 extern unsigned char _binary___relu6_bwd_bf16_o_start;
 extern unsigned char _binary___relu6_bwd_bf16_o_end;
 
+extern unsigned char _binary___relu_fwd_f32_o_start;
+extern unsigned char _binary___relu_fwd_f32_o_end;
+extern unsigned char _binary___relu_bwd_f32_o_start;
+extern unsigned char _binary___relu_bwd_f32_o_end;
+extern unsigned char _binary___relu_fwd_bf16_o_start;
+extern unsigned char _binary___relu_fwd_bf16_o_end;
+extern unsigned char _binary___relu_bwd_bf16_o_start;
+extern unsigned char _binary___relu_bwd_bf16_o_end;
+
+
 gcapi::GlueCodeReturn_t Relu6All::GetKernelName(
         char kernelName [gcapi::MAX_NODE_NAME], Relu6_mode_t mode)
 {
-    if(mode == fwd_f32)
+    if(mode == relu6_fwd_f32)
         strcpy(kernelName,"custom_relu6_fwd_f32");
-    else if(mode == bwd_f32)
+    else if(mode == relu6_bwd_f32)
         strcpy(kernelName,"custom_relu6_bwd_f32");
-    else if(mode == fwd_bf16)
+    else if(mode == relu6_fwd_bf16)
         strcpy(kernelName,"custom_relu6_fwd_bf16");
-    else if(mode == bwd_bf16)
+    else if(mode == relu6_bwd_bf16)
         strcpy(kernelName,"custom_relu6_bwd_bf16");
+    else if(mode == relu_fwd_f32)
+        strcpy(kernelName,"custom_relu_fwd_f32");
+    else if(mode == relu_bwd_f32)
+        strcpy(kernelName,"custom_relu_bwd_f32");
+    else if(mode == relu_fwd_bf16)
+        strcpy(kernelName,"custom_relu_fwd_bf16");
+    else if(mode == relu_bwd_bf16)
+        strcpy(kernelName,"custom_relu_bwd_bf16");
     else
         return gcapi::GLUE_NODE_NOT_FOUND;
     return gcapi::GLUE_SUCCESS;
@@ -52,7 +70,7 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     *   Stage I - validate input
     **************************************************************************************/
     //validate correct amount of input tensors
-    if(m_mode == fwd_f32 || m_mode == fwd_bf16)
+    if(m_mode == relu6_fwd_f32 || m_mode == relu6_fwd_bf16 || m_mode == relu_fwd_f32 || m_mode == relu_fwd_bf16)
     {
         if (in_defs->inputTensorNr != 1)
         {
@@ -76,7 +94,7 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     }
 
     // validate input and output data type
-    if(m_mode == fwd_f32 || m_mode == bwd_f32)
+    if(m_mode == relu6_fwd_f32 || m_mode == relu6_bwd_f32 || m_mode == relu_fwd_f32 || m_mode == relu_bwd_f32)
     {
         if (in_defs->inputTensors[0].dataType != gcapi::DATA_F32 ||
             in_defs->outputTensors[0].dataType != gcapi::DATA_F32)
@@ -116,7 +134,7 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     *    the dimensions of the output tensor, up to dim 0.
     **************************************************************************************/
     int elementsInVec;
-    if(m_mode == fwd_f32 || m_mode == bwd_f32)
+    if(m_mode == relu6_fwd_f32 || m_mode == relu6_bwd_f32 || m_mode == relu_fwd_f32 || m_mode == relu_bwd_f32)
         elementsInVec = 64;
     else
         elementsInVec = 128;
@@ -227,22 +245,39 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     unsigned char *binary_kernel;
     switch (m_mode)
     {
-        case fwd_f32:
+        case relu6_fwd_f32:
             IsaSize = (&_binary___relu6_fwd_f32_o_end - &_binary___relu6_fwd_f32_o_start);
             binary_kernel = &_binary___relu6_fwd_f32_o_start;
             break;
-        case bwd_f32:
+        case relu6_bwd_f32:
             IsaSize = (&_binary___relu6_bwd_f32_o_end - &_binary___relu6_bwd_f32_o_start);
             binary_kernel = &_binary___relu6_bwd_f32_o_start;
             break;
-        case fwd_bf16:
+        case relu6_fwd_bf16:
             IsaSize = (&_binary___relu6_fwd_bf16_o_end - &_binary___relu6_fwd_bf16_o_start);
             binary_kernel = &_binary___relu6_fwd_bf16_o_start;
             break;
-        case bwd_bf16:
+        case relu6_bwd_bf16:
             IsaSize = (&_binary___relu6_bwd_bf16_o_end - &_binary___relu6_bwd_bf16_o_start);
             binary_kernel = &_binary___relu6_bwd_bf16_o_start;
             break;
+        case relu_fwd_f32:
+            IsaSize = (&_binary___relu_fwd_f32_o_end - &_binary___relu_fwd_f32_o_start);
+            binary_kernel = &_binary___relu_fwd_f32_o_start;
+            break;
+        case relu_bwd_f32:
+            IsaSize = (&_binary___relu_bwd_f32_o_end - &_binary___relu_bwd_f32_o_start);
+            binary_kernel = &_binary___relu_bwd_f32_o_start;
+            break;
+        case relu_fwd_bf16:
+            IsaSize = (&_binary___relu_fwd_bf16_o_end - &_binary___relu_fwd_bf16_o_start);
+            binary_kernel = &_binary___relu_fwd_bf16_o_start;
+            break;
+        case relu_bwd_bf16:
+            IsaSize = (&_binary___relu_bwd_bf16_o_end - &_binary___relu_bwd_bf16_o_start);
+            binary_kernel = &_binary___relu_bwd_bf16_o_start;
+            break;
+
         default:
             break;
     

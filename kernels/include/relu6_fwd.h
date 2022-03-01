@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs. All rights reserved.
+Copyright (c) 2022 Habana Labs. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -22,9 +22,6 @@ void main(tensor input, tensor output)
   const int height = 2;
   const int batch = 3;
   const int fifthDim = 4;
-
-  SCALAR inputZeroPoint = 0.f;
-  SCALAR threshold = 0.f;
 
   const int5 indexSpaceStart = get_index_space_offset();
   const int5 indexSpaceEnd = get_index_space_size() + indexSpaceStart;
@@ -81,9 +78,14 @@ void main(tensor input, tensor output)
             ifmCoords[width] = w;
 
             x00 = v_ld_tnsr_i(ifmCoords, input);
-            o00 = v_sel_leq_v_s_v_v(x00, threshold, inputZeroPoint, x00);
+            o00 = v_sel_leq_v_s_v_v(x00, 0.0, 0.0, x00);
+#if defined(USE_RELU6)
             o00 = v_sel_geq_v_s_v_v_b(o00, (SCALAR)6.0, (SCALAR)6.0, o00, o00,
                                        1, 0);
+#else
+            o00 = v_sel_geq_v_s_v_v_b(o00, (SCALAR)6.0, (SCALAR)6.0, o00, o00,
+                                       0, 0);
+#endif
             // store
             st_tnsr_i_v(ifmCoords, output, o00);
           }

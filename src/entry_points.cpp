@@ -59,14 +59,22 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            sparseLengthsSumInstance.GetKernelName(names[GAUDI_KERNEL_SPARSE_LEN_SUM_BF16]);
            CustomdivFwdF32 customdivFwdF32Instance;
            customdivFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_CUSTOMDIV_FWD_F32]);
-           Relu6All Relu6FwdF32Instance(Relu6All::fwd_f32);
-           Relu6FwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_F32], Relu6All::fwd_f32);
-           Relu6All Relu6BwdF32Instance(Relu6All::bwd_f32);
-           Relu6BwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_F32], Relu6All::bwd_f32);
-           Relu6All Relu6FwdBF16Instance(Relu6All::fwd_bf16);
-           Relu6FwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_BF16], Relu6All::fwd_bf16);
-           Relu6All Relu6BwdBF16Instance(Relu6All::bwd_bf16);
-           Relu6BwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_BF16], Relu6All::bwd_bf16);
+           Relu6All Relu6FwdF32Instance(Relu6All::relu6_fwd_f32);
+           Relu6FwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_F32], Relu6All::relu6_fwd_f32);
+           Relu6All Relu6BwdF32Instance(Relu6All::relu6_bwd_f32);
+           Relu6BwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_F32], Relu6All::relu6_bwd_f32);
+           Relu6All Relu6FwdBF16Instance(Relu6All::relu6_fwd_bf16);
+           Relu6FwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_BF16], Relu6All::relu6_fwd_bf16);
+           Relu6All Relu6BwdBF16Instance(Relu6All::relu6_bwd_bf16);
+           Relu6BwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_BF16], Relu6All::relu6_bwd_bf16);
+           Relu6All ReluFwdF32Instance(Relu6All::relu_fwd_f32);
+           ReluFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU_FWD_F32], Relu6All::relu_fwd_f32);
+           Relu6All ReluBwdF32Instance(Relu6All::relu_bwd_f32);
+           ReluBwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU_BWD_F32], Relu6All::relu_bwd_f32);
+           Relu6All ReluFwdBF16Instance(Relu6All::relu_fwd_bf16);
+           ReluFwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU_FWD_BF16], Relu6All::relu_fwd_bf16);
+           Relu6All ReluBwdBF16Instance(Relu6All::relu_bwd_bf16);
+           ReluBwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU_BWD_BF16], Relu6All::relu_bwd_bf16);
            MatrixMulFwdF32 MatrixMulFwdF32Instance;
            MatrixMulFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_MATRIXMUL_FWD_F32]);
            SpatialConvF32 spatialConvInstance;
@@ -166,32 +174,60 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     {
         return customdivFwdF32Instance.GetGcDefinitions(params,instance);
     }
-    Relu6All Relu6FwdF32Instance(Relu6All::fwd_f32);
-    Relu6FwdF32Instance.GetKernelName(kernelName, Relu6All::fwd_f32);
+    Relu6All Relu6FwdF32Instance(Relu6All::relu6_fwd_f32);
+    Relu6FwdF32Instance.GetKernelName(kernelName, Relu6All::relu6_fwd_f32);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return Relu6FwdF32Instance.GetGcDefinitions(params,instance);
     }
 
-    Relu6All Relu6BwdF32Instance(Relu6All::bwd_f32);
-    Relu6BwdF32Instance.GetKernelName(kernelName, Relu6All::bwd_f32);
+    Relu6All Relu6BwdF32Instance(Relu6All::relu6_bwd_f32);
+    Relu6BwdF32Instance.GetKernelName(kernelName, Relu6All::relu6_bwd_f32);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return Relu6BwdF32Instance.GetGcDefinitions(params,instance);
     }
 
-    Relu6All Relu6FwdBF16Instance(Relu6All::fwd_bf16);
-    Relu6FwdBF16Instance.GetKernelName(kernelName, Relu6All::fwd_bf16);
+    Relu6All Relu6FwdBF16Instance(Relu6All::relu6_fwd_bf16);
+    Relu6FwdBF16Instance.GetKernelName(kernelName, Relu6All::relu6_fwd_bf16);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return Relu6FwdBF16Instance.GetGcDefinitions(params,instance);
     }
 
-    Relu6All Relu6BwdBF16Instance(Relu6All::bwd_bf16);
-    Relu6BwdBF16Instance.GetKernelName(kernelName, Relu6All::bwd_bf16);
+    Relu6All Relu6BwdBF16Instance(Relu6All::relu6_bwd_bf16);
+    Relu6BwdBF16Instance.GetKernelName(kernelName, Relu6All::relu6_bwd_bf16);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return Relu6BwdBF16Instance.GetGcDefinitions(params,instance);
+    }
+
+    Relu6All ReluFwdF32Instance(Relu6All::relu_fwd_f32);
+    ReluFwdF32Instance.GetKernelName(kernelName, Relu6All::relu_fwd_f32);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return ReluFwdF32Instance.GetGcDefinitions(params,instance);
+    }
+
+    Relu6All ReluBwdF32Instance(Relu6All::relu_bwd_f32);
+    ReluBwdF32Instance.GetKernelName(kernelName, Relu6All::relu_bwd_f32);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return ReluBwdF32Instance.GetGcDefinitions(params,instance);
+    }
+
+    Relu6All ReluFwdBF16Instance(Relu6All::relu_fwd_bf16);
+    ReluFwdBF16Instance.GetKernelName(kernelName, Relu6All::relu_fwd_bf16);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return ReluFwdBF16Instance.GetGcDefinitions(params,instance);
+    }
+
+    Relu6All ReluBwdBF16Instance(Relu6All::relu_bwd_bf16);
+    ReluBwdBF16Instance.GetKernelName(kernelName, Relu6All::relu_bwd_bf16);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return ReluBwdBF16Instance.GetGcDefinitions(params,instance);
     }
 
     MatrixMulFwdF32 MatrixMulFwdF32Instance;

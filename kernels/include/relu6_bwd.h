@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs. All rights reserved.
+Copyright (c) 2022 Habana Labs. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -66,9 +66,8 @@ void main(tensor grad, tensor input, tensor output)
     const int fifthDimStart = indexSpaceStart[fifthDim];
     const int fifthDimEnd = indexSpaceEnd[fifthDim];
 
-    SCALAR threshold = 0.f;
     // bool256 pred0, pred1, pred2, pred3;
-    VECTOR threshold_v = threshold;
+    VECTOR threshold_v = 0.f;
     VECTOR x0, x1, x2, x3;
     VECTOR outp0, outp1, outp2, outp3;
     VECTOR grad0, grad1, grad2, grad3;
@@ -111,11 +110,17 @@ void main(tensor grad, tensor input, tensor output)
                         outp1 = v_sel_grt_v_s_v_v(x1, threshold_v, grad1, 0);
                         outp2 = v_sel_grt_v_s_v_v(x2, threshold_v, grad2, 0);
                         outp3 = v_sel_grt_v_s_v_v(x3, threshold_v, grad3, 0);
-
+#if defined(USE_RELU6)
                         outp0 = v_sel_less_v_s_v_v_b(x0, (SCALAR)6.0, outp0, 0, outp0, 1, 0);
                         outp1 = v_sel_less_v_s_v_v_b(x1, (SCALAR)6.0, outp1, 0, outp1, 1, 0);
                         outp2 = v_sel_less_v_s_v_v_b(x2, (SCALAR)6.0, outp2, 0, outp2, 1, 0);
                         outp3 = v_sel_less_v_s_v_v_b(x3, (SCALAR)6.0, outp3, 0, outp3, 1, 0);
+#else
+                        outp0 = v_sel_less_v_s_v_v_b(x0, (SCALAR)6.0, outp0, 0, outp0, 0, 0);
+                        outp1 = v_sel_less_v_s_v_v_b(x1, (SCALAR)6.0, outp1, 0, outp1, 0, 0);
+                        outp2 = v_sel_less_v_s_v_v_b(x2, (SCALAR)6.0, outp2, 0, outp2, 0, 0);
+                        outp3 = v_sel_less_v_s_v_v_b(x3, (SCALAR)6.0, outp3, 0, outp3, 0, 0);
+#endif
 
                         //return NAN if grad == NAN, checking it by comparing grad greater than INF
                         outp0 = (VECTOR)v_sel_grt_b(grad0, outp0);

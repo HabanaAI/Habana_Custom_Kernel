@@ -15,4 +15,5 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #define BFLOAT16
+#define USE_RELU6
 #include "relu6_fwd.h"

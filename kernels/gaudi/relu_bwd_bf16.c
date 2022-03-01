@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs. All rights reserved.
+Copyright (c) 2022 Habana Labs. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -13,42 +13,6 @@ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCL
 OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
+#define BFLOAT16
+#include "relu6_bwd.h"
 
-#ifndef _RELU6_ALL_HPP
-#define _RELU6_ALL_HPP
-
-#include "gc_interface.h"
-
-class Relu6All
-{
-public:
-    typedef enum _Relu6_mode_t
-    {
-        relu6_fwd_f32,
-        relu6_bwd_f32,
-        relu6_fwd_bf16,
-        relu6_bwd_bf16,
-        relu_fwd_f32,
-        relu_bwd_f32,
-        relu_fwd_bf16,
-        relu_bwd_bf16
-    } Relu6_mode_t;
-
-    Relu6All(Relu6_mode_t mode=relu6_fwd_f32) {m_mode = mode;}
-    virtual ~Relu6All() {}
-
-    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
-            gcapi::HabanaKernelParams_t* params,
-            gcapi::HabanaKernelInstantiation_t* kernel);
-
-    virtual gcapi::GlueCodeReturn_t GetKernelName(
-            char kernelName [gcapi::MAX_NODE_NAME], Relu6_mode_t mode);
-
-private:
-    Relu6_mode_t m_mode;
-    Relu6All(const Relu6All& other) = delete;
-    Relu6All& operator=(const Relu6All& other) = delete;
-};
-
-
-#endif //_RELU6_ALL_HPP

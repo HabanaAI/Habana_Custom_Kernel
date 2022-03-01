@@ -56,6 +56,10 @@ int main(int argc, char** argv)
             "Relu6BwdF32                Run Relu6BwdF32 only   " << std::endl <<
             "Relu6FwdBF16               Run Relu6FwdBF16 only   " << std::endl <<
             "Relu6BwdBF16               Run Relu6BwdBF16 only   " << std::endl <<
+            "ReluFwdF32                 Run ReluFwdF32 only   " << std::endl <<
+            "ReluBwdF32                 Run ReluBwdF32 only   " << std::endl <<
+            "ReluFwdBF16                Run ReluFwdBF16 only   " << std::endl <<
+            "ReluBwdBF16                Run ReluBwdBF16 only   " << std::endl <<
             "MatrixMulFwdF32Test        Run MatrixMulFwdF32Test only   " << std::endl <<
             "SpatialConvF32Test         Run SpatialConvF32Test only   " << std::endl <<
             "SinF32Test                 Run SinF32Test only   " << std::endl <<
@@ -243,6 +247,71 @@ int main(int argc, char** argv)
         testRelu6.SetUp();
         result = testRelu6.runTest(GAUDI_KERNEL_RELU6_BWD_BF16);
         testRelu6.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    Relu6AllTest testRelu;
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"ReluFwdF32") ==0))))
+    {
+        testRelu.SetUp();
+        result = testRelu.runTest(GAUDI_KERNEL_RELU_FWD_F32);
+        testRelu.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"ReluBwdF32") ==0))))
+    {
+        testRelu.SetUp();
+        result = testRelu.runTest(GAUDI_KERNEL_RELU_BWD_F32);
+        testRelu.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"ReluFwdBF16") ==0))))
+    {
+        testRelu.SetUp();
+        result = testRelu.runTest(GAUDI_KERNEL_RELU_FWD_BF16);
+        testRelu.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"ReluBwdBF16") ==0))))
+    {
+        testRelu.SetUp();
+        result = testRelu.runTest(GAUDI_KERNEL_RELU_BWD_BF16);
+        testRelu.TearDown();
         testCount ++;
         if (result != 0)
         {
