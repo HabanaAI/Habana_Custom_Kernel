@@ -6,7 +6,7 @@ This repository provides the examples to write and build Habana custom kernels u
 * [Install Habanatools For Ubuntu](#install-habanatools-for-ubuntu)
 * [Template Examples](#template-examples)
 * [Kernels Performance Measure](#kernels-performance-measure)
-* [Tensorflow Custom Ops](#tensorflow-custom-ops)
+* [Custom Ops for Tensorflow and PyTorch](#custom-ops-for-tensorflow-and-pytorch)
 
 ## TPC Kernels Overview
 The Tensor Processor Core™ (**TPC**) is a fully programmable VLIW4 processor designed to execute non-linear deep learning operators. It is embedded in Habana’s Gaudi deep learning accelerator. Habana’s Gaudi SoC contains numerous TPC cores all operating in parallel, with each core running a single thread. The TPC is designed with very long instruction word (VLIW) architecture. It has a wide single instruction multiple data (SIMD) vector unit that support 2048-bit SIMD operations with data types such as float, bfloat16, INT16, INT32 and INT8. In each cycle, the TPC’s ALU (Arithmetic Logic Unit) can execute up to 64 floats/INT32 ops, or 128 INT16 ops, or 256 INT8 ops.
@@ -72,5 +72,5 @@ For more details about TPC kernel writing, please refer to the [TPC User Guide](
 ## Kernels Performance Measure
 The new test core feature can be used to measure the custom kernels performance when set env variable TPC_RUNNER (make sure hardware and driver are installed correctly). A json file will be created after running the test. You can load the json file to https://hltv.habana.ai/ and visually check the performance. We also provide a script (run_kernel_perf_test.py) to measure and report the TPC custom kernel performance numbers. Please check the scripts/ in this repo to find more details how to use the script.
 
-## Tensorflow Custom Ops
-The user also can develop their own TF custom ops using their own TPC kernels. In this custom kernel project, we provide several custom kernel examples, such as custom_div (division), relu6_fwd (relu6 forward path) and relu6_bwd (relu6 backward path). Please visit [TensorFlow Custom OPs Examples](https://github.com/HabanaAI/Model-References/tree/master/TensorFlow/examples/custom_op) for more details and make sure add your custom kernel path to environment variable GC_KERNEL_PATH, like export GC_KERNEL_PATH=/path/to/your_so/libcustom_tpc_perf_lib.so:/usr/lib/habanalabs/libtpc_kernels.so.
+## Custom Ops for Tensorflow and PyTorch
+The user also can develop their own Tensorflow and PyTorch custom ops using their created TPC kernels. In this custom kernel project, we provide several custom kernel examples, such as custom_div (division), relu6_fwd/relu_fwd (relu6/relu forward path) and relu6_bwd/relu_bwd (relu6/relu backward path). Please visit [TensorFlow Custom OPs Examples](https://github.com/HabanaAI/Model-References/tree/master/TensorFlow/examples/custom_op) and [PyTorch Custom Ops Examples](https://github.com/HabanaAI/Model-References/tree/master/PyTorch/examples/custom_op/custom_relu) for more details and make sure add your custom kernel path to environment variable GC_KERNEL_PATH, like export GC_KERNEL_PATH=/path/to/your_so/libcustom_tpc_perf_lib.so:/usr/lib/habanalabs/libtpc_kernels.so.
