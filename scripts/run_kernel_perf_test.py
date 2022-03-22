@@ -77,9 +77,11 @@ def get_kernel_time(args):
             matches = re.findall(regex, lines[0].strip(), re.MULTILINE)
             scale = matches[0]
 
+            tpcindex = -1
             for i in range(len(lines)-3):
-                self_time = lines[3+i].strip().split()[1].split(',')[3]
-                avg_time, Wall_time = lines[3+i].strip().split()[1].split(',')[-2:]
+                lineSizeinWord = len(lines[3+i].strip().split())
+                self_time = lines[3+i].strip().split()[lineSizeinWord-1].split(',')[-5]
+                avg_time, Wall_time = lines[3+i].strip().split()[lineSizeinWord-1].split(',')[-2:]
           
                 self_time = float(self_time)
                 avg_time = float(avg_time)
@@ -93,8 +95,10 @@ def get_kernel_time(args):
                     self_time = int(self_time * 1000000)
                     avg_time = int(avg_time * 1000000)
                     Wall_time = int(Wall_time * 1000000)
-
-                print('At TPC%d SelfTime = %d ns, AvgTime = %d ns, WallTime = %d ns' % (float(i), float(self_time), float(avg_time), float(Wall_time)), flush=True)
+                    
+                if lineSizeinWord < 5:
+                    tpcindex = tpcindex + 1
+                    print('At TPC%d SelfTime = %d ns, AvgTime = %d ns, WallTime = %d ns' % (float(tpcindex), float(self_time), float(avg_time), float(Wall_time)), flush=True)
 
     return (self_time, avg_time, Wall_time)
 
