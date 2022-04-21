@@ -28,6 +28,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "sin_f32.hpp"
 #include "add_f32.hpp"
 #include "avg_pool_2d_f32.hpp"
+#include "avg_pool_2d_f32_gaudi2.hpp"
 
 #include "entry_points.hpp"
 
@@ -96,6 +97,23 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
             *kernelCount = GAUDI_KERNEL_MAX_EXAMPLE_KERNEL;
         }
     }
+    else if (deviceId == gcapi::DEVICE_ID_GAUDI2)
+    {
+        if (names != nullptr )
+        {
+           AvgPool2dF32Gaudi2 avgpool2dfwdf32g2Instance(AvgPool2dF32Gaudi2::fwd);
+           avgpool2dfwdf32g2Instance.GetKernelName(names[GAUDI2_KERNEL_AVG_POOL_2D_FWD_F32]);
+           AvgPool2dF32Gaudi2 avgpool2dbwdf32g2Instance(AvgPool2dF32Gaudi2::bwd);
+           avgpool2dbwdf32g2Instance.GetKernelName(names[GAUDI2_KERNEL_AVG_POOL_2D_BWD_F32]);
+
+        }
+
+        if (kernelCount != nullptr)
+        {
+            // currently the library support 8 kernel.
+            *kernelCount = GAUDI2_KERNEL_MAX_EXAMPLE_KERNEL;
+        }
+    }
     else
     {
         if (kernelCount != nullptr)
@@ -114,6 +132,8 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
 {
     char kernelName [gcapi::MAX_NODE_NAME];
 
+    ///////---Gaudi---
+    ///////////////////////////////
     PrintfTestKernel printfInstance;
     printfInstance.GetKernelName(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)
@@ -270,6 +290,22 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return avgpool2dbwdf32Instance.GetGcDefinitions(params, instance);
+    }
+
+    /////// --- Gaudi2 
+    ///////////////////////////////
+    AvgPool2dF32Gaudi2 avgpool2dfwdf32g2Instance(AvgPool2dF32Gaudi2::fwd);
+    avgpool2dfwdf32g2Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return avgpool2dfwdf32g2Instance.GetGcDefinitions(params, instance);
+    }
+
+    AvgPool2dF32Gaudi2 avgpool2dbwdf32g2Instance(AvgPool2dF32Gaudi2::bwd);
+    avgpool2dbwdf32g2Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return avgpool2dbwdf32g2Instance.GetGcDefinitions(params, instance);
     }
 
     return gcapi::GLUE_NODE_NOT_FOUND;

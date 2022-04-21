@@ -49,6 +49,16 @@ typedef enum
     GAUDI_KERNEL_MAX_EXAMPLE_KERNEL
 
 } Gaudi_Kernel_Name_e;
+
+typedef enum
+{
+    GAUDI2_KERNEL_AVG_POOL_2D_FWD_F32 = 0,
+    GAUDI2_KERNEL_AVG_POOL_2D_BWD_F32,
+
+    GAUDI2_KERNEL_MAX_EXAMPLE_KERNEL
+
+} Gaudi2_Kernel_Name_e;
+
 /*
  ***************************************************************************************************
  *   @brief This function returns exported kernel names
