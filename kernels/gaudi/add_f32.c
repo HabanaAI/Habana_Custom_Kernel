@@ -101,7 +101,7 @@ void main(tensor input0, tensor input1, tensor output)
 
                     for (int w = widthStart + widthStep; w < widthEnd; w += widthStep)
                     {
-                        o0  = v_f32_add_v_v(x00, x01);
+                        o0  = v_f32_add_b(x00, x01);
                         x00 = v_f32_ld_tnsr_b(ifmCoords, input0);
                         ofmCoords[width] += 1;
 
@@ -109,7 +109,7 @@ void main(tensor input0, tensor input1, tensor output)
                         ifmCoords[width] += 1;
                         v_f32_st_tnsr(ofmCoords, output, o0);
 
-                        o1  = v_f32_add_v_v(x10, x11);
+                        o1  = v_f32_add_b(x10, x11);
                         x10 = v_f32_ld_tnsr_b(ifmCoords, input0);
                         ofmCoords[width] += 1;
 
@@ -117,7 +117,7 @@ void main(tensor input0, tensor input1, tensor output)
                         ifmCoords[width] += 1;
                         v_f32_st_tnsr(ofmCoords, output, o1);
 
-                        o2  = v_f32_add_v_v(x20, x21);
+                        o2  = v_f32_add_b(x20, x21);
                         x20 = v_f32_ld_tnsr_b(ifmCoords, input0);
                         ofmCoords[width] += 1;
 
@@ -125,7 +125,7 @@ void main(tensor input0, tensor input1, tensor output)
                         ifmCoords[width] += 1;
                         v_f32_st_tnsr(ofmCoords, output, o2);
 
-                        o3  = v_f32_add_v_v(x30, x31);
+                        o3  = v_f32_add_b(x30, x31);
                         x30 = v_f32_ld_tnsr_b(ifmCoords, input0);
                         ofmCoords[width] += 1;
 
@@ -134,18 +134,18 @@ void main(tensor input0, tensor input1, tensor output)
                         v_f32_st_tnsr(ofmCoords, output, o3);
                     }
 
-                    o0 = v_f32_add_v_v(x00, x01);
+                    o0 = v_f32_add_b(x00, x01);
                     ofmCoords[width] += 1;
 
-                    o1 = v_f32_add_v_v(x10, x11);
+                    o1 = v_f32_add_b(x10, x11);
                     v_f32_st_tnsr(ofmCoords, output, o0);
                     ofmCoords[width] += 1;
 
-                    o2 = v_f32_add_v_v(x20, x21);
+                    o2 = v_f32_add_b(x20, x21);
                     v_f32_st_tnsr(ofmCoords, output, o1);
                     ofmCoords[width] += 1;
 
-                    o3 = v_f32_add_v_v(x30, x31);
+                    o3 = v_f32_add_b(x30, x31);
                     v_f32_st_tnsr(ofmCoords, output, o2);
                     ofmCoords[width] += 1;
 

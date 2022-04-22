@@ -17,7 +17,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include <algorithm>
 #include <sstream>
 
-#include "TPC.h" //TPC simulator header
 #include "test_base.hpp"
 #include "tpc_test_core_api.h"
 

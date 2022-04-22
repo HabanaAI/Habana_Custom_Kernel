@@ -20,7 +20,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "test_base.hpp"
 #include "tensor.h"
 #include "cast_gaudi.hpp"
-#include "ConvInterface.h"
 
 class CastGaudiTest : public TestBase
 {

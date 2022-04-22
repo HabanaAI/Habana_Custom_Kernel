@@ -18,27 +18,27 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #define VECTOR                      float64
 #define VECTOR_SIZE                 64
 typedef float                       SCALAR;
-#define v_ld_tnsr_i(a,b)            v_f32_ld_tnsr_i(a,b)
+#define v_ld_tnsr_i(a,b)            v_f32_ld_tnsr_b(a,b)
 #define v_sel_less_v_s_v_v(a,b,c,d) v_f32_sel_less_f32_b(a,b,c,d)
 #define v_sel_geq_v_s_v_v(a,b,c,d)    v_f32_sel_geq_f32_b(a,b,c,d)
 #define v_sel_grt_v_s_v_v(a,b,c,d)    v_f32_sel_grt_f32_b(a,b,c,d)
 #define v_sel_leq_v_s_v_v(a, b, c, d) v_f32_sel_leq_f32_b(a, b, c, d)
 #define v_sel_geq_v_s_v_v_b(a, b, c, d, i, p, o)  v_f32_sel_geq_f32_b(a, b, c, d, 0, i, p, o)
 #define v_sel_less_v_s_v_v_b(a, b, c, d, i, p, o) v_f32_sel_less_f32_b(a, b, c, d, 0, i, p, o)
-#define st_tnsr_i_v(a,b,c)          f32_st_tnsr_i_v(a,b,c)
+#define st_tnsr_i_v(a,b,c)          v_f32_st_tnsr(a,b,c)
 #endif
 
 #if defined(BFLOAT16)
 #define VECTOR                      bfloat128
 #define VECTOR_SIZE                 128
 typedef bf16                        SCALAR;
-#define v_ld_tnsr_i(a,b)            v_bf16_ld_tnsr_i(a,b)
+#define v_ld_tnsr_i(a,b)            v_bf16_ld_tnsr_b(a,b)
 #define v_sel_less_v_s_v_v(a,b,c,d) v_bf16_sel_less_bf16_b(a,b,c,d)
 #define v_sel_geq_v_s_v_v(a,b,c,d)    v_bf16_sel_geq_bf16_b(a,b,c,d)
 #define v_sel_grt_v_s_v_v(a,b,c,d)    v_bf16_sel_grt_bf16_b(a,b,c,d)
 #define v_sel_leq_v_s_v_v(a, b, c, d) v_bf16_sel_leq_bf16_b(a, b, c, d)
 #define v_sel_geq_v_s_v_v_b(a, b, c, d, i, p, o)  v_bf16_sel_geq_bf16_b(a, b, c, d, 0, i, p, o)
 #define v_sel_less_v_s_v_v_b(a, b, c, d, i, p, o) v_bf16_sel_less_bf16_b(a, b, c, d, 0, i, p, o)
-#define st_tnsr_i_v(a,b,c)          bf16_st_tnsr_i_v(a,b,c)
+#define st_tnsr_i_v(a,b,c)          v_bf16_st_tnsr(a,b,c)
 
 #endif

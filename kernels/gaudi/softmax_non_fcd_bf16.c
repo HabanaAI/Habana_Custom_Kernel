@@ -50,7 +50,7 @@ void main(
 
     int5 ifmCoords = { depthStart, widthStart, heightStart, batchStart, 0 };
 
-    bfloat128 zero_bf16 = v_bf16_mov_s(0.f);
+    bfloat128 zero_bf16 = 0.f;
 
     bfloat128 x;
     bfloat128 y;

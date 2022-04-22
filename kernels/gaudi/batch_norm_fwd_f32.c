@@ -66,7 +66,7 @@ void main(
     int5 ofmCoords = { 0, 0, 0, 0, 0 };
     int5 depthCoords = { depthStart, 0, 0, 0, 0 };
 
-    float64 vN = v_f32_mov_s(N_reciprocal);
+    float64 vN = N_reciprocal;
 
     for (int d = depthStart; d < depthEnd; d += depthStep)
     {
