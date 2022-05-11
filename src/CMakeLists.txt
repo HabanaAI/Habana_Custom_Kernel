@@ -16,17 +16,19 @@
 set(TARGET custom_tpc_perf_lib)
 
 # Decide which files to compile
-file(GLOB SRC *.cpp gaudi_src/*.cpp)
+file(GLOB SRC *.cpp gaudi_src/*.cpp gaudi2_src/*.cpp)
 
 # define .so object for compiling.
 add_library(${TARGET} SHARED ${SRC})
 
 include_directories(.
                     gaudi_src
+                    gaudi2_src
                     )
 
 # Generate a list of all TPC headers for compilation dependencies.
 file(GLOB TPC_GAUDI_HEADERS ../kernels/gaudi/*.h)
+file(GLOB TPC_GAUDI2_HEADERS ../kernels/gaudi2/*.h)
 
 IF( NOT CMAKE_BUILD_TYPE )
    SET( CMAKE_BUILD_TYPE Release ... FORCE )
@@ -72,3 +74,4 @@ function(CompileTPCCWithClang TPC_C_SOURCES_TO_EMBED TPC_HEADERS deviceName)
 endfunction(CompileTPCCWithClang)
 
 CompileTPCCWithClang("${TPC_C_GAUDI_SOURCES_TO_EMBED}" "${TPC_GAUDI_HEADERS}" gaudi)
+CompileTPCCWithClang("${TPC_C_GAUDI2_SOURCES_TO_EMBED}" "${TPC_GAUDI2_HEADERS}" gaudi2)

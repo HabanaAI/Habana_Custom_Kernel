@@ -46,6 +46,10 @@ include_directories(${TPC_TESTS_CORE_INCLUDE_DIR} ${TPC_INCLUDE_DIR})
 # linked into tpc_kernels executable.
 file(GLOB TPC_C_GAUDI_SOURCES_TO_EMBED ./kernels/gaudi/*.c)
 
+# Add TPC-C source files to be compiled by TPC Gaudi2 compiler and
+# linked into tpc_kernels executable.
+file(GLOB TPC_C_GAUDI2_SOURCES_TO_EMBED ./kernels/gaudi2/*.c)
+
 # Add TPC assembly files to be compiled by TPC Goya assembler and
 # linked into tpc_kernels executable.
 file(GLOB TPC_ASSEMBLY_TO_EMBED  ./kernels/*.tpcasm)
