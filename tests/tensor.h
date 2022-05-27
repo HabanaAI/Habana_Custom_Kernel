@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2018 Habana Labs.
+Copyright (c) 2022 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -27,6 +27,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include <random>
 
 #include "bfloat16.h"
+#include "float16.h"
 #include "TensorDescriptor.h" //header for simulator TPC descriptor
 #include "gc_interface.h"
 
@@ -202,6 +203,20 @@ public:
             if (num >= modulo)
             {
                 num = 0;
+            }
+        }
+    }
+
+    void FillWithData_f16(int modulo = 0x4C00)
+    {
+        int num = 0x3C00;
+        for (int i = 0 ; i < m_element_count; i++)
+        {
+            m_pdata[i] = num;
+            num += 300;
+            if (num >= modulo)
+            {
+                num = 0x3C00;
             }
         }
     }
@@ -391,6 +406,12 @@ gcapi::TensorDataType_t getGcDataType(const Tensor<bfloat16,NUM>& a)
    return gcapi::DATA_BF16;
 }
 
+template<int NUM>
+gcapi::TensorDataType_t getGcDataType(const Tensor<float16,NUM>& a)
+{
+   return gcapi::DATA_F16;
+}
+
 static const unsigned MAX_TENSOR_DIM = 5;
 
 
@@ -406,6 +427,7 @@ typedef test::Tensor<int16_t,1> int16_1DTensor;
 typedef test::Tensor<int16_t,2> int16_2DTensor;
 typedef test::Tensor<int16_t,3> int16_3DTensor;
 typedef test::Tensor<int16_t,4> int16_4DTensor;
+typedef test::Tensor<int16_t,5> int16_5DTensor;
 typedef test::Tensor<int32_t,1> int32_1DTensor;
 typedef test::Tensor<int32_t,2> int32_2DTensor;
 typedef test::Tensor<int32_t,3> int32_3DTensor;
@@ -420,6 +442,10 @@ typedef test::Tensor<bfloat16,2>   bfloat16_2DTensor;
 typedef test::Tensor<bfloat16,3>   bfloat16_3DTensor;
 typedef test::Tensor<bfloat16,4>   bfloat16_4DTensor;
 typedef test::Tensor<bfloat16,5>   bfloat16_5DTensor;
+typedef test::Tensor<float16,2>    float16_2DTensor;
+typedef test::Tensor<float16,3>    float16_3DTensor;
+typedef test::Tensor<float16,4>    float16_4DTensor;
+typedef test::Tensor<float16,5>    float16_5DTensor;
 
 
 struct IndexSpace

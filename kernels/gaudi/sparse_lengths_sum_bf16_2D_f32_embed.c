@@ -13,7 +13,7 @@ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCL
 OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
-#pragma tpc_printf (enable)
+//#pragma tpc_printf (enable)
 // Cast bfloat128 into float128
 bfloat128_pair_t cast_bf16_to_32bits_lin_order(bfloat128 x)
 {
@@ -150,7 +150,7 @@ void main(tensor input_tensor,
             // Shuffle first element of vector to dual group 0
             float64 scale_1_v = v_f32_shuffle_b(scale_zp_1, lut1, 0, scale_zp_1);
             float64 scale_2_v = v_f32_shuffle_b(scale_zp_2, lut1, 0, scale_zp_2);
-            printf("value 0 in vector scale_1_v is %f\n", scale_1_v[0]);
+            //printf("value 0 in vector scale_1_v is %f\n", scale_1_v[0]);
 
             // Move dual group 0 to dual group 1
             scale_1_v = v_f32_mov_dual_group_b(scale_1_v, 0xFFFFFFFF, 0, 1, MkWr(1, 1), scale_1_v);

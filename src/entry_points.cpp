@@ -29,6 +29,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "add_f32.hpp"
 #include "avg_pool_2d_f32.hpp"
 #include "avg_pool_2d_f32_gaudi2.hpp"
+#include "cast_f16_to_i16_gaudi2.hpp"
 
 #include "entry_points.hpp"
 
@@ -105,6 +106,8 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            avgpool2dfwdf32g2Instance.GetKernelName(names[GAUDI2_KERNEL_AVG_POOL_2D_FWD_F32]);
            AvgPool2dF32Gaudi2 avgpool2dbwdf32g2Instance(AvgPool2dF32Gaudi2::bwd);
            avgpool2dbwdf32g2Instance.GetKernelName(names[GAUDI2_KERNEL_AVG_POOL_2D_BWD_F32]);
+           Castf16toi16Gaudi2 castf16toi16g2Instance;
+           castf16toi16g2Instance.GetKernelName(names[GAUDI2_KERNEL_CAST_F16_TO_I16]);
 
         }
 
@@ -306,6 +309,13 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return avgpool2dbwdf32g2Instance.GetGcDefinitions(params, instance);
+    }
+
+    Castf16toi16Gaudi2 castf16toi16g2Instance;
+    castf16toi16g2Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return castf16toi16g2Instance.GetGcDefinitions(params, instance);
     }
 
     return gcapi::GLUE_NODE_NOT_FOUND;
