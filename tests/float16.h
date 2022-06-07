@@ -109,10 +109,6 @@ class float16
 public:
     float16(float v=0);
 
-    void operator=(float16 a) { this->val = a.val; }
-
-    void operator=(uint16_t a) { this->val = a; }
-
     friend bool operator<(float16 a, float16 b);
 
     friend bool operator>(float16 a, float16 b);
