@@ -28,6 +28,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "sin_f32.hpp"
 #include "add_f32.hpp"
 #include "avg_pool_2d_f32.hpp"
+#include "bitonic_sort_f32.hpp"
 #include "avg_pool_2d_f32_gaudi2.hpp"
 #include "cast_f16_to_i16_gaudi2.hpp"
 
@@ -89,6 +90,8 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            avgpool2dfwdf32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_FWD_F32]);
            AvgPool2dF32 avgpool2dbwdf32Instance(AvgPool2dF32::bwd);
            avgpool2dbwdf32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_BWD_F32]);
+           BitonicSortF32 bitonicSortInstance;
+           bitonicSortInstance.GetKernelName(names[GAUDI_KERNEL_BITONIC_SORT_F32]);
 
         }
 
@@ -295,6 +298,13 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
         return avgpool2dbwdf32Instance.GetGcDefinitions(params, instance);
     }
 
+    BitonicSortF32 bitonicSortInstance;
+    bitonicSortInstance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return bitonicSortInstance.GetGcDefinitions(params, instance);
+    }
+
     /////// --- Gaudi2 
     ///////////////////////////////
     AvgPool2dF32Gaudi2 avgpool2dfwdf32g2Instance(AvgPool2dF32Gaudi2::fwd);
@@ -317,6 +327,7 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     {
         return castf16toi16g2Instance.GetGcDefinitions(params, instance);
     }
+
 
     return gcapi::GLUE_NODE_NOT_FOUND;
 }

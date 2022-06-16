@@ -128,10 +128,9 @@ void main(tensor ifmData,
 
 
     int ofmDataIdx = 1;
-    int auxLutAndPredIdx = ofmDataIdx + 1;
 
     int ofmIndexIdx = ofmDataIdx + 1;
-    auxLutAndPredIdx = ofmIndexIdx + 1;
+    int auxLutAndPredIdx = ofmIndexIdx + 1;
 
     int ofmDepth = get_dim_size(ofmDataIdx, 0);
     bool isLastNode = (chunkSize == ofmDepth);
