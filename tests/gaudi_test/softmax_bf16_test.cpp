@@ -180,7 +180,7 @@ void SoftMaxBF16Test::softmax_reference_implementation(
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec;
+    std::vector<TensorDesc> vec;
     vec.push_back(input.GetTensorDescriptor());
     vec.push_back(ofm.GetTensorDescriptor());
     vec.push_back(aux_tensor.GetTensorDescriptor());
@@ -227,7 +227,7 @@ void SoftMaxBF16Test::softmax_reference_implementation(
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec2;
+    std::vector<TensorDesc> vec2;
     vec2.push_back(input.GetTensorDescriptor());
     vec2.push_back(ofm.GetTensorDescriptor());
 

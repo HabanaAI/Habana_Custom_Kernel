@@ -28,11 +28,25 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include "bfloat16.h"
 #include "float16.h"
-#include "TensorDescriptor.h" //header for simulator TPC descriptor
+#include "tpc_test_core_types.h"
 #include "gc_interface.h"
 
+using namespace tpc_tests;
 
+#define TENSOR_DESCRIPTOR_CONFIGURATION(elementSizeType, validDimMask, lastDim)                                        \
+    (((elementSizeType)&0x3) | (((validDimMask) & ((1 << (DEF_NUM_DIMS_IN_IRF)) - 1)) << 8) | (((lastDim)&0x7) << 16))
 
+inline uint32_t VpeTensorDescriptorElementSizeTypeFromElementSizeInBytes(uint32_t elementSizeInBytes)
+{
+    switch (elementSizeInBytes) {
+        case 1: return 0;
+        case 2: return 1;
+        case 4: return 2;
+        case 8: return 11; // TensorDT_INT64
+        default: break;
+    }
+    return 0;
+}
 namespace test
 {
 // This is helper class for reference implementation of tensors.
@@ -75,7 +89,6 @@ public:
     }
     void Init(const std::vector<unsigned>& sizes, T* data = NULL,  int32_t padValue = 0)
     {
-        assert (sizes.size() == DIM && "Tensor initialized with incorrect dim count");
         if (m_pdata)
         {
             delete [] m_pdata;
@@ -93,7 +106,6 @@ public:
             m_dim_array[i].stride = m_dim_array[i-1].stride * m_dim_array[i-1].size;
         }
 
-        assert (m_element_count != 0 && "Tensor initialized with 0 elements");
         m_pdata = new T[m_element_count](); // NB: array is zero-initialized here
         if (data != NULL)
         {
@@ -290,9 +302,9 @@ public:
     }
 
     // @brief returns tensor descriptor for TPC simulator
-    TensorDescriptor GetTensorDescriptor() const
+    TensorDesc GetTensorDescriptor() const
     {
-        TensorDescriptor tensorDesc;
+        TensorDesc tensorDesc;
         tensorDesc.baseAddrUnion.baseAddr = (uint64_t)m_pdata;
 
         uint32_t validDimMask = 0;
@@ -300,7 +312,6 @@ public:
         {
             tensorDesc.dimDescriptors[dim].size = m_dim_array[dim].size;
             tensorDesc.dimDescriptors[dim].stride = m_dim_array[dim].stride;
-            tensorDesc.dimDescriptors[dim].baseOffset = 0;
             validDimMask |= (1 << dim);
         }
         // Due to HW consideration, the padd value needs to be replicated across
@@ -317,7 +328,6 @@ public:
             break;
             case 2:
             {
-                assert ( (padValueInt  & 0xffff0000) == 0); //make sure upper bits are empty
                 tensorDesc.paddingValue = padValueInt | (padValueInt << 16);
             }
             break;
@@ -328,7 +338,7 @@ public:
             break;
             default:
             {
-                assert("Unsupported data type size");
+                break;
             }
         }
 

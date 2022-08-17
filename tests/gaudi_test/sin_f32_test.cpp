@@ -102,7 +102,7 @@ int SinF32Test::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec;
+    std::vector<TensorDesc> vec;
     vec.push_back(input.GetTensorDescriptor());
     vec.push_back(output.GetTensorDescriptor());
     // execute a simulation of the kernel using TPC simulator,

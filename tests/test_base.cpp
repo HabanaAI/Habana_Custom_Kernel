@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs.
+Copyright (c) 2022 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -16,6 +16,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include <algorithm>
 #include <sstream>
+
 
 #include "test_base.hpp"
 #include "tpc_test_core_api.h"
@@ -38,7 +39,7 @@ void TestBase::TearDown()
     m_out_defs.elfSize = 0;
 }
 
-unsigned int TestBase::RunSimulation(   std::vector<TensorDescriptor>& descriptors,
+unsigned int TestBase::RunSimulation(   std::vector<TensorDesc>& descriptors,
                                         const gcapi::HabanaKernelParams_t& gc_input,
                                         const gcapi::HabanaKernelInstantiation_t& gc_output,
                                         IndexSpaceMappingTest_t testMode)

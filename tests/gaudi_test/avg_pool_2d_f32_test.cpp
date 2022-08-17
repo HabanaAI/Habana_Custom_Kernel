@@ -354,7 +354,7 @@ int AvgPool2DF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec;
+    std::vector<TensorDesc> vec;
     vec.push_back(ifm.GetTensorDescriptor());
     vec.push_back(ofm.GetTensorDescriptor());
     vec.push_back(aux_tensor.GetTensorDescriptor());

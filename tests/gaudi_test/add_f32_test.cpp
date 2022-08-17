@@ -107,7 +107,7 @@ int AddF32Test::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec;
+    std::vector<TensorDesc> vec;
     vec.push_back(input0.GetTensorDescriptor());
     vec.push_back(input1.GetTensorDescriptor());
     vec.push_back(output.GetTensorDescriptor());

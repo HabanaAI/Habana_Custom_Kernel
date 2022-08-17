@@ -132,7 +132,7 @@ int CastF16toI16Gaudi2Test::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec;
+    std::vector<TensorDesc> vec;
     vec.push_back(ifm.GetTensorDescriptor());
     vec.push_back(ofm.GetTensorDescriptor());
 

@@ -210,7 +210,7 @@ int BatchNormF32Test::runTest()
 
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec;
+    std::vector<TensorDesc> vec;
     vec.push_back(input.GetTensorDescriptor());
     vec.push_back(beta.GetTensorDescriptor());
     vec.push_back(gamma.GetTensorDescriptor());;

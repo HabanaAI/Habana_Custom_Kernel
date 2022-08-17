@@ -174,7 +174,7 @@ int SparseLengthsSumBF16Test::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec;
+    std::vector<TensorDesc> vec;
     vec.push_back(input_tensor.GetTensorDescriptor());
     vec.push_back(indices_tensor.GetTensorDescriptor());
     vec.push_back(lengths_tensor.GetTensorDescriptor());

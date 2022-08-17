@@ -111,7 +111,7 @@ int MatrixMulFwdF32Test::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec;
+    std::vector<TensorDesc> vec;
     vec.push_back(a_matrix.GetTensorDescriptor());
     vec.push_back(b_matrix.GetTensorDescriptor());
     vec.push_back(c_matrix.GetTensorDescriptor());

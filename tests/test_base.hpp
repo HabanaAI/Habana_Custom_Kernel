@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2021 Habana Labs.
+Copyright (c) 2022 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -38,7 +38,7 @@ public:
         e_partialReadWriteMode  = 4,
     } IndexSpaceMappingTest_t;
 
-    unsigned int RunSimulation( std::vector<TensorDescriptor>& descriptors,
+    unsigned int RunSimulation( std::vector<TensorDesc>& descriptors,
                                 const gcapi::HabanaKernelParams_t& gc_input,
                                 const gcapi::HabanaKernelInstantiation_t& gc_output,
                                 IndexSpaceMappingTest_t testMode = e_defaultMode);

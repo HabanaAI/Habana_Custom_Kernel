@@ -147,7 +147,7 @@ int FilterFwd2DBF16Test::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDescriptor> vec;
+    std::vector<TensorDesc> vec;
     vec.push_back(ifm.GetTensorDescriptor());
     vec.push_back(filter.GetTensorDescriptor());
     vec.push_back(ofm.GetTensorDescriptor());

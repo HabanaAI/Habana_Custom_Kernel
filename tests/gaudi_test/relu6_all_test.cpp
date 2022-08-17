@@ -216,7 +216,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         }
 
         // generate and load tensor descriptors
-        std::vector<TensorDescriptor> vec;
+        std::vector<TensorDesc> vec;
         if(NameofKernel == GAUDI_KERNEL_RELU6_BWD_F32 || NameofKernel == GAUDI_KERNEL_RELU_BWD_F32)
             vec.push_back(gradin.GetTensorDescriptor());
         vec.push_back(input.GetTensorDescriptor());
@@ -306,7 +306,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         }
 
         // generate and load tensor descriptors
-        std::vector<TensorDescriptor> vec;
+        std::vector<TensorDesc> vec;
         if(NameofKernel == GAUDI_KERNEL_RELU6_BWD_BF16 || NameofKernel == GAUDI_KERNEL_RELU_BWD_BF16)
             vec.push_back(gradin.GetTensorDescriptor());
         vec.push_back(input.GetTensorDescriptor());
