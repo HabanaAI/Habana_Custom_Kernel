@@ -242,7 +242,7 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
     unsigned IsaSize = (&_binary___relu6_fwd_f32_o_end - &_binary___relu6_fwd_f32_o_start);
-    unsigned char *binary_kernel;
+    unsigned char *binary_kernel =  &_binary___relu6_fwd_f32_o_start;
     switch (m_mode)
     {
         case relu6_fwd_f32:
