@@ -199,7 +199,7 @@ gcapi::GlueCodeReturn_t AvgPool2dF32Gaudi2::GetGcDefinitions(
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
     unsigned IsaSize = (&_binary___avg_pool_2d_fwd_f32_gaudi2_o_end - &_binary___avg_pool_2d_fwd_f32_gaudi2_o_start);
-    unsigned char *binary_kernel;
+    unsigned char *binary_kernel = &_binary___avg_pool_2d_fwd_f32_gaudi2_o_start;
     switch (m_mode){
         case fwd:
             IsaSize = (&_binary___avg_pool_2d_fwd_f32_gaudi2_o_end - &_binary___avg_pool_2d_fwd_f32_gaudi2_o_start);
