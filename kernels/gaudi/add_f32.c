@@ -46,7 +46,7 @@ void main(tensor input0, tensor input1, tensor output)
     // BATCH
     const int batchStep  = 1;
     const int batchStart = index_space_start[batch];
-    const int batchtEnd  = index_space_end[batch];
+    const int batchEnd  = index_space_end[batch];
 
     // fifthDim
     const int fifthDimStep  = 1;
@@ -73,7 +73,7 @@ void main(tensor input0, tensor input1, tensor output)
             ifmCoords[fifthDim] = f;
             ofmCoords[fifthDim] = f;
 
-            for (int b = batchStart; b < batchtEnd; b += batchStep)
+            for (int b = batchStart; b < batchEnd; b += batchStep)
             {
                 ifmCoords[batch] = b;
                 ofmCoords[batch] = b;
