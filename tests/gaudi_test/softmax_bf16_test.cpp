@@ -151,27 +151,6 @@ void SoftMaxBF16Test::softmax_reference_implementation(
 
     strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_SOFTMAX_FCD_BF16]);
     result  = HabanaKernel(&m_in_defs,&m_out_defs);
-
-    // Declaration of auxiliary tensor
-    int8_1DTensor aux_tensor({100});
-    // Allocate memory for aux tensor if not allocated
-    if (result == gcapi::GLUE_INSUFICIENT_AUX_BUFFER_SIZE)
-    {
-        if (m_out_defs.auxiliaryTensors[0].pData)
-        {
-            delete [] (int8_t*)m_out_defs.auxiliaryTensors[0].pData;
-            m_out_defs.auxiliaryTensors[0].pData = NULL;
-        }
-
-        m_out_defs.auxiliaryTensors[0].pData =
-                                    new int8_t[m_out_defs.auxiliaryTensors[0].bufferSize / sizeof(int8_t)];
-        // second call of glue-code to load Auxiliary data.
-        result  = HabanaKernel(&m_in_defs,&m_out_defs);
-        // AUXILIARY TENSOR init based on parameters got from glue code
-        aux_tensor.Init(m_out_defs.auxiliaryTensors[0].geometry.sizes,
-                                    (int8_t*)m_out_defs.auxiliaryTensors[0].pData);
-    }
-
     if (result != gcapi::GLUE_SUCCESS)
     {
         std::cout << "glue test failed!!" << result << std::endl;
@@ -183,7 +162,6 @@ void SoftMaxBF16Test::softmax_reference_implementation(
     std::vector<TensorDesc> vec;
     vec.push_back(input.GetTensorDescriptor());
     vec.push_back(ofm.GetTensorDescriptor());
-    vec.push_back(aux_tensor.GetTensorDescriptor());
 
     // execute a simulation of the kernel using TPC simulator,
     TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
