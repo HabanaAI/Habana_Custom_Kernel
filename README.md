@@ -15,7 +15,7 @@ TPC is designed for workloads that do not map to Matrix Multiplication Engine (*
 ## Install Habanatools For Ubuntu
 To retrieve the package please visit [Habana Vault](https://vault.habana.ai/ui/repos/tree/General/debian%2Fbionic%2Fpool%2Fmain%2Fh%2Fhabanatools), click Artifact, find habanatools and download the latest release package for Ubuntu 18.04. You can find different packages for different OS you used. 
 ```  
-  sudo dpkg -i ./habanatools_1.4.1-11_amd64.deb
+  sudo dpkg -i ./habanatools_1.7.0-665_amd64.deb
 ```
 - Once installed the following files will be added to your machine 
   
@@ -25,9 +25,9 @@ To retrieve the package please visit [Habana Vault](https://vault.habana.ai/ui/r
   |2 | /usr/bin/tpc-llvm-objdump | TPC dis-assembler|
   |3 | /usr/lib/habanatools/libtpcsim_shared.so | TPC simulator|
   |4 | /usr/lib/habanatools/libtpc_tests_core.so | Test core library |  
-  |5 | /usr/lib/habanatools/include/TPC.h |Simulator headers |
-  |6 | /usr/lib/habanatools/include/gc_interface.h | Glue code interface header |
-  |7 | /usr/lib/habanatools/include/tpc-intrinsics.h | Available TPC-C intrinsics |  
+  |5 | /usr/lib/habanatools/include/gc_interface.h | Glue code interface header |
+  |6 | /usr/lib/habanatools/include/tpc_test_core_api.h |Test core APIs |
+  |7 | /usr/lib/habanatools/include/tpc_test_core_types.h | Test core type defines |  
       
 - Compiler usage example
 The compiler supports a single translation unit, hence ‘-c’ argument should be defined.
