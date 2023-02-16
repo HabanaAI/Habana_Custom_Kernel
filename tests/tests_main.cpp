@@ -30,6 +30,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "avg_pool_2d_f32_test.hpp"
 #include "avg_pool_2d_f32_gaudi2_test.hpp"
 #include "cast_f16_to_i16_gaudi2_test.hpp"
+#include "searchsorted_f32_test.hpp"
 
 int main(int argc, char** argv)
 {
@@ -68,7 +69,7 @@ int main(int argc, char** argv)
             "AddF32Test                 Run AddF32Test only   " << std::endl <<
             "AvgPool2DFwdF32Test        Run AvgPool2DFwdF32Test only   " << std::endl <<
             "AvgPool2DBwdF32Test        Run AvgPool2DBwdF32Test only   " << std::endl <<
-
+            "SearchSortedFwdF32Test     Run SearchSortedFwdF32Test only   " << std::endl <<
             "AvgPool2DFwdF32Gaudi2Test  Run AvgPool2DFwdF32Gaudi2Test only   " << std::endl <<
             "AvgPool2DBwdF32Gaudi2Test  Run AvgPool2DBwdF32Gaudi2Test only   " << std::endl <<
             "CastF16toI16Gaudi2Test     Run CastF16toI16Gaudi2Test only   " << std::endl;
@@ -426,6 +427,24 @@ int main(int argc, char** argv)
         }
     }
 
+    SearchSortedF32Test searchsortedf32ins;
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"SearchSortedFwdF32Test") ==0))))
+    {
+        searchsortedf32ins.SetUp();
+        result = searchsortedf32ins.runTest(GAUDI_KERNEL_SEARCH_SORTED_FWD_F32);
+        searchsortedf32ins.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    // The following ones are for Gaudi2
     AvgPool2DF32Gaudi2Test avgpool2df32Gaudi2ins;
     if(argc == 1 ||
         (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
