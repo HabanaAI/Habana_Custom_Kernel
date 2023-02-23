@@ -29,11 +29,15 @@ public:
     ~SearchSortedF32Test() {}
     int runTest(Gaudi_Kernel_Name_e NameofKernel);
 
-    inline static void searchsortedf32_reference_implementation(
+    inline static void searchsorted_fwd_f32_reference_implementation(
             const float_5DTensor& input0,
             const float_5DTensor& input1,
             int32_5DTensor& output,
             const SearchSortedF32::SearchSortedParam& def);
+
+    inline static void searchsorted_bwd_f32_reference_implementation(
+            const float_5DTensor& input,
+            float_5DTensor& output);            
 private:
     SearchSortedF32Test(const SearchSortedF32Test& other) = delete;
     SearchSortedF32Test& operator=(const SearchSortedF32Test& other) = delete;

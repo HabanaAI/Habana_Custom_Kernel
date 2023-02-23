@@ -17,7 +17,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "searchsorted_f32_test.hpp"
 #include "entry_points.hpp"
 
-void SearchSortedF32Test::searchsortedf32_reference_implementation(
+void SearchSortedF32Test::searchsorted_fwd_f32_reference_implementation(
         const float_5DTensor& input0,
         const float_5DTensor& input1,
         int32_5DTensor& output,
@@ -69,6 +69,36 @@ void SearchSortedF32Test::searchsortedf32_reference_implementation(
     }
 }
 
+void SearchSortedF32Test::searchsorted_bwd_f32_reference_implementation(
+        const float_5DTensor& input,
+        float_5DTensor& output)
+{
+    int coords[5] = {0};
+    for (unsigned r4 = 0; r4 < input.Size(4); r4 += 1)
+    {
+        coords[4] = r4;
+        for (unsigned b = 0; b < input.Size(3); b += 1)
+        {
+            coords[3] = b;
+            for (unsigned h = 0; h < input.Size(2); h += 1)
+            {
+                coords[2] = h;
+                for (unsigned d = 0; d < input.Size(0); d += 1)
+                {
+                    coords[0] = d;
+
+                    for (unsigned w = 0; w < input.Size(1); w += 1)
+                    {
+                        coords[1] = w;
+                        float sequence = input.ElementAt(coords);
+                        output.SetElement(coords, sequence);
+                    }
+                }
+            }
+        }
+    }
+}
+
 int SearchSortedF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
 {
     const int height = 1;
@@ -84,27 +114,36 @@ int SearchSortedF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
     float_5DTensor input0(ifmInitializer);
     input0.FillWithSortedValue(1);
 
-    float_5DTensor input1(ifmInitializer);
+    float_5DTensor input1(ofmInitializer);
     input1.FillWithSortedValue(0);
 
     int32_5DTensor output(ofmInitializer);
     int32_5DTensor output_ref(ofmInitializer);
+    float_5DTensor outputb_ref(ofmInitializer);
     SearchSortedF32::SearchSortedParam def;
     def.side = 1; //1:right, 0:left
 
     // execute reference implementation of the kernel.
-    searchsortedf32_reference_implementation(input0, input1, output_ref, def);
+    if(NameofKernel == GAUDI_KERNEL_SEARCH_SORTED_FWD_F32)
+        searchsorted_fwd_f32_reference_implementation(input0, input1, output_ref, def);
+    else
+        searchsorted_bwd_f32_reference_implementation(input0, outputb_ref);
 
     // generate input for query call
     m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
-    m_in_defs.NodeParams = &def;
-
-    m_in_defs.inputTensorNr = 2;
-    LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input0);
-    LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), input1);
-
     m_in_defs.outputTensorNr = 1;
-    LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
+    if(NameofKernel == GAUDI_KERNEL_SEARCH_SORTED_FWD_F32) {
+        m_in_defs.NodeParams = &def;
+        m_in_defs.inputTensorNr = 2;
+        LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input0);
+        LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), input1);
+        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
+    }
+    else{
+        m_in_defs.inputTensorNr = 1;
+        LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input0);
+        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), input1);
+    }
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
@@ -135,7 +174,8 @@ int SearchSortedF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
     std::vector<TensorDesc> vec;
     vec.push_back(input0.GetTensorDescriptor());
     vec.push_back(input1.GetTensorDescriptor());
-    vec.push_back(output.GetTensorDescriptor());
+    if(NameofKernel == GAUDI_KERNEL_SEARCH_SORTED_FWD_F32)
+        vec.push_back(output.GetTensorDescriptor());
     // execute a simulation of the kernel using TPC simulator,
     TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
     ReleaseKernelNames(kernelNames, kernelCount);

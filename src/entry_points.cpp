@@ -92,6 +92,8 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            avgpool2dbwdf32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_BWD_F32]);
            SearchSortedF32 searchsortedfwdf32Instance(SearchSortedF32::fwd);
            searchsortedfwdf32Instance.GetKernelName(names[GAUDI_KERNEL_SEARCH_SORTED_FWD_F32]);
+           SearchSortedF32 searchsortedbwdf32Instance(SearchSortedF32::bwd);
+           searchsortedbwdf32Instance.GetKernelName(names[GAUDI_KERNEL_SEARCH_SORTED_BWD_F32]);
 
         }
 
@@ -303,6 +305,13 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return searchsortedfwdf32Instance.GetGcDefinitions(params, instance);
+    }
+
+    SearchSortedF32 searchsortedbwdf32Instance(SearchSortedF32::bwd);
+    searchsortedbwdf32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return searchsortedbwdf32Instance.GetGcDefinitions(params, instance);
     }
 
     /////// --- Gaudi2 

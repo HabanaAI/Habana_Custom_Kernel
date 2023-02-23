@@ -70,6 +70,7 @@ int main(int argc, char** argv)
             "AvgPool2DFwdF32Test        Run AvgPool2DFwdF32Test only   " << std::endl <<
             "AvgPool2DBwdF32Test        Run AvgPool2DBwdF32Test only   " << std::endl <<
             "SearchSortedFwdF32Test     Run SearchSortedFwdF32Test only   " << std::endl <<
+            "SearchSortedBwdF32Test     Run SearchSortedBwdF32Test only   " << std::endl <<
             "AvgPool2DFwdF32Gaudi2Test  Run AvgPool2DFwdF32Gaudi2Test only   " << std::endl <<
             "AvgPool2DBwdF32Gaudi2Test  Run AvgPool2DBwdF32Gaudi2Test only   " << std::endl <<
             "CastF16toI16Gaudi2Test     Run CastF16toI16Gaudi2Test only   " << std::endl;
@@ -432,10 +433,24 @@ int main(int argc, char** argv)
         (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
         && (strcmp(argv[2],"Gaudi") ==0)))  ||
         (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
-        && (strcmp(argv[2],"SearchSortedFwdF32Test") ==0))))
-    {
+        && (strcmp(argv[2],"SearchSortedFwdF32Test") ==0)))) {
         searchsortedf32ins.SetUp();
         result = searchsortedf32ins.runTest(GAUDI_KERNEL_SEARCH_SORTED_FWD_F32);
+        searchsortedf32ins.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"SearchSortedBwdF32Test") ==0)))) {
+        searchsortedf32ins.SetUp();
+        result = searchsortedf32ins.runTest(GAUDI_KERNEL_SEARCH_SORTED_BWD_F32);
         searchsortedf32ins.TearDown();
         testCount ++;
         if (result != 0)

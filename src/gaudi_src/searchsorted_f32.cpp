@@ -15,11 +15,12 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #include "searchsorted_f32.hpp"
+#include <stdio.h>
 
 extern unsigned char _binary___searchsorted_fwd_f32_o_start;
 extern unsigned char _binary___searchsorted_fwd_f32_o_end;
-//extern unsigned char _binary___searchsorted_bwd_f32_o_start;
-//extern unsigned char _binary___searchsorted_bwd_f32_o_end;
+extern unsigned char _binary___searchsorted_bwd_f32_o_start;
+extern unsigned char _binary___searchsorted_bwd_f32_o_end;
 
  gcapi::GlueCodeReturn_t SearchSortedF32::GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME])
@@ -43,10 +44,20 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
     *   Stage I - validate input
     **************************************************************************************/
     //validate correct amount of input tensors
-    if (params->inputTensorNr != 2)
-    {
-        params->inputTensorNr  = 2;
-        return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+    if(m_mode == fwd){
+        if (params->inputTensorNr != 2)
+        {
+            params->inputTensorNr  = 2;
+            return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+        }
+    }
+    else{
+        if (params->inputTensorNr != 1)
+        {
+            params->inputTensorNr  = 1;
+            return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+        }
+
     }
     //validate correct amount of output tensors
     if (params->outputTensorNr != 1)
@@ -54,20 +65,35 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
         params->outputTensorNr  = 1;
         return gcapi::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
-     //validate matrix dimensions
-    if (params->inputTensors[0].geometry.sizes[0] != params->inputTensors[1].geometry.sizes[0])
-    {
-        return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
-    }
+ 
     // validate input and output data type
-    if (params->inputTensors[0].dataType != gcapi::DATA_F32 ||
-        params->inputTensors[1].dataType != gcapi::DATA_F32 ||
-        params->outputTensors[0].dataType != gcapi::DATA_I32)
-    {
-        params->inputTensors[0].dataType = gcapi::DATA_F32;
-        params->inputTensors[1].dataType = gcapi::DATA_F32;
-        params->outputTensors[0].dataType = gcapi::DATA_I32;
-        return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
+    if(m_mode == fwd){
+        if (params->inputTensors[0].geometry.sizes[0] != params->inputTensors[1].geometry.sizes[0])
+        {
+            return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
+        }        
+        if (params->inputTensors[0].dataType != gcapi::DATA_F32 ||
+            params->inputTensors[1].dataType != gcapi::DATA_F32 ||
+            params->outputTensors[0].dataType != gcapi::DATA_I32)
+        {
+            params->inputTensors[0].dataType = gcapi::DATA_F32;
+            params->inputTensors[1].dataType = gcapi::DATA_F32;
+            params->outputTensors[0].dataType = gcapi::DATA_I32;
+            return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
+        }
+    }
+    else{
+        if (params->inputTensors[0].geometry.sizes[0] != params->outputTensors[0].geometry.sizes[0])
+        {
+            return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
+        }        
+        if (params->inputTensors[0].dataType != gcapi::DATA_F32 ||
+            params->outputTensors[0].dataType != gcapi::DATA_F32)
+        {
+            params->inputTensors[0].dataType = gcapi::DATA_F32;
+            params->outputTensors[0].dataType = gcapi::DATA_F32;
+            return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
+        }
     }
 
     /*************************************************************************************
@@ -96,10 +122,6 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
     // Index space mapping is calculated using f(i) = Ai + B
     // 'i' is the index space member and A/B constants to be defined.
 
-    // f_start(i) = 0;
-    // f_end f(i) = size[0] - 1;
-    // Resource 0 (IFM) dim 0 (depth)
-    // Access is given to all the elements since single indexspace is used
     for (unsigned i = 0; i < params->inputTensorNr; i++)
     {
         kernel->inputTensorAccessPattern[i].dim[0].dim      = 0;
@@ -108,9 +130,6 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
         kernel->inputTensorAccessPattern[i].dim[0].start_b  = 0;
         kernel->inputTensorAccessPattern[i].dim[0].end_b    = elementsInVec - 1;
 
-        // f_start f(i) = 1*i + 0;
-        // f_end   f(i) = 1*i + 0;
-        // Resource 0 (IFM) dim 1-4
         for (int dims = 1; dims < 5; dims++)
         {
             kernel->inputTensorAccessPattern[i].dim[dims].dim      = dims;
@@ -121,18 +140,12 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
         }        
     }    
 
-    // f_start f(i) = elementsInVec*i + 0;
-    // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
-    // Resource 0 (OFM) dim 0
     kernel->outputTensorAccessPattern[0].dim[0].dim      = 0;
     kernel->outputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
     kernel->outputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
     kernel->outputTensorAccessPattern[0].dim[0].start_b  = 0;
     kernel->outputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
 	
-    // f_start f(i) = 1*i + 0;
-    // f_end   f(i) = 1*i + 0;
-    // Resource 0 (OFM) dim 1-4
     for (int dims = 1; dims < 5; dims++)
     {
         kernel->outputTensorAccessPattern[0].dim[dims].dim      = dims;
@@ -142,12 +155,13 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
         kernel->outputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
     }
 
-
     /*************************************************************************************
     *    Stage IV -  Set Auxiliary Tensor
     **************************************************************************************/
-    kernel->kernel.paramsNr = sizeof(*def)/ sizeof(int);
-    memcpy(&( kernel->kernel.scalarParams[0]), def, sizeof(*def));
+    if(m_mode == fwd){
+        kernel->kernel.paramsNr = sizeof(*def)/ sizeof(int);
+        memcpy(&( kernel->kernel.scalarParams[0]), def, sizeof(*def));
+    }
     /*************************************************************************************
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
@@ -158,10 +172,10 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
             IsaSize = (&_binary___searchsorted_fwd_f32_o_end - &_binary___searchsorted_fwd_f32_o_start);
             binary_kernel = &_binary___searchsorted_fwd_f32_o_start;
             break;
-        //case bwd:
-        //    IsaSize = (&_binary___searchsorted_bwd_f32_o_end - &_binary___searchsorted_bwd_f32_o_start);
-        //    binary_kernel = &_binary___searchsorted_bwd_f32_o_start;
-        //    break;
+        case bwd:
+            IsaSize = (&_binary___searchsorted_bwd_f32_o_end - &_binary___searchsorted_bwd_f32_o_start);
+            binary_kernel = &_binary___searchsorted_bwd_f32_o_start;
+            break;
         default:
             break;
 
