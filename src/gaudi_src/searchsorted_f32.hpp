@@ -21,18 +21,10 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include <cstring>
 #include "gc_interface.h"
 
-
-
 class SearchSortedF32
 {
 public:
-    typedef enum _Search_Sorted_mode_t
-    {
-        fwd,
-        bwd,
-    } SearchSorted_mode_t;
-
-    SearchSortedF32(SearchSorted_mode_t mode = fwd) {m_mode = mode;}
+    SearchSortedF32() {}
     virtual ~SearchSortedF32() {}
 
     virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
@@ -53,7 +45,6 @@ public:
 
 
 private:
-    SearchSorted_mode_t m_mode;
     SearchSortedF32(const SearchSortedF32& other) = delete;
     SearchSortedF32& operator=(const SearchSortedF32& other) = delete;
 };

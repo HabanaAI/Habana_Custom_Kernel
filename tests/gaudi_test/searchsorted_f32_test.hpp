@@ -20,14 +20,13 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "test_base.hpp"
 #include "tensor.h"
 #include "searchsorted_f32.hpp"
-#include "entry_points.hpp"
 
 class SearchSortedF32Test : public TestBase
 {
 public:
     SearchSortedF32Test() {}
     ~SearchSortedF32Test() {}
-    int runTest(Gaudi_Kernel_Name_e NameofKernel);
+    int runTest();
 
     inline static void searchsorted_fwd_f32_reference_implementation(
             const float_5DTensor& input0,
@@ -35,9 +34,6 @@ public:
             int32_5DTensor& output,
             const SearchSortedF32::SearchSortedParam& def);
 
-    inline static void searchsorted_bwd_f32_reference_implementation(
-            const float_5DTensor& input,
-            float_5DTensor& output);            
 private:
     SearchSortedF32Test(const SearchSortedF32Test& other) = delete;
     SearchSortedF32Test& operator=(const SearchSortedF32Test& other) = delete;

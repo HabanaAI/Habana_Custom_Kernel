@@ -69,37 +69,7 @@ void SearchSortedF32Test::searchsorted_fwd_f32_reference_implementation(
     }
 }
 
-void SearchSortedF32Test::searchsorted_bwd_f32_reference_implementation(
-        const float_5DTensor& input,
-        float_5DTensor& output)
-{
-    int coords[5] = {0};
-    for (unsigned r4 = 0; r4 < input.Size(4); r4 += 1)
-    {
-        coords[4] = r4;
-        for (unsigned b = 0; b < input.Size(3); b += 1)
-        {
-            coords[3] = b;
-            for (unsigned h = 0; h < input.Size(2); h += 1)
-            {
-                coords[2] = h;
-                for (unsigned d = 0; d < input.Size(0); d += 1)
-                {
-                    coords[0] = d;
-
-                    for (unsigned w = 0; w < input.Size(1); w += 1)
-                    {
-                        coords[1] = w;
-                        float sequence = input.ElementAt(coords);
-                        output.SetElement(coords, sequence);
-                    }
-                }
-            }
-        }
-    }
-}
-
-int SearchSortedF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
+int SearchSortedF32Test::runTest()
 {
     const int height = 1;
     const int width  = 5;
@@ -119,31 +89,20 @@ int SearchSortedF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
 
     int32_5DTensor output(ofmInitializer);
     int32_5DTensor output_ref(ofmInitializer);
-    float_5DTensor outputb_ref(ofmInitializer);
     SearchSortedF32::SearchSortedParam def;
     def.side = 1; //1:right, 0:left
 
     // execute reference implementation of the kernel.
-    if(NameofKernel == GAUDI_KERNEL_SEARCH_SORTED_FWD_F32)
-        searchsorted_fwd_f32_reference_implementation(input0, input1, output_ref, def);
-    else
-        searchsorted_bwd_f32_reference_implementation(input0, outputb_ref);
+    searchsorted_fwd_f32_reference_implementation(input0, input1, output_ref, def);
 
     // generate input for query call
     m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
     m_in_defs.outputTensorNr = 1;
-    if(NameofKernel == GAUDI_KERNEL_SEARCH_SORTED_FWD_F32) {
-        m_in_defs.NodeParams = &def;
-        m_in_defs.inputTensorNr = 2;
-        LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input0);
-        LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), input1);
-        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
-    }
-    else{
-        m_in_defs.inputTensorNr = 1;
-        LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input0);
-        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), input1);
-    }
+    m_in_defs.NodeParams = &def;
+    m_in_defs.inputTensorNr = 2;
+    LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input0);
+    LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), input1);
+    LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
@@ -161,7 +120,7 @@ int SearchSortedF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[NameofKernel]);
+    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_SEARCH_SORTED_FWD_F32]);
     result  = HabanaKernel(&m_in_defs,&m_out_defs);
     if (result != gcapi::GLUE_SUCCESS)
     {
@@ -174,15 +133,12 @@ int SearchSortedF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
     std::vector<TensorDesc> vec;
     vec.push_back(input0.GetTensorDescriptor());
     vec.push_back(input1.GetTensorDescriptor());
-    if(NameofKernel == GAUDI_KERNEL_SEARCH_SORTED_FWD_F32)
-        vec.push_back(output.GetTensorDescriptor());
+    vec.push_back(output.GetTensorDescriptor());
     // execute a simulation of the kernel using TPC simulator,
     TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
     ReleaseKernelNames(kernelNames, kernelCount);
     output.Print(0);
-    output.Print(2);
     output_ref.Print(0);
-    output_ref.Print(2);
     for (int element = 0 ; element <  output_ref.ElementCount() ; element++)
     {
         if (abs(output.Data()[element] - output_ref.Data()[element]) > 1e-6)

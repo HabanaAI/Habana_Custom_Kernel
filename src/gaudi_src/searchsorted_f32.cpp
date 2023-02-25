@@ -19,18 +19,12 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 extern unsigned char _binary___searchsorted_fwd_f32_o_start;
 extern unsigned char _binary___searchsorted_fwd_f32_o_end;
-extern unsigned char _binary___searchsorted_bwd_f32_o_start;
-extern unsigned char _binary___searchsorted_bwd_f32_o_end;
 
  gcapi::GlueCodeReturn_t SearchSortedF32::GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME])
  {
-    if(m_mode == fwd)
-        strcpy(kernelName,"searchsorted_fwd_f32");
-    else
-        strcpy(kernelName,"searchsorted_bwd_f32");
-
-     return gcapi::GLUE_SUCCESS;
+    strcpy(kernelName,"searchsorted_fwd_f32");
+    return gcapi::GLUE_SUCCESS;
  }
 
 gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
@@ -44,21 +38,12 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
     *   Stage I - validate input
     **************************************************************************************/
     //validate correct amount of input tensors
-    if(m_mode == fwd){
-        if (params->inputTensorNr != 2)
-        {
-            params->inputTensorNr  = 2;
-            return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
-        }
+    if (params->inputTensorNr != 2)
+    {
+        params->inputTensorNr  = 2;
+        return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
     }
-    else{
-        if (params->inputTensorNr != 1)
-        {
-            params->inputTensorNr  = 1;
-            return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
-        }
 
-    }
     //validate correct amount of output tensors
     if (params->outputTensorNr != 1)
     {
@@ -67,33 +52,18 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
     }
  
     // validate input and output data type
-    if(m_mode == fwd){
-        if (params->inputTensors[0].geometry.sizes[0] != params->inputTensors[1].geometry.sizes[0])
-        {
-            return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
-        }        
-        if (params->inputTensors[0].dataType != gcapi::DATA_F32 ||
-            params->inputTensors[1].dataType != gcapi::DATA_F32 ||
-            params->outputTensors[0].dataType != gcapi::DATA_I32)
-        {
-            params->inputTensors[0].dataType = gcapi::DATA_F32;
-            params->inputTensors[1].dataType = gcapi::DATA_F32;
-            params->outputTensors[0].dataType = gcapi::DATA_I32;
-            return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
-        }
-    }
-    else{
-        if (params->inputTensors[0].geometry.sizes[0] != params->outputTensors[0].geometry.sizes[0])
-        {
-            return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
-        }        
-        if (params->inputTensors[0].dataType != gcapi::DATA_F32 ||
-            params->outputTensors[0].dataType != gcapi::DATA_F32)
-        {
-            params->inputTensors[0].dataType = gcapi::DATA_F32;
-            params->outputTensors[0].dataType = gcapi::DATA_F32;
-            return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
-        }
+    if (params->inputTensors[0].geometry.sizes[0] != params->inputTensors[1].geometry.sizes[0])
+    {
+        return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
+    }        
+    if (params->inputTensors[0].dataType != gcapi::DATA_F32 ||
+        params->inputTensors[1].dataType != gcapi::DATA_F32 ||
+        params->outputTensors[0].dataType != gcapi::DATA_I32)
+    {
+        params->inputTensors[0].dataType = gcapi::DATA_F32;
+        params->inputTensors[1].dataType = gcapi::DATA_F32;
+        params->outputTensors[0].dataType = gcapi::DATA_I32;
+        return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
     }
 
     /*************************************************************************************
@@ -158,43 +128,26 @@ gcapi::GlueCodeReturn_t SearchSortedF32::GetGcDefinitions(
     /*************************************************************************************
     *    Stage IV -  Set Auxiliary Tensor
     **************************************************************************************/
-    if(m_mode == fwd){
-        kernel->kernel.paramsNr = sizeof(*def)/ sizeof(int);
-        memcpy(&( kernel->kernel.scalarParams[0]), def, sizeof(*def));
-    }
+    kernel->kernel.paramsNr = sizeof(*def)/ sizeof(int);
+    memcpy(&( kernel->kernel.scalarParams[0]), def, sizeof(*def));
+
     /*************************************************************************************
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
     unsigned IsaSize = &_binary___searchsorted_fwd_f32_o_end - &_binary___searchsorted_fwd_f32_o_start;
-    unsigned char *binary_kernel = &_binary___searchsorted_fwd_f32_o_start;
-    switch (m_mode){
-        case fwd:
-            IsaSize = (&_binary___searchsorted_fwd_f32_o_end - &_binary___searchsorted_fwd_f32_o_start);
-            binary_kernel = &_binary___searchsorted_fwd_f32_o_start;
-            break;
-        case bwd:
-            IsaSize = (&_binary___searchsorted_bwd_f32_o_end - &_binary___searchsorted_bwd_f32_o_start);
-            binary_kernel = &_binary___searchsorted_bwd_f32_o_start;
-            break;
-        default:
-            break;
-
-    }
-
     unsigned givenBinarySize = kernel->elfSize;
     kernel->elfSize = IsaSize;
 
     if (givenBinarySize >= IsaSize)
     {
-        // copy binary out
         memcpy (kernel->kernelElf ,
-                binary_kernel,
-                IsaSize);
+                    &_binary___searchsorted_fwd_f32_o_start,
+                    IsaSize);
     }
     else
     {
-       retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
-       return retVal;
+        retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
+        return retVal;
     }
 
     return gcapi::GLUE_SUCCESS;
