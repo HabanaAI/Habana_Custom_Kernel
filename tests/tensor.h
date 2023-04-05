@@ -31,6 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "tpc_test_core_types.h"
 #include "gc_interface.h"
 
+#define GATHER_INDEX 1
 using namespace tpc_tests;
 
 #define TENSOR_DESCRIPTOR_CONFIGURATION(elementSizeType, validDimMask, lastDim)                                        \
@@ -253,6 +254,17 @@ public:
         {
             m_pdata[i] = val;
         }
+    }
+
+    void FillWithSpecificData(int type)
+    {
+        if(type == GATHER_INDEX) {
+            m_pdata[0] = 0; m_pdata[1] = 1; m_pdata[2] = 2; m_pdata[3] = 3; 
+            m_pdata[4] = 3; m_pdata[5] = 2; m_pdata[6] = 1; m_pdata[7] = 0; 
+            m_pdata[8] = 2; m_pdata[9] = 3; m_pdata[10] = 0; m_pdata[11] = 1; 
+            m_pdata[12] = 1; m_pdata[13] = 2; m_pdata[14] = 1; m_pdata[15] = 0; 
+        }
+
     }
 
     void InitRand(const T rangemin, const T rangemax, unsigned seed = 0)
