@@ -28,6 +28,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "sin_f32.hpp"
 #include "add_f32.hpp"
 #include "avg_pool_2d_f32.hpp"
+#include "gather_fwd_i32.hpp"
 #include "avg_pool_2d_f32_gaudi2.hpp"
 #include "cast_f16_to_i16_gaudi2.hpp"
 #include "searchsorted_f32.hpp"
@@ -92,6 +93,10 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            avgpool2dbwdf32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_BWD_F32]);
            SearchSortedF32 searchsortedfwdf32Instance;
            searchsortedfwdf32Instance.GetKernelName(names[GAUDI_KERNEL_SEARCH_SORTED_FWD_F32]);
+           GatherFwdI32 gatherfwddim0i32Instance(GatherFwdI32::gather_fwd_dim0);
+           gatherfwddim0i32Instance.GetKernelName(names[GAUDI_KERNEL_GATHER_FWD_DIM0_I32]);
+           GatherFwdI32 gatherfwddim1i32Instance(GatherFwdI32::gather_fwd_dim1);
+           gatherfwddim1i32Instance.GetKernelName(names[GAUDI_KERNEL_GATHER_FWD_DIM1_I32]);
 
         }
 
@@ -303,6 +308,20 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return searchsortedfwdf32Instance.GetGcDefinitions(params, instance);
+    }
+    
+    GatherFwdI32 gatherfwddim0i32Instance(GatherFwdI32::gather_fwd_dim0);
+    gatherfwddim0i32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return gatherfwddim0i32Instance.GetGcDefinitions(params, instance);
+    }
+
+    GatherFwdI32 gatherfwddim1i32Instance(GatherFwdI32::gather_fwd_dim1);
+    gatherfwddim1i32Instance.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return gatherfwddim1i32Instance.GetGcDefinitions(params, instance);
     }
 
     /////// --- Gaudi2 
