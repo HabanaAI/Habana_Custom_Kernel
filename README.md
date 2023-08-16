@@ -15,7 +15,7 @@ TPC is designed for workloads that do not map to Matrix Multiplication Engine (*
 ## Install Habanatools For Ubuntu
 To retrieve the package please visit [Habana Vault](https://vault.habana.ai/ui/repos/tree/General/debian/focal/pool/main/h/habanatools/habanatools_1.10.0-494_amd64.deb), click Artifact, find habanatools and download the latest release package for Ubuntu 20.04. You can find different packages for different OS you used. 
 ```  
-  sudo dpkg -i ./habanatools_1.10.0-494_amd64.deb
+  sudo dpkg -i ./habanatools_1.11.0-587_amd64.deb
 ```
 - Once installed the following files will be added to your machine 
   
