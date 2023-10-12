@@ -400,7 +400,7 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
     unsigned IsaSize = (&_binary___kl_div_fwd_f32_o_end - &_binary___kl_div_fwd_f32_o_start);
-    unsigned char *binary_kernel;
+    unsigned char *binary_kernel = &_binary___kl_div_bwd_f32_o_start;
     switch (m_mode)
     {
         case fwd_f32:
