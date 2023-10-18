@@ -74,7 +74,6 @@ int main(int argc, char** argv)
             "SearchSortedFwdF32Test     Run SearchSortedFwdF32Test only   " << std::endl <<
             "GatherFwdDim0I32Test       Run GatherFwdDim0I32Test only   " << std::endl <<
             "KLDivFwdF32                Run KLDivFwdF32 only   "          << std::endl <<
-            "KLDivBwdF32                Run KLDivBwdF32 only   "          << std::endl <<
 
             "AvgPool2DFwdF32Gaudi2Test  Run AvgPool2DFwdF32Gaudi2Test only   " << std::endl <<
             "AvgPool2DBwdF32Gaudi2Test  Run AvgPool2DBwdF32Gaudi2Test only   " << std::endl <<
@@ -483,20 +482,6 @@ int main(int argc, char** argv)
         }
     }
 
-    if(argc == 1 ||
-        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0)) 
-        && (strcmp(argv[2],"Gaudi") ==0)))  ||    
-        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0)) 
-        && (strcmp(argv[2],"KLDivBwdF32") ==0))))
-    {
-        testKLDiv.SetUp();
-        result = testKLDiv.runTest(GAUDI_KERNEL_KL_DIV_BWD_F32);
-        testKLDiv.TearDown();
-        if (result != 0)
-        {
-            return result;
-        }
-    }
     // The following ones are for Gaudi2
     AvgPool2DF32Gaudi2Test avgpool2df32Gaudi2ins;
     if(argc == 1 ||
