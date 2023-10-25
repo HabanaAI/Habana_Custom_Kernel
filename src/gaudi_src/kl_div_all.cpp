@@ -15,12 +15,13 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #include "kl_div_all.hpp"
-#include <stdio.h>
 
 extern unsigned char _binary___kl_div_fwd_f32_o_start;
 extern unsigned char _binary___kl_div_fwd_f32_o_end;
 extern unsigned char _binary___kl_div_bwd_f32_o_start;
 extern unsigned char _binary___kl_div_bwd_f32_o_end;
+extern unsigned char _binary___kl_div_fwd_f32_gaudi2_o_start;
+extern unsigned char _binary___kl_div_fwd_f32_gaudi2_o_end;
 
 gcapi::GlueCodeReturn_t KLDivAll::GetKernelName(
              char kernelName [gcapi::MAX_NODE_NAME])
@@ -29,6 +30,8 @@ gcapi::GlueCodeReturn_t KLDivAll::GetKernelName(
         strcpy(kernelName,"custom_kl_div_fwd_f32");
     else if(m_mode == bwd_f32)
         strcpy(kernelName,"custom_kl_div_bwd_f32");
+    else if(m_mode == fwd_f32_gaudi2)
+        strcpy(kernelName,"custom_kl_div_fwd_f32_gaudi2");    
     else
         return gcapi::GLUE_NODE_NOT_FOUND;
     return gcapi::GLUE_SUCCESS;
@@ -114,7 +117,7 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
     *   Stage I - validate input
     **************************************************************************************/
     //validate correct amount of input tensors
-    if(m_mode == fwd_f32) {
+    if(m_mode == fwd_f32 || m_mode == fwd_f32_gaudi2) {
         if (in_defs->inputTensorNr != 2)
         {
             in_defs->inputTensorNr  = 2;
@@ -154,7 +157,7 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
     unsigned int * inputTensorSizes = in_defs->inputTensors[0].geometry.sizes;
     bool SizesAreEqual = true;
 
-    if(m_mode == fwd_f32) 
+    if(m_mode == fwd_f32 || m_mode == fwd_f32_gaudi2) 
     {
         SizesAreEqual &= in_defs->outputTensors[0].geometry.sizes[0] == 1;
     }
@@ -191,14 +194,14 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
     **************************************************************************************/
     int elementsInVec;
     unsigned depthIndex, elements;
-    if(m_mode == fwd_f32 || m_mode == bwd_f32)
+    if(m_mode == fwd_f32 || m_mode == fwd_f32_gaudi2|| m_mode == bwd_f32)
         elementsInVec = 64;
     else
         elementsInVec = 128;
 
     depthIndex = (inputTensorSizes[0] + (elementsInVec - 1)) / elementsInVec;
     elements   = elementsInVec * depthIndex;
-    if(m_mode == fwd_f32) 
+    if(m_mode == fwd_f32 || m_mode == fwd_f32_gaudi2) 
     {
         out_defs->indexSpaceGeometry.dims = 1;
         out_defs->indexSpaceGeometry.sizes[0] = 1;
@@ -216,7 +219,7 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
     // f_start(i) = elementsInVec*i + 0;
     // f_end f(i) = elementsInVec*i + (elementsInVec - 1);
     // Resource 0-4 (IFM) dim 0
-    if(m_mode == fwd_f32)    
+    if(m_mode == fwd_f32 || m_mode == fwd_f32_gaudi2)    
     {
         for(unsigned int ii = 0;ii < in_defs->inputTensorNr; ii++) {
             out_defs->inputTensorAccessPattern[ii].allRequired = true;
@@ -394,7 +397,6 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
     KLDivAllParams* def = static_cast<KLDivAllParams*>(in_defs->NodeParams);
     out_defs->kernel.paramsNr = sizeof(*def)/ sizeof(float);
     memcpy(&( out_defs->kernel.scalarParams[0]),def, sizeof(*def));
-    printf("KLDivParam size is %d\n", out_defs->kernel.paramsNr);
 
     /*************************************************************************************
     *    Stage V -  Load ISA into the descriptor.
@@ -411,6 +413,11 @@ gcapi::GlueCodeReturn_t KLDivAll::GetGcDefinitions(
             IsaSize = (&_binary___kl_div_bwd_f32_o_end - &_binary___kl_div_bwd_f32_o_start);
             binary_kernel = &_binary___kl_div_bwd_f32_o_start;
             break;
+        case fwd_f32_gaudi2:
+            IsaSize = (&_binary___kl_div_fwd_f32_gaudi2_o_end - &_binary___kl_div_fwd_f32_gaudi2_o_start);
+            binary_kernel = &_binary___kl_div_fwd_f32_gaudi2_o_start;
+            break;
+
         default:
             break;
     

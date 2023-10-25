@@ -28,7 +28,8 @@ public:
     typedef enum _KLDiv_mode_t
     {
         fwd_f32,
-        bwd_f32
+        bwd_f32,
+        fwd_f32_gaudi2
     } KLDiv_mode_t;
 
     KLDivAll(KLDiv_mode_t mode=fwd_f32) {m_mode = mode;}

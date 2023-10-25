@@ -33,7 +33,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "cast_f16_to_i16_gaudi2.hpp"
 #include "searchsorted_f32.hpp"
 #include "kl_div_all.hpp"
-#include <iostream>
 
 #include "entry_points.hpp"
 
@@ -115,6 +114,8 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
     {
         if (names != nullptr )
         {
+           KLDivAll KLDivFwdF32Instance2(KLDivAll::fwd_f32_gaudi2); 
+           KLDivFwdF32Instance2.GetKernelName(names[GAUDI2_KERNEL_KL_DIV_FWD_F32]);            
            AvgPool2dF32Gaudi2 avgpool2dfwdf32g2Instance(AvgPool2dF32Gaudi2::fwd);
            avgpool2dfwdf32g2Instance.GetKernelName(names[GAUDI2_KERNEL_AVG_POOL_2D_FWD_F32]);
            AvgPool2dF32Gaudi2 avgpool2dbwdf32g2Instance(AvgPool2dF32Gaudi2::bwd);
@@ -333,7 +334,6 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     KLDivFwdF32Instance.GetKernelName(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)
     {
-        std::cout<<"KLDivName is"<<params->nodeName<<std::endl;
         return KLDivFwdF32Instance.GetGcDefinitions(params,instance);
     }
 
@@ -345,6 +345,12 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     }
     /////// --- Gaudi2 
     ///////////////////////////////
+    KLDivAll KLDivFwdF32Instance2(KLDivAll::fwd_f32_gaudi2);
+    KLDivFwdF32Instance2.GetKernelName(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return KLDivFwdF32Instance2.GetGcDefinitions(params,instance);
+    }    
     AvgPool2dF32Gaudi2 avgpool2dfwdf32g2Instance(AvgPool2dF32Gaudi2::fwd);
     avgpool2dfwdf32g2Instance.GetKernelName(kernelName);
     if (strcmp(params->nodeName, kernelName) == 0)

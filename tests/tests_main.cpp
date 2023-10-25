@@ -476,6 +476,7 @@ int main(int argc, char** argv)
         testKLDiv.SetUp();
         result = testKLDiv.runTest(GAUDI_KERNEL_KL_DIV_FWD_F32);
         testKLDiv.TearDown();
+        testCount ++;
         if (result != 0)
         {
             return result;
