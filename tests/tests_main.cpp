@@ -17,6 +17,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include <iostream>
 #include "filter_fwd_2d_bf16_test.hpp"
 #include "softmax_bf16_test.hpp"
+#include "softmax_bf16_gaudi2_test.hpp"
 #include "cast_gaudi_test.hpp"
 #include "batchnorm_f32_test.hpp"
 #include "leakyrelu_f32_gaudi_test.hpp"
@@ -77,7 +78,8 @@ int main(int argc, char** argv)
 
             "AvgPool2DFwdF32Gaudi2Test  Run AvgPool2DFwdF32Gaudi2Test only   " << std::endl <<
             "AvgPool2DBwdF32Gaudi2Test  Run AvgPool2DBwdF32Gaudi2Test only   " << std::endl <<
-            "CastF16toI16Gaudi2Test     Run CastF16toI16Gaudi2Test only   " << std::endl;
+            "CastF16toI16Gaudi2Test     Run CastF16toI16Gaudi2Test only   " << std::endl <<
+            "SoftMaxBF16Gaudi2Test      Run SoftMaxBF16Gaudi2Test only   " << std::endl;
 
         exit(0);
     }
@@ -528,6 +530,23 @@ int main(int argc, char** argv)
         result = castf16tpi16Gaudi2ins.runTest();
         castf16tpi16Gaudi2ins.TearDown();
         testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(argc == 1 ||
+        (argc == 3 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
+        && (strcmp(argv[2],"Gaudi2") ==0)))  ||
+        (argc == 3 && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2],"SoftMaxBF16Gaudi2Test") ==0))))
+    {
+        SoftMaxBF16Gaudi2Test testSoftMaxBF16Gaudi2;
+        testSoftMaxBF16Gaudi2.SetUp();
+        result = testSoftMaxBF16Gaudi2.runTest();
+        testSoftMaxBF16Gaudi2.TearDown();
+        testCount += 2;
         if (result != 0)
         {
             return result;
