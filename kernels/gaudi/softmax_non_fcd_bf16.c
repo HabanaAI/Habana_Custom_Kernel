@@ -52,41 +52,54 @@ void main(
 
     bfloat128 zero_bf16 = 0.f;
 
+    // definition of -inf in bf16
+    static const unsigned short minusInfBf16 = 0xff80;
+    const short128 minusInfShort = minusInfBf16;
+    const bfloat128   neg_inf_bf16 = *((bfloat128*)&minusInfShort);
+
     bfloat128 x;
     bfloat128 y;
     bfloat128 sum;
-
+    bfloat128 max;
+    // for numerical sbaility reasons we will implement the following softmax calculation EXP(X-Xmax)/ SUM(X-Xmax)
     for (int d = depthStart; d < depthEnd; d += depthStep)
     {
         ifmCoords[depth] = d;
-
         for (int b = batchStart; b < batchEnd; b += batchStep)
         {
             ifmCoords[batch] = b;
-
             for (int h = heightStart; h < heightEnd; h += heightStep)
             {
                 ifmCoords[height] = h;
-
-                sum = zero_bf16;
-
+                max = neg_inf_bf16;
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
                     ifmCoords[width] = w;
-
                     // load input pixel
                     x = v_bf16_ld_tnsr_b(ifmCoords, ifm);
+                    // Move -inf for out of bound co-ordinates
+                    bool256 pred = from_bool128(v_u16_cmp_geq_b(d + V_LANE_ID_16, (unsigned)depthEnd, 0, to_bool128((bool256){0})));
+                    y = v_bf16_mov_vb(neg_inf_bf16, 0, x, to_bool128(pred), 0);
+                    // Get max values
+                    max = v_bf16_max_b(max,y);
+                }
+
+                sum = zero_bf16;
+                for (int w = widthStart; w < widthEnd; w += widthStep)
+                {
+                    ifmCoords[width] = w;
+                    // load input pixel
+                    x = v_bf16_ld_tnsr_b(ifmCoords, ifm);
+                    x = x - max;
                     float64_pair_t  xf32, yf32;
                     xf32 = v_convert_bf16_to_f32_all_b(x);
                     // exp_f32(float64 input)
                     yf32.v1 = v_exp_cephes_f32(xf32.v1);
                     yf32.v2 = v_exp_cephes_f32(xf32.v2);
                     y = v_convert_f32_to_bf16_all_b(yf32);
-
                     // Move zero for out of bound co-ordinates
                     bool256 pred = from_bool128(v_u16_cmp_geq_b(d + V_LANE_ID_16, (unsigned)depthEnd, 0, to_bool128((bool256){0})));
                     y = v_bf16_mov_vb(zero_bf16, 0, y, to_bool128(pred), 0);
-
                     // Sum up the values in a vector
                     sum = sum + y;
 
@@ -105,16 +118,15 @@ void main(
                     ifmCoords[width] = w;
 
                     x = v_bf16_ld_tnsr_b(ifmCoords, ifm);
+                    x = x - max;
                     float64_pair_t xf32, yf32;
                     xf32 = v_convert_bf16_to_f32_all_b(x);
                     // exp_bf16(bfloat128 input)
                     yf32.v1 = v_exp_cephes_f32(xf32.v1);
                     yf32.v2 = v_exp_cephes_f32(xf32.v2);
                     y = v_convert_f32_to_bf16_all_b(yf32);
-
                     // Multiply exp(x) * 1/(sum_of_exponents)
                     x = y * sum;
-
                     v_bf16_st_tnsr(ifmCoords, ofm, x);
                }
             }

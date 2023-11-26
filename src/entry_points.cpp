@@ -19,6 +19,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "cast_gaudi.hpp"
 #include "filter_fwd_2d_bf16.hpp"
 #include "softmax_bf16.hpp"
+#include "softmax_bf16_gaudi2.hpp"
 #include "leakyrelu_f32_gaudi.hpp"
 #include "sparse_lengths_sum_bf16.hpp"
 #include "customdiv_fwd_f32.hpp"
@@ -122,6 +123,9 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
            avgpool2dbwdf32g2Instance.GetKernelName(names[GAUDI2_KERNEL_AVG_POOL_2D_BWD_F32]);
            Castf16toi16Gaudi2 castf16toi16g2Instance;
            castf16toi16g2Instance.GetKernelName(names[GAUDI2_KERNEL_CAST_F16_TO_I16]);
+           SoftMaxBF16Gaudi2 softmaxInstance;
+           softmaxInstance.GetKernelNameFcd(names[GAUDI2_KERNEL_SOFTMAX_FCD_BF16]);
+           softmaxInstance.GetKernelNameNonFcd(names[GAUDI2_KERNEL_SOFTMAX_NONFCD_BF16]);
 
         }
 
@@ -370,6 +374,17 @@ HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     if (strcmp(params->nodeName, kernelName) == 0)
     {
         return castf16toi16g2Instance.GetGcDefinitions(params, instance);
+    }
+    SoftMaxBF16Gaudi2 softmaxBf16g2Instance;
+    softmaxBf16g2Instance.GetKernelNameFcd(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return softmaxBf16g2Instance.GetGcDefinitions(params,instance);
+    }
+    softmaxBf16g2Instance.GetKernelNameNonFcd(kernelName);
+    if (strcmp(params->nodeName, kernelName) == 0)
+    {
+        return softmaxBf16g2Instance.GetGcDefinitions(params,instance);
     }
 
     return gcapi::GLUE_NODE_NOT_FOUND;

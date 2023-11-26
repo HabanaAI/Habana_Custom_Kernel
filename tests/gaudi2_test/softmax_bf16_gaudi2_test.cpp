@@ -15,7 +15,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #include "tensor.h"
-#include "softmax_bf16_test.hpp"
+#include "softmax_bf16_gaudi2_test.hpp"
 #include "entry_points.hpp"
 
 inline float zeroSubNormals2(const float fp)
@@ -33,7 +33,7 @@ void Mul2(T* op1, T* op2, T_res* res)
     *res = (T_res)(*op1) * (T_res)(*op2);
 }
 
-void SoftMaxBF16Test::softmax_reference_implementation(
+void SoftMaxBF16Gaudi2Test::softmax_reference_implementation(
         test::Tensor<bfloat16,2>& input,
         test::Tensor<bfloat16,2>& output,
         int axis)
@@ -108,7 +108,7 @@ void SoftMaxBF16Test::softmax_reference_implementation(
      }
 }
 
- int SoftMaxBF16Test::runTest()
+ int SoftMaxBF16Gaudi2Test::runTest()
  {
     // Initialize input data
     const int fm_dim1 = 9;
@@ -122,7 +122,7 @@ void SoftMaxBF16Test::softmax_reference_implementation(
     bfloat16_2DTensor ofm(fmInitializer);
     bfloat16_2DTensor ofm_ref(fmInitializer);
 
-    SoftMaxBF16::SoftMaxParam def;
+    SoftMaxBF16Gaudi2::SoftMaxParam def;
 
     // Test for axis 0 softmax kernel
     def.axis = 0;
@@ -133,7 +133,7 @@ void SoftMaxBF16Test::softmax_reference_implementation(
                                      def.axis);
 
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
+    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI2;
     m_in_defs.inputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]),input );
 
@@ -144,13 +144,13 @@ void SoftMaxBF16Test::softmax_reference_implementation(
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    gcapi::GlueCodeReturn_t result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
         kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
     }    
-    result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
     if (result != gcapi::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
@@ -158,7 +158,7 @@ void SoftMaxBF16Test::softmax_reference_implementation(
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_SOFTMAX_FCD_BF16]);
+    strcpy(m_in_defs.nodeName, kernelNames[GAUDI2_KERNEL_SOFTMAX_FCD_BF16]);
     result  = HabanaKernel(&m_in_defs,&m_out_defs);
     if (result != gcapi::GLUE_SUCCESS)
     {
@@ -180,7 +180,7 @@ void SoftMaxBF16Test::softmax_reference_implementation(
     {
         if (tmp.abs(ofm.Data()[element] - ofm_ref.Data()[element])  > 1e-8)
         {
-            std::cout << "Softmax BF16 FCD test failed!!" << std::endl;
+            std::cout << "Softmax BF16 FCD Gaudi 2 test failed!!" << std::endl;
             ReleaseKernelNames(kernelNames, kernelCount);
             return -1;
         }
@@ -191,7 +191,7 @@ void SoftMaxBF16Test::softmax_reference_implementation(
         m_out_defs.auxiliaryTensors[0].pData = NULL;
     }
 
-    std::cout << "Softmax BF16 FCD test pass!!" << std::endl;
+    std::cout << "Softmax BF16 FCD Gaudi 2 test pass!!" << std::endl;
 
     // Test for axis 1 softmax kernel
     def.axis = 1;
@@ -204,7 +204,7 @@ void SoftMaxBF16Test::softmax_reference_implementation(
     m_in_defs.NodeParams = &def;
 
     // make the call into the glue code.
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_SOFTMAX_NONFCD_BF16]);
+    strcpy(m_in_defs.nodeName, kernelNames[GAUDI2_KERNEL_SOFTMAX_NONFCD_BF16]);
     result  = HabanaKernel(&m_in_defs,&m_out_defs);
     if (result != gcapi::GLUE_SUCCESS)
     {
@@ -227,12 +227,12 @@ void SoftMaxBF16Test::softmax_reference_implementation(
     {
         if (tmp.abs(ofm.Data()[element] - ofm_ref.Data()[element])  > 1e-7)
         {
-            std::cout << "Softmax BF 16 Non FCD test failed!!" << std::endl;
+            std::cout << "Softmax BF 16 Non FCD Gaudi 2 test failed!!" << std::endl;
             return -1;
         }
     }
 
-    std::cout << "Softmax BF 16 axis Non FCD test pass!!" << std::endl;
+    std::cout << "Softmax BF 16 axis Non FCD Gaudi 2 test pass!!" << std::endl;
     return 0;
  }
 
