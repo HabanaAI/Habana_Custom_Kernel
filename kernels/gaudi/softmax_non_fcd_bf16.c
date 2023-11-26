@@ -14,7 +14,6 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#define MINUS_INF (0xFF80)
 void main(
     tensor ifm,
     tensor ofm
@@ -54,7 +53,8 @@ void main(
     bfloat128 zero_bf16 = 0.f;
 
     // definition of -inf in bf16
-    const short128 minusInfShort = MINUS_INF;
+    static const unsigned short minusInfBf16 = 0xff80;
+    const short128 minusInfShort = minusInfBf16;
     const bfloat128   neg_inf_bf16 = *((bfloat128*)&minusInfShort);
 
     bfloat128 x;
@@ -65,27 +65,21 @@ void main(
     for (int d = depthStart; d < depthEnd; d += depthStep)
     {
         ifmCoords[depth] = d;
-
         for (int b = batchStart; b < batchEnd; b += batchStep)
         {
             ifmCoords[batch] = b;
-
             for (int h = heightStart; h < heightEnd; h += heightStep)
             {
                 ifmCoords[height] = h;
-
-
                 max = neg_inf_bf16;
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
                     ifmCoords[width] = w;
-
                     // load input pixel
                     x = v_bf16_ld_tnsr_b(ifmCoords, ifm);
                     // Move -inf for out of bound co-ordinates
                     bool256 pred = from_bool128(v_u16_cmp_geq_b(d + V_LANE_ID_16, (unsigned)depthEnd, 0, to_bool128((bool256){0})));
                     y = v_bf16_mov_vb(neg_inf_bf16, 0, x, to_bool128(pred), 0);
-
                     // Get max values
                     max = v_bf16_max_b(max,y);
                 }
@@ -94,7 +88,6 @@ void main(
                 for (int w = widthStart; w < widthEnd; w += widthStep)
                 {
                     ifmCoords[width] = w;
-
                     // load input pixel
                     x = v_bf16_ld_tnsr_b(ifmCoords, ifm);
                     x = x - max;
@@ -104,11 +97,9 @@ void main(
                     yf32.v1 = v_exp_cephes_f32(xf32.v1);
                     yf32.v2 = v_exp_cephes_f32(xf32.v2);
                     y = v_convert_f32_to_bf16_all_b(yf32);
-
                     // Move zero for out of bound co-ordinates
                     bool256 pred = from_bool128(v_u16_cmp_geq_b(d + V_LANE_ID_16, (unsigned)depthEnd, 0, to_bool128((bool256){0})));
                     y = v_bf16_mov_vb(zero_bf16, 0, y, to_bool128(pred), 0);
-
                     // Sum up the values in a vector
                     sum = sum + y;
 
@@ -134,10 +125,8 @@ void main(
                     yf32.v1 = v_exp_cephes_f32(xf32.v1);
                     yf32.v2 = v_exp_cephes_f32(xf32.v2);
                     y = v_convert_f32_to_bf16_all_b(yf32);
-
                     // Multiply exp(x) * 1/(sum_of_exponents)
                     x = y * sum;
-
                     v_bf16_st_tnsr(ifmCoords, ofm, x);
                }
             }

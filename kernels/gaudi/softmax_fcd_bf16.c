@@ -135,7 +135,8 @@ void main(
 
     const bfloat128 zero_bf16 = 0.f;
     // definition of -inf in bf16
-    const short128 minusInfShort = MINUS_INF;
+    static const unsigned short minusInfBf16 = 0xff80;
+    const short128 minusInfShort = minusInfBf16;
     const bfloat128   neg_inf_bf16 = *((bfloat128*)&minusInfShort);
     // calculation of the vlm_data_end in the depth dimension
     const int vlm_data_end =  (VLM_VECTORS_IN_DEPTH*depthStep) > depthEnd ? depthEnd : (VLM_VECTORS_IN_DEPTH*depthStep)  ;
