@@ -108,13 +108,13 @@ int CastF16toI16Gaudi2Test::runTest()
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
+    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
         kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
     }    
-    result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
+    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
     if (result != gcapi::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
@@ -123,7 +123,7 @@ int CastF16toI16Gaudi2Test::runTest()
     }
 
     strcpy(m_in_defs.nodeName, kernelNames[GAUDI2_KERNEL_CAST_F16_TO_I16]);
-    result  = HabanaKernel(&m_in_defs,&m_out_defs);
+    result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
     if (result != gcapi::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;

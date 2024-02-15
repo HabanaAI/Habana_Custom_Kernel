@@ -40,7 +40,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 extern "C"
 {
 
-gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
+gcapi::GlueCodeReturn_t GetKernelGuids(_OUT_ char**         names,
                                        unsigned*            kernelCount,
                                        gcapi::DeviceId_t    deviceId)
 {
@@ -148,7 +148,7 @@ gcapi::GlueCodeReturn_t GetKernelNames(_OUT_ char**         names,
 
 
 gcapi::GlueCodeReturn_t
-HabanaKernel(_IN_  gcapi::HabanaKernelParams_t* params,
+InstantiateTpcKernel(_IN_  gcapi::HabanaKernelParams_t* params,
              _OUT_ gcapi::HabanaKernelInstantiation_t*instance)
 {
     char kernelName [gcapi::MAX_NODE_NAME];

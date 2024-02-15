@@ -106,13 +106,13 @@ int SearchSortedF32Test::runTest()
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
         kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
     }    
-    result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
     if (result != gcapi::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
@@ -121,7 +121,7 @@ int SearchSortedF32Test::runTest()
     }
 
     strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_SEARCH_SORTED_FWD_F32]);
-    result  = HabanaKernel(&m_in_defs,&m_out_defs);
+    result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
     if (result != gcapi::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;

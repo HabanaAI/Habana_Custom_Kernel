@@ -327,13 +327,13 @@ int AvgPool2DF32Gaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
+    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
         kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
     }    
-    result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
+    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
     if (result != gcapi::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
@@ -342,7 +342,7 @@ int AvgPool2DF32Gaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
     }
 
     strcpy(m_in_defs.nodeName, kernelNames[NameofKernel]);
-    result  = HabanaKernel(&m_in_defs,&m_out_defs);
+    result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
 
     // Declaration of auxiliary tensor
     float_1DTensor aux_tensor({100});
@@ -358,7 +358,7 @@ int AvgPool2DF32Gaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
         m_out_defs.auxiliaryTensors[0].pData =
                                     new float[m_out_defs.auxiliaryTensors[0].bufferSize / sizeof(float)];
         // second call of glue-code to load Auxiliary data.
-        result  = HabanaKernel(&m_in_defs,&m_out_defs);
+        result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
         // AUXILIARY TENSOR init based on parameters got from glue code
         aux_tensor.Init(m_out_defs.auxiliaryTensors[0].geometry.sizes,
                                     (float*)m_out_defs.auxiliaryTensors[0].pData);

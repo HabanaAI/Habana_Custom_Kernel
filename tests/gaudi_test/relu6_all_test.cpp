@@ -192,13 +192,13 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
 
         kernelCount = 0;
-        result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+        result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
         kernelNames = new char*[kernelCount];
         for (unsigned i = 0; i < kernelCount; i++)
         {
             kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
         }    
-        result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+        result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
         if (result != gcapi::GLUE_SUCCESS)
         {
             std::cout << "Can't get kernel name!! " << result << std::endl;
@@ -207,7 +207,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         }
 
         strcpy(m_in_defs.nodeName, kernelNames[NameofKernel]);
-        result  = HabanaKernel(&m_in_defs,&m_out_defs);
+        result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
         if (result != gcapi::GLUE_SUCCESS)
         {
             std::cout << "Glue test failed, can't load kernel " << result << std::endl;
@@ -282,13 +282,13 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
 
         kernelCount = 0;
-        result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+        result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
         kernelNames = new char*[kernelCount];
         for (unsigned i = 0; i < kernelCount; i++)
         {
             kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
         }    
-        result = GetKernelNames(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+        result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
         if (result != gcapi::GLUE_SUCCESS)
         {
             std::cout << "Can't get kernel name!! " << result << std::endl;
@@ -297,7 +297,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         }
 
         strcpy(m_in_defs.nodeName, kernelNames[NameofKernel]);
-        result  = HabanaKernel(&m_in_defs,&m_out_defs);
+        result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
         if (result != gcapi::GLUE_SUCCESS)
         {
             std::cout << "Glue test failed, can't load kernel " << result << std::endl;
