@@ -45,7 +45,11 @@ int check_arg(int argc, char** argv, const char* device, const char* test)
         (argc == 5 && (((strcmp(argv[1], "--device") ==0) || (strcmp(argv[1], "-d") ==0))
         && (strcmp(argv[2], device) ==0))  
         && (((strcmp(argv[3], "--test") ==0) || (strcmp(argv[3], "-t") ==0))
-        && (strcmp(argv[4], test) ==0))) )
+        && (strcmp(argv[4], test) ==0))) ||
+        (argc == 5 && (((strcmp(argv[3], "--device") ==0) || (strcmp(argv[3], "-d") ==0))
+        && (strcmp(argv[4], device) ==0))  
+        && (((strcmp(argv[1], "--test") ==0) || (strcmp(argv[1], "-t") ==0))
+        && (strcmp(argv[2], test) ==0))))
         return 1;
     else
         return 0;
