@@ -97,6 +97,7 @@ int main(int argc, char** argv)
             "KLDivFwdF32                Run KLDivFwdF32 only   "          << std::endl <<
 
             "AvgPool2DFwdF32Gaudi2Test  Run AvgPool2DFwdF32Gaudi2Test only   " << std::endl <<
+            "AvgPool2DBwdF32Gaudi2Test  Run AvgPool2DBwdF32Gaudi2Test only   " << std::endl <<
             "CastF16toI16Gaudi2Test     Run CastF16toI16Gaudi2Test only   " << std::endl <<
             "SoftMaxBF16Gaudi2Test      Run SoftMaxBF16Gaudi2Test only   " << std::endl;
 
@@ -427,7 +428,7 @@ int main(int argc, char** argv)
         }
     }
 
-    /*if(check_arg(argc, argv, "Gaudi2", "AvgPool2DBwdF32Gaudi2Test"))
+    if(check_arg(argc, argv, "Gaudi2", "AvgPool2DBwdF32Gaudi2Test"))
     {
         avgpool2df32Gaudi2ins.SetUp();
         result = avgpool2df32Gaudi2ins.runTest(GAUDI2_KERNEL_AVG_POOL_2D_BWD_F32);
@@ -437,7 +438,7 @@ int main(int argc, char** argv)
         {
             return result;
         }
-    }*/
+    }
 
     
     if(check_arg(argc, argv, "Gaudi2", "CastF16toI16Gaudi2Test"))

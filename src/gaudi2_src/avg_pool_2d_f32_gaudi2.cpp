@@ -154,6 +154,10 @@ gcapi::GlueCodeReturn_t AvgPool2dF32Gaudi2::GetGcDefinitions(
         out_defs->inputTensorAccessPattern[0].dim[2].start_b =  -((def->srdef.kernel_h - 1) + (def->srdef.stride_h - 1)) * def->srdef.dilation_h / def->srdef.stride_h;
         out_defs->inputTensorAccessPattern[0].dim[2].end_b = (def->srdef.pad_h / (float)def->srdef.stride_h);
 
+        out_defs->inputPadValues[0].fValue = 0.0;
+        out_defs->outputMemsetValues[0].fValue = 0.0;
+        out_defs->inputTensorAccessPattern[0].memsetBeforeExecution = 1;
+        out_defs->outputTensorAccessPattern[0].memsetBeforeExecution = 1;
     }
 
     /*************************************************************************************
