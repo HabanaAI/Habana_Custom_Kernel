@@ -18,6 +18,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #define _MATRIX_MUL_FWD_F32_HPP
 
 #include "gc_interface.h"
+#include "tpc_kernel_lib_interface.h"
 
 class MatrixMulFwdF32
 {
@@ -25,12 +26,12 @@ class MatrixMulFwdF32
         MatrixMulFwdF32() {}
         virtual ~MatrixMulFwdF32() {}
 
-        virtual gcapi::GlueCodeReturn_t
-        GetGcDefinitions(gcapi::HabanaKernelParams_t*      in_defs,
-                     gcapi::HabanaKernelInstantiation_t* out_defs);
+        virtual tpc_lib_api::GlueCodeReturn
+        GetGcDefinitions(tpc_lib_api::HabanaKernelParams*      in_defs,
+                     tpc_lib_api::HabanaKernelInstantiation* out_defs);
 
-        virtual gcapi::GlueCodeReturn_t GetKernelName(
-                char kernelName [gcapi::MAX_NODE_NAME]);                            
+        virtual tpc_lib_api::GlueCodeReturn GetKernelName(
+                char kernelName [tpc_lib_api::MAX_NODE_NAME]);                            
 
     private:
         MatrixMulFwdF32(const MatrixMulFwdF32& other) = delete;

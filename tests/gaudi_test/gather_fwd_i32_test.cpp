@@ -149,8 +149,8 @@ int GatherFwdI32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
     const int batch  = 1;
     const int fifthdim  = 1;
 
-    unsigned int fmInitializer[] = {depth, width, height, batch, fifthdim};
-    unsigned int indexInitializer[] = {depth, width, height, batch, fifthdim};
+    uint64_t fmInitializer[] = {depth, width, height, batch, fifthdim};
+    uint64_t indexInitializer[] = {depth, width, height, batch, fifthdim};
 
     int32_5DTensor input_tensor(fmInitializer);
     int32_5DTensor index_tensor(indexInitializer);
@@ -170,8 +170,8 @@ int GatherFwdI32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
 
     // generate input for query call
     m_in_defs.inputTensorNr = 2;
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
-    m_in_defs.NodeParams = &param;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
+    m_in_defs.nodeParams.nodeParams = &param;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input_tensor);
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), index_tensor);
 
@@ -186,23 +186,23 @@ int GatherFwdI32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[NameofKernel]);
+    strcpy(m_in_defs.guid.name, kernelNames[NameofKernel]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);

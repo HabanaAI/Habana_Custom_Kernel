@@ -36,8 +36,8 @@ extern unsigned char _binary___relu_bwd_bf16_o_start;
 extern unsigned char _binary___relu_bwd_bf16_o_end;
 
 
-gcapi::GlueCodeReturn_t Relu6All::GetKernelName(
-        char kernelName [gcapi::MAX_NODE_NAME], Relu6_mode_t mode)
+tpc_lib_api::GlueCodeReturn Relu6All::GetKernelName(
+        char kernelName [tpc_lib_api::MAX_NODE_NAME], Relu6_mode_t mode)
 {
     if(mode == relu6_fwd_f32)
         strcpy(kernelName,"custom_relu6_fwd_f32");
@@ -56,16 +56,16 @@ gcapi::GlueCodeReturn_t Relu6All::GetKernelName(
     else if(mode == relu_bwd_bf16)
         strcpy(kernelName,"custom_relu_bwd_bf16");
     else
-        return gcapi::GLUE_NODE_NOT_FOUND;
-    return gcapi::GLUE_SUCCESS;
+        return tpc_lib_api::GLUE_NODE_NOT_FOUND;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
-gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
-        gcapi::HabanaKernelParams_t* in_defs,
-        gcapi::HabanaKernelInstantiation_t* out_defs)
+tpc_lib_api::GlueCodeReturn Relu6All::GetGcDefinitions(
+        tpc_lib_api::HabanaKernelParams* in_defs,
+        tpc_lib_api::HabanaKernelInstantiation* out_defs)
 {
 	const int c_unrollCount = 4;
-    gcapi::GlueCodeReturn_t retVal;
+    tpc_lib_api::GlueCodeReturn retVal;
     /*************************************************************************************
     *   Stage I - validate input
     **************************************************************************************/
@@ -75,14 +75,14 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
         if (in_defs->inputTensorNr != 1)
         {
             in_defs->inputTensorNr  = 1;
-            return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+            return tpc_lib_api::GLUE_INCOMPATIBLE_INPUT_COUNT;
         }
     }
     else{
         if (in_defs->inputTensorNr != 2)
         {
             in_defs->inputTensorNr  = 2;
-            return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+            return tpc_lib_api::GLUE_INCOMPATIBLE_INPUT_COUNT;
         }
 
     }
@@ -90,27 +90,27 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     if (in_defs->outputTensorNr != 1)
     {
         in_defs->outputTensorNr  = 1;
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
 
     // validate input and output data type
     if(m_mode == relu6_fwd_f32 || m_mode == relu6_bwd_f32 || m_mode == relu_fwd_f32 || m_mode == relu_bwd_f32)
     {
-        if (in_defs->inputTensors[0].dataType != gcapi::DATA_F32 ||
-            in_defs->outputTensors[0].dataType != gcapi::DATA_F32)
+        if (in_defs->inputTensors[0].geometry.dataType != tpc_lib_api::DATA_F32 ||
+            in_defs->outputTensors[0].geometry.dataType != tpc_lib_api::DATA_F32)
         {
-            in_defs->inputTensors[0].dataType = gcapi::DATA_F32;
-            in_defs->outputTensors[0].dataType = gcapi::DATA_F32;
-            return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
+            in_defs->inputTensors[0].geometry.dataType = tpc_lib_api::DATA_F32;
+            in_defs->outputTensors[0].geometry.dataType = tpc_lib_api::DATA_F32;
+            return tpc_lib_api::GLUE_INCOMPATIBLE_DATA_TYPE;
         }
     }
     else{
-        if (in_defs->inputTensors[0].dataType != gcapi::DATA_BF16 ||
-            in_defs->outputTensors[0].dataType != gcapi::DATA_BF16)
+        if (in_defs->inputTensors[0].geometry.dataType != tpc_lib_api::DATA_BF16 ||
+            in_defs->outputTensors[0].geometry.dataType != tpc_lib_api::DATA_BF16)
         {
-            in_defs->inputTensors[0].dataType = gcapi::DATA_BF16;
-            in_defs->outputTensors[0].dataType = gcapi::DATA_BF16;
-            return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
+            in_defs->inputTensors[0].geometry.dataType = tpc_lib_api::DATA_BF16;
+            in_defs->outputTensors[0].geometry.dataType = tpc_lib_api::DATA_BF16;
+            return tpc_lib_api::GLUE_INCOMPATIBLE_DATA_TYPE;
         }
     }
     // Tensor 0 should be input feature map.
@@ -119,14 +119,14 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     // framework level.
     unsigned int outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
 
-    memcpy(outputSizes, in_defs->inputTensors[0].geometry.sizes, sizeof(outputSizes));
+    memcpy(outputSizes, in_defs->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
 
     // verify that output feature map dimension are correct
-    if (memcmp(in_defs->outputTensors[0].geometry.sizes, outputSizes,
+    if (memcmp(in_defs->outputTensors[0].geometry.maxSizes, outputSizes,
                in_defs->outputTensors[0].geometry.dims * sizeof(unsigned) ) != 0)
     {
-        memcpy(in_defs->outputTensors[0].geometry.sizes, in_defs->inputTensors[0].geometry.sizes, sizeof(outputSizes));
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
+        memcpy(in_defs->outputTensors[0].geometry.maxSizes, in_defs->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
     }
 
     /*************************************************************************************
@@ -141,13 +141,13 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
 
     //round up to elementsInVec and divide by elementsInVec.
     unsigned depthIndex = (outputSizes[0] + (elementsInVec - 1)) / elementsInVec;
-    out_defs->indexSpaceGeometry.dims = 5;
-    out_defs->indexSpaceGeometry.sizes[0] = depthIndex;
+    out_defs->indexSpaceRank = 5;
+    out_defs->indexSpaceGeometry[0] = depthIndex;
 	//reduce index space due to unroll.
-    out_defs->indexSpaceGeometry.sizes[1] = (outputSizes[1] +(c_unrollCount-1)) / c_unrollCount; 
-    out_defs->indexSpaceGeometry.sizes[2] = outputSizes[2];
-    out_defs->indexSpaceGeometry.sizes[3] = outputSizes[3];
-    out_defs->indexSpaceGeometry.sizes[4] = outputSizes[4];
+    out_defs->indexSpaceGeometry[1] = (outputSizes[1] +(c_unrollCount-1)) / c_unrollCount; 
+    out_defs->indexSpaceGeometry[2] = outputSizes[2];
+    out_defs->indexSpaceGeometry[3] = outputSizes[3];
+    out_defs->indexSpaceGeometry[4] = outputSizes[4];
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping
@@ -156,80 +156,71 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
     // Resource 0 (IFM) dim 0
     out_defs->inputTensorAccessPattern[0].allRequired = true;
-    out_defs->inputTensorAccessPattern[0].dim[0].dim      = 0;
-    out_defs->inputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
-    out_defs->inputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
-    out_defs->inputTensorAccessPattern[0].dim[0].start_b  = 0;
-    out_defs->inputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
+    out_defs->inputTensorAccessPattern[0].mapping[0].indexSpaceDim      = 0;
+    out_defs->inputTensorAccessPattern[0].mapping[0].a        = elementsInVec;
+    out_defs->inputTensorAccessPattern[0].mapping[0].start_b  = 0;
+    out_defs->inputTensorAccessPattern[0].mapping[0].end_b    = elementsInVec - 1;
 
-	out_defs->inputTensorAccessPattern[0].dim[1].dim      = 1;
-    out_defs->inputTensorAccessPattern[0].dim[1].start_a  = c_unrollCount;
-    out_defs->inputTensorAccessPattern[0].dim[1].end_a    = c_unrollCount;
-    out_defs->inputTensorAccessPattern[0].dim[1].start_b  = 0;
-    out_defs->inputTensorAccessPattern[0].dim[1].end_b    = c_unrollCount - 1;
+	out_defs->inputTensorAccessPattern[0].mapping[1].indexSpaceDim      = 1;
+    out_defs->inputTensorAccessPattern[0].mapping[1].a        = c_unrollCount;
+    out_defs->inputTensorAccessPattern[0].mapping[1].start_b  = 0;
+    out_defs->inputTensorAccessPattern[0].mapping[1].end_b    = c_unrollCount - 1;
 	
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (IFM) dim 1-4
-    for (unsigned int dims = 2; dims < out_defs->indexSpaceGeometry.dims; dims++)
+    for (unsigned int dims = 2; dims < out_defs->indexSpaceRank; dims++)
     {
-        out_defs->inputTensorAccessPattern[0].dim[dims].dim      = dims;
-        out_defs->inputTensorAccessPattern[0].dim[dims].start_a  = 1;
-        out_defs->inputTensorAccessPattern[0].dim[dims].end_a    = 1;
-        out_defs->inputTensorAccessPattern[0].dim[dims].start_b  = 0;
-        out_defs->inputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
+        out_defs->inputTensorAccessPattern[0].mapping[dims].indexSpaceDim      = dims;
+        out_defs->inputTensorAccessPattern[0].mapping[dims].a        = 1;
+        out_defs->inputTensorAccessPattern[0].mapping[dims].start_b  = 0;
+        out_defs->inputTensorAccessPattern[0].mapping[dims].end_b    = 1 - 1;
     }
 
     //out_defs->inputTensorAccessPattern[1].allRequired = true;
-    out_defs->inputTensorAccessPattern[1].dim[0].dim      = 0;
-    out_defs->inputTensorAccessPattern[1].dim[0].start_a  = elementsInVec;
-    out_defs->inputTensorAccessPattern[1].dim[0].end_a    = elementsInVec;
-    out_defs->inputTensorAccessPattern[1].dim[0].start_b  = 0;
-    out_defs->inputTensorAccessPattern[1].dim[0].end_b    = elementsInVec - 1;
+    out_defs->inputTensorAccessPattern[1].mapping[0].indexSpaceDim      = 0;
+    out_defs->inputTensorAccessPattern[1].mapping[0].a        = elementsInVec;
+    out_defs->inputTensorAccessPattern[1].mapping[0].start_b  = 0;
+    out_defs->inputTensorAccessPattern[1].mapping[0].end_b    = elementsInVec - 1;
 
-	out_defs->inputTensorAccessPattern[1].dim[1].dim      = 1;
-    out_defs->inputTensorAccessPattern[1].dim[1].start_a  = c_unrollCount;
-    out_defs->inputTensorAccessPattern[1].dim[1].end_a    = c_unrollCount;
-    out_defs->inputTensorAccessPattern[1].dim[1].start_b  = 0;
-    out_defs->inputTensorAccessPattern[1].dim[1].end_b    = c_unrollCount - 1;
+	out_defs->inputTensorAccessPattern[1].mapping[1].indexSpaceDim      = 1;
+    out_defs->inputTensorAccessPattern[1].mapping[1].a        = c_unrollCount;
+    out_defs->inputTensorAccessPattern[1].mapping[1].start_b  = 0;
+    out_defs->inputTensorAccessPattern[1].mapping[1].end_b    = c_unrollCount - 1;
 	
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (IFM) dim 1-4
-    for (unsigned int dims = 2; dims < out_defs->indexSpaceGeometry.dims; dims++)
+    for (unsigned int dims = 2; dims < out_defs->indexSpaceRank; dims++)
     {
-        out_defs->inputTensorAccessPattern[1].dim[dims].dim      = dims;
-        out_defs->inputTensorAccessPattern[1].dim[dims].start_a  = 1;
-        out_defs->inputTensorAccessPattern[1].dim[dims].end_a    = 1;
-        out_defs->inputTensorAccessPattern[1].dim[dims].start_b  = 0;
-        out_defs->inputTensorAccessPattern[1].dim[dims].end_b    = 1 - 1;
+        out_defs->inputTensorAccessPattern[1].mapping[dims].indexSpaceDim      = dims;
+        out_defs->inputTensorAccessPattern[1].mapping[dims].a        = 1;
+        out_defs->inputTensorAccessPattern[1].mapping[dims].start_b  = 0;
+        out_defs->inputTensorAccessPattern[1].mapping[dims].end_b    = 1 - 1;
     }
 
     // f_start f(i) = elementsInVec*i + 0;
     // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
     // Resource 0 (OFM) dim 0
-    out_defs->outputTensorAccessPattern[0].dim[0].dim      = 0;
-    out_defs->outputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
-    out_defs->outputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
-    out_defs->outputTensorAccessPattern[0].dim[0].start_b  = 0;
-    out_defs->outputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
+    out_defs->outputTensorAccessPattern[0].mapping[0].indexSpaceDim      = 0;
+    out_defs->outputTensorAccessPattern[0].mapping[0].a        = elementsInVec;
+    out_defs->outputTensorAccessPattern[0].mapping[0].start_b  = 0;
+    out_defs->outputTensorAccessPattern[0].mapping[0].end_b    = elementsInVec - 1;
 	
-	out_defs->outputTensorAccessPattern[0].dim[1].dim      = 1;
-    out_defs->outputTensorAccessPattern[0].dim[1].start_a  = c_unrollCount;
-    out_defs->outputTensorAccessPattern[0].dim[1].end_a    = c_unrollCount;
-    out_defs->outputTensorAccessPattern[0].dim[1].start_b  = 0;
-    out_defs->outputTensorAccessPattern[0].dim[1].end_b    = c_unrollCount - 1;
+	out_defs->outputTensorAccessPattern[0].mapping[1].indexSpaceDim      = 1;
+    out_defs->outputTensorAccessPattern[0].mapping[1].a        = c_unrollCount;
+    out_defs->outputTensorAccessPattern[0].mapping[1].start_b  = 0;
+    out_defs->outputTensorAccessPattern[0].mapping[1].end_b    = c_unrollCount - 1;
 
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (OFM) dim 1-4
-    for (unsigned int dims = 2; dims < out_defs->indexSpaceGeometry.dims; dims++)
+    for (unsigned int dims = 2; dims < out_defs->indexSpaceRank; dims++)
     {
-        out_defs->outputTensorAccessPattern[0].dim[dims].dim      = dims;
-        out_defs->outputTensorAccessPattern[0].dim[dims].start_a  = 1;
-        out_defs->outputTensorAccessPattern[0].dim[dims].end_a    = 1;
-        out_defs->outputTensorAccessPattern[0].dim[dims].start_b  = 0;
-        out_defs->outputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
+        out_defs->outputTensorAccessPattern[0].mapping[dims].indexSpaceDim      = dims;
+        out_defs->outputTensorAccessPattern[0].mapping[dims].a        = 1;
+        out_defs->outputTensorAccessPattern[0].mapping[dims].start_b  = 0;
+        out_defs->outputTensorAccessPattern[0].mapping[dims].end_b    = 1 - 1;
     }
 
 
@@ -283,19 +274,19 @@ gcapi::GlueCodeReturn_t Relu6All::GetGcDefinitions(
     
     }
         
-    unsigned givenBinarySize = out_defs->elfSize;
-    out_defs->elfSize = IsaSize;
+    unsigned givenBinarySize = out_defs->kernel.elfSize;
+    out_defs->kernel.elfSize = IsaSize;
     if (givenBinarySize >= IsaSize)
     {
-        memcpy (out_defs->kernelElf, binary_kernel, IsaSize);
+        memcpy (out_defs->kernel.kernelElf, binary_kernel, IsaSize);
     }
     else
     {
-        retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
+        retVal = tpc_lib_api::GLUE_INSUFFICIENT_ELF_BUFFER;
         return retVal;
     }
 
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
 

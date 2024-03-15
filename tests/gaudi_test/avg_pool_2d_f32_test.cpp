@@ -243,9 +243,9 @@ int AvgPool2DF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
     def.include_pads = 1;
 
 
-    unsigned int ifmInitializer[] = {ifm_depth, ifm_width, ifm_height, ifm_batch};
-    unsigned int ifmInit_tmp[] = {ifm_depth, ifm_width, ifm_height, ifm_batch};
-    unsigned int tfm2dInitializer[] = {ifm_width, ifm_height, 0, 0};
+    uint64_t ifmInitializer[] = {ifm_depth, ifm_width, ifm_height, ifm_batch};
+    uint64_t ifmInit_tmp[] = {ifm_depth, ifm_width, ifm_height, ifm_batch};
+    uint64_t tfm2dInitializer[] = {ifm_width, ifm_height, 0, 0};
     float_4DTensor ifm(ifmInitializer);
     ifm.FillWithData();
 
@@ -268,7 +268,7 @@ int AvgPool2DF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
         return -1;
     }
 
-    unsigned int ofmInitializer[] = {ifm_depth, (unsigned int)ofm_width, (unsigned int)ofm_height, ifm_batch};
+    uint64_t ofmInitializer[] = {ifm_depth, (unsigned int)ofm_width, (unsigned int)ofm_height, ifm_batch};
     
     float_4DTensor ofm(ofmInitializer);
     float_4DTensor ofm_ref(ofmInitializer);
@@ -299,8 +299,8 @@ int AvgPool2DF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
     }
 
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
-    m_in_defs.NodeParams = &def;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
+    m_in_defs.nodeParams.nodeParams = &def;
     m_in_defs.inputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), ifm);
 
@@ -309,27 +309,27 @@ int AvgPool2DF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[NameofKernel]);
+    strcpy(m_in_defs.guid.name, kernelNames[NameofKernel]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
 
     // Declaration of auxiliary tensor
     float_1DTensor aux_tensor({100});
     // Allocate memory for aux tensor if not allocated
-    if (result == gcapi::GLUE_INSUFICIENT_AUX_BUFFER_SIZE)
+    if (result == tpc_lib_api::GLUE_INSUFFICIENT_AUX_BUFFER_SIZE)
     {
         if (m_out_defs.auxiliaryTensors[0].pData)
         {
@@ -342,11 +342,11 @@ int AvgPool2DF32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
         // second call of glue-code to load Auxiliary data.
         result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
         // AUXILIARY TENSOR init based on parameters got from glue code
-        aux_tensor.Init(m_out_defs.auxiliaryTensors[0].geometry.sizes,
+        aux_tensor.Init(m_out_defs.auxiliaryTensors[0].geometry.maxSizes,
                                     (float*)m_out_defs.auxiliaryTensors[0].pData);
     }
 
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);

@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2022 Habana Labs.
+Copyright (c) 2024 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -28,28 +28,29 @@ void TestBase::SetUp()
     memset(&m_out_defs,0,sizeof(m_out_defs));
 
     // allocate memory for ISA
-    m_out_defs.elfSize = c_default_isa_buffer_size;
-    m_out_defs.kernelElf = malloc(c_default_isa_buffer_size);
+    m_out_defs.kernel.elfSize = c_default_isa_buffer_size;
+    m_out_defs.kernel.kernelElf = malloc(c_default_isa_buffer_size);
 }
 
 void TestBase::TearDown()
 {
-    free (m_out_defs.kernelElf);
-    m_out_defs.kernelElf = NULL;
-    m_out_defs.elfSize = 0;
+    free (m_out_defs.kernel.kernelElf);
+    m_out_defs.kernel.kernelElf = NULL;
+    m_out_defs.kernel.elfSize = 0;
 }
 
 unsigned int TestBase::RunSimulation(   std::vector<TensorDesc>& descriptors,
-                                        const gcapi::HabanaKernelParams_t& gc_input,
-                                        const gcapi::HabanaKernelInstantiation_t& gc_output,
+                                        const tpc_lib_api::HabanaKernelParams& gc_input,
+                                        const tpc_lib_api::HabanaKernelInstantiation& gc_output,
                                         IndexSpaceMappingTest_t testMode)
 {
-   unsigned  retVal= 0;
+   unsigned int  retVal= 0;
    //debug prints of glue code input and output.
    PrintKernelInputParams(&gc_input);
    PrintKernelOutputParams(&gc_input,&gc_output);    
 
-   retVal = tpc_tests::RunSimulation(gc_input, gc_output, descriptors);
+   VPEStats stat;
+   retVal = tpc_tests::RunSimulation(gc_input, gc_output, descriptors, stat);
    const char* env = getenv("TPC_RUNNER");
    if(env != nullptr && strcmp(env, "1") == 0)
       printf("Program executed using Habana device\n");
@@ -61,7 +62,7 @@ unsigned int TestBase::RunSimulation(   std::vector<TensorDesc>& descriptors,
 
 static const std::string dataType[] = {"float32", "float16", "int32", "int16", "int8", "uint8", "bfloat16"};
 
-void TestBase::PrintKernelInputParams(const gcapi::HabanaKernelParams_t* gc_input)
+void TestBase::PrintKernelInputParams(const tpc_lib_api::HabanaKernelParams* gc_input)
 {
     std::stringstream ss;
     ss << "Kernel Input Params:" << std::endl;
@@ -69,15 +70,15 @@ void TestBase::PrintKernelInputParams(const gcapi::HabanaKernelParams_t* gc_inpu
     for (unsigned i = 0; i < gc_input->inputTensorNr; i++)
     {
         ss << "\tinputTensors[" << i << "]."
-           << dataType[gc_input->inputTensors[i].dataType] << "_"
+           << dataType[gc_input->inputTensors[i].geometry.dataType] << "_"
            << gc_input->inputTensors[i].geometry.dims     << "DTensor[] = {"
-           << gc_input->inputTensors[i].geometry.sizes[0] << ", "
-           << gc_input->inputTensors[i].geometry.sizes[1] << ", "
-           << gc_input->inputTensors[i].geometry.sizes[2] << ", "
-           << gc_input->inputTensors[i].geometry.sizes[3] << ", "
-           << gc_input->inputTensors[i].geometry.sizes[4] << "}"
+           << gc_input->inputTensors[i].geometry.maxSizes[0] << ", "
+           << gc_input->inputTensors[i].geometry.maxSizes[1] << ", "
+           << gc_input->inputTensors[i].geometry.maxSizes[2] << ", "
+           << gc_input->inputTensors[i].geometry.maxSizes[3] << ", "
+           << gc_input->inputTensors[i].geometry.maxSizes[4] << "}"
            << std::endl;
-        if (gc_input->inputTensors[i].dataType != gcapi::DATA_F32)
+        if (gc_input->inputTensors[i].geometry.dataType != tpc_lib_api::DATA_F32)
         {
             ss << "\tinputTensors[" << i << "].scale = "
                << gc_input->inputTensors[i].quantizationParam.scale          << std::endl;
@@ -89,15 +90,15 @@ void TestBase::PrintKernelInputParams(const gcapi::HabanaKernelParams_t* gc_inpu
     for (unsigned i = 0; i < gc_input->outputTensorNr; i++)
     {
         ss << "\toutputTensors[" << i << "]."
-           << dataType[gc_input->outputTensors[i].dataType] << "_"
+           << dataType[gc_input->outputTensors[i].geometry.dataType] << "_"
            << gc_input->outputTensors[i].geometry.dims     << "DTensor[] = {"
-           << gc_input->outputTensors[i].geometry.sizes[0] << ", "
-           << gc_input->outputTensors[i].geometry.sizes[1] << ", "
-           << gc_input->outputTensors[i].geometry.sizes[2] << ", "
-           << gc_input->outputTensors[i].geometry.sizes[3] << ", "
-           << gc_input->outputTensors[i].geometry.sizes[4] << "}"
+           << gc_input->outputTensors[i].geometry.maxSizes[0] << ", "
+           << gc_input->outputTensors[i].geometry.maxSizes[1] << ", "
+           << gc_input->outputTensors[i].geometry.maxSizes[2] << ", "
+           << gc_input->outputTensors[i].geometry.maxSizes[3] << ", "
+           << gc_input->outputTensors[i].geometry.maxSizes[4] << "}"
            << std::endl;
-        if (gc_input->inputTensors[i].dataType != gcapi::DATA_F32)
+        if (gc_input->inputTensors[i].geometry.dataType != tpc_lib_api::DATA_F32)
         {
             ss << "\toutputTensors[" << i << "].scale = "
                << gc_input->outputTensors[i].quantizationParam.scale          << std::endl;
@@ -111,18 +112,18 @@ void TestBase::PrintKernelInputParams(const gcapi::HabanaKernelParams_t* gc_inpu
     std::cout << ss.str();
 }
 
-void TestBase::PrintKernelOutputParams(const gcapi::HabanaKernelParams_t* gc_input,
-                             const gcapi::HabanaKernelInstantiation_t*gc_output)
+void TestBase::PrintKernelOutputParams(const tpc_lib_api::HabanaKernelParams* gc_input,
+                             const tpc_lib_api::HabanaKernelInstantiation*gc_output)
 {
     std::stringstream ss;
     ss << "Glue code outputs:"  << std::endl;
-    ss << "\tindexSpaceGeometry.dims  = " << gc_output->indexSpaceGeometry.dims << std::endl;
-    ss << "\tindexSpaceGeometry.sizes = "
-       << gc_output->indexSpaceGeometry.sizes[0] << ", "
-       << gc_output->indexSpaceGeometry.sizes[1] << ", "
-       << gc_output->indexSpaceGeometry.sizes[2] << ", "
-       << gc_output->indexSpaceGeometry.sizes[3] << ", "
-       << gc_output->indexSpaceGeometry.sizes[4]
+    ss << "\tindexSpaceGeometry.dims  = " << gc_output->indexSpaceRank << std::endl;
+    ss << "\tindexSpaceGeometry.maxSizes = "
+       << gc_output->indexSpaceGeometry[0] << ", "
+       << gc_output->indexSpaceGeometry[1] << ", "
+       << gc_output->indexSpaceGeometry[2] << ", "
+       << gc_output->indexSpaceGeometry[3] << ", "
+       << gc_output->indexSpaceGeometry[4]
        << std::endl;
     for (unsigned i = 0; i < gc_input->inputTensorNr; i++)
     {
@@ -130,22 +131,17 @@ void TestBase::PrintKernelOutputParams(const gcapi::HabanaKernelParams_t* gc_inp
            << gc_output->inputTensorAccessPattern[i].allRequired
            << std::endl;
 
-        for (unsigned j = 0; j < gc_output->indexSpaceGeometry.dims; j++)
+        for (unsigned j = 0; j < gc_output->indexSpaceRank; j++)
         {
             ss << "\tinputTensorAccessPattern[" << i << "].tensorDim[" << j << "].indexSpaceDim = "
-               << gc_output->inputTensorAccessPattern[i].dim[j].dim     << std::endl;
-            ss << "\tinputTensorAccessPattern[" << i << "].tensorDim[" << j << "].start_a = "
-               << gc_output->inputTensorAccessPattern[i].dim[j].start_a << std::endl;
+               << gc_output->inputTensorAccessPattern[i].mapping[j].indexSpaceDim << std::endl;
+            ss << "\tinputTensorAccessPattern[" << i << "].tensorDim[" << j << "].a = "
+               << gc_output->inputTensorAccessPattern[i].mapping[j].a << std::endl;
             ss << "\tinputTensorAccessPattern[" << i << "].tensorDim[" << j << "].start_b = "
-               << gc_output->inputTensorAccessPattern[i].dim[j].start_b << std::endl;
-            ss << "\tinputTensorAccessPattern[" << i << "].tensorDim[" << j << "].end_a = "
-               << gc_output->inputTensorAccessPattern[i].dim[j].end_a   << std::endl;
+               << gc_output->inputTensorAccessPattern[i].mapping[j].start_b << std::endl;
             ss << "\tinputTensorAccessPattern[" << i << "].tensorDim[" << j << "].end_b = "
-               << gc_output->inputTensorAccessPattern[i].dim[j].end_b   << std::endl;
+               << gc_output->inputTensorAccessPattern[i].mapping[j].end_b   << std::endl;
         }
-        ss << "\tinputPadValues[" << i << "].i32Value = "
-           << gc_output->inputPadValues[i].i32Value
-           << std::endl;
     }
     for (unsigned i = 0; i < gc_input->outputTensorNr; i++)
     {
@@ -153,29 +149,26 @@ void TestBase::PrintKernelOutputParams(const gcapi::HabanaKernelParams_t* gc_inp
            << gc_output->outputTensorAccessPattern[i].allRequired
            << std::endl;
 
-        for (unsigned j = 0; j < gc_output->indexSpaceGeometry.dims; j++)
+        for (unsigned j = 0; j < gc_output->indexSpaceRank; j++)
         {
             ss << "\toutputTensorAccessPattern[" << i << "].tensorDim[" << j << "].indexSpaceDim = "
-               << gc_output->outputTensorAccessPattern[i].dim[j].dim     << std::endl;
-            ss << "\toutputTensorAccessPattern[" << i << "].tensorDim[" << j << "].start_a = "
-               << gc_output->outputTensorAccessPattern[i].dim[j].start_a << std::endl;
+               << gc_output->outputTensorAccessPattern[i].mapping[j].indexSpaceDim << std::endl;
+            ss << "\toutputTensorAccessPattern[" << i << "].tensorDim[" << j << "].a = "
+               << gc_output->outputTensorAccessPattern[i].mapping[j].a << std::endl;
             ss << "\toutputTensorAccessPattern[" << i << "].tensorDim[" << j << "].start_b = "
-               << gc_output->outputTensorAccessPattern[i].dim[j].start_b << std::endl;
-            ss << "\toutputTensorAccessPattern[" << i << "].tensorDim[" << j << "].end_a = "
-               << gc_output->outputTensorAccessPattern[i].dim[j].end_a   << std::endl;
+               << gc_output->outputTensorAccessPattern[i].mapping[j].start_b << std::endl;
             ss << "\toutputTensorAccessPattern[" << i << "].tensorDim[" << j << "].end_b = "
-               << gc_output->outputTensorAccessPattern[i].dim[j].end_b   << std::endl;
+               << gc_output->outputTensorAccessPattern[i].mapping[j].end_b   << std::endl;
         }
     }
-    ss << "\tauxiliaryTensorCount = " << gc_output->auxiliaryTensorCount << std::endl;
-    ss << "\tkernel.kernelBinary = " << gc_output->kernel.kernelBinary << std::endl;
-    ss << "\tkernel.binarySize = "   << gc_output->kernel.binarySize   << std::endl;
+    ss << "\tauxiliaryTensorNr = " << gc_output->auxiliaryTensorNr << std::endl;
+    ss << "\tkernel.kernelElf = " << gc_output->kernel.kernelElf << std::endl;
+    ss << "\tkernel.elfSize = "   << gc_output->kernel.elfSize   << std::endl;
     ss << "\tkernel.paramsNr = "     << gc_output->kernel.paramsNr     << std::endl;
     for (unsigned i = 0; i < gc_output->kernel.paramsNr; i++)
     {
         ss << "\tkernel.scalarParams[" << i << "] = " << gc_output->kernel.scalarParams[i] << std::endl;
     }
-    ss << "\tflags.Value = " << gc_output->flags.Value << std::endl;
-
+    
      std::cout << ss.str();
 }

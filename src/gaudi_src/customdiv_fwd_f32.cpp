@@ -21,18 +21,18 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 extern unsigned char _binary___customdiv_fwd_f32_o_start;
 extern unsigned char _binary___customdiv_fwd_f32_o_end;
 
-gcapi::GlueCodeReturn_t CustomdivFwdF32::GetKernelName(
-        char kernelName [gcapi::MAX_NODE_NAME])
+tpc_lib_api::GlueCodeReturn CustomdivFwdF32::GetKernelName(
+        char kernelName [tpc_lib_api::MAX_NODE_NAME])
 {
     strcpy(kernelName,"customdiv_fwd_f32");
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
-gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
-        gcapi::HabanaKernelParams_t* params,
-        gcapi::HabanaKernelInstantiation_t* kernel)
+tpc_lib_api::GlueCodeReturn CustomdivFwdF32::GetGcDefinitions(
+        tpc_lib_api::HabanaKernelParams* params,
+        tpc_lib_api::HabanaKernelInstantiation* kernel)
 {
-    gcapi::GlueCodeReturn_t retVal;
+    tpc_lib_api::GlueCodeReturn retVal;
     /*************************************************************************************
     *   Stage I - validate input
     **************************************************************************************/
@@ -40,24 +40,24 @@ gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
     if (params->inputTensorNr != 2)
     {
         params->inputTensorNr  = 2;
-        return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_INPUT_COUNT;
     }
     //validate correct amount of output tensors
     if (params->outputTensorNr != 1)
     {
         params->outputTensorNr  = 1;
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
 
     // validate input and output data type
-    if (params->inputTensors[0].dataType != gcapi::DATA_F32 ||
-        params->inputTensors[1].dataType != gcapi::DATA_F32 ||
-        params->outputTensors[0].dataType != gcapi::DATA_F32)
+    if (params->inputTensors[0].geometry.dataType != tpc_lib_api::DATA_F32 ||
+        params->inputTensors[1].geometry.dataType != tpc_lib_api::DATA_F32 ||
+        params->outputTensors[0].geometry.dataType != tpc_lib_api::DATA_F32)
     {
-        params->inputTensors[0].dataType = gcapi::DATA_F32;
-        params->inputTensors[1].dataType = gcapi::DATA_F32;
-        params->outputTensors[0].dataType = gcapi::DATA_F32;
-        return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
+        params->inputTensors[0].geometry.dataType = tpc_lib_api::DATA_F32;
+        params->inputTensors[1].geometry.dataType = tpc_lib_api::DATA_F32;
+        params->outputTensors[0].geometry.dataType = tpc_lib_api::DATA_F32;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_DATA_TYPE;
     }
 
     // Tensor 0 should be input feature map.
@@ -66,14 +66,14 @@ gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
     // framework level.
     unsigned int outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
 
-    memcpy(outputSizes, params->inputTensors[0].geometry.sizes, sizeof(outputSizes));
+    memcpy(outputSizes, params->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
 
     // verify that output feature map dimension are correct
-    if (memcmp(params->outputTensors[0].geometry.sizes, outputSizes,
+    if (memcmp(params->outputTensors[0].geometry.maxSizes, outputSizes,
                params->outputTensors[0].geometry.dims * sizeof(unsigned) ) != 0)
     {
-        memcpy(params->outputTensors[0].geometry.sizes, params->inputTensors[0].geometry.sizes, sizeof(outputSizes));
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
+        memcpy(params->outputTensors[0].geometry.maxSizes, params->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
     }
 
     /*************************************************************************************
@@ -84,13 +84,13 @@ gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
 
     //round up to elementsInVec and divide by elementsInVec.
     unsigned depthIndex = (outputSizes[0] + (elementsInVec - 1)) / elementsInVec;
-    kernel->indexSpaceGeometry.dims = 5;
-    kernel->indexSpaceGeometry.sizes[0] = depthIndex;
+    kernel->indexSpaceRank = 5;
+    kernel->indexSpaceGeometry[0] = depthIndex;
 	//reduce index space due to unroll.
-    kernel->indexSpaceGeometry.sizes[1] = outputSizes[1]; 
-    kernel->indexSpaceGeometry.sizes[2] = outputSizes[2];
-    kernel->indexSpaceGeometry.sizes[3] = outputSizes[3];
-    kernel->indexSpaceGeometry.sizes[4] = outputSizes[4];
+    kernel->indexSpaceGeometry[1] = outputSizes[1]; 
+    kernel->indexSpaceGeometry[2] = outputSizes[2];
+    kernel->indexSpaceGeometry[3] = outputSizes[3];
+    kernel->indexSpaceGeometry[4] = outputSizes[4];
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping
@@ -100,44 +100,40 @@ gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
     // Resource 0 (IFM) dim 0
     for (unsigned i = 0; i < params->inputTensorNr; i++)
     {
-        kernel->inputTensorAccessPattern[i].dim[0].dim      = 0;
-        kernel->inputTensorAccessPattern[i].dim[0].start_a  = elementsInVec;
-        kernel->inputTensorAccessPattern[i].dim[0].end_a    = elementsInVec;
-        kernel->inputTensorAccessPattern[i].dim[0].start_b  = 0;
-        kernel->inputTensorAccessPattern[i].dim[0].end_b    = elementsInVec - 1;
+        kernel->inputTensorAccessPattern[i].mapping[0].indexSpaceDim      = 0;
+        kernel->inputTensorAccessPattern[i].mapping[0].a        = elementsInVec;
+        kernel->inputTensorAccessPattern[i].mapping[0].start_b  = 0;
+        kernel->inputTensorAccessPattern[i].mapping[0].end_b    = elementsInVec - 1;
 
         // f_start f(i) = 1*i + 0;
         // f_end   f(i) = 1*i + 0;
         // Resource 0 (IFM) dim 1-4
-        for (int dims = 1; dims < 5; dims++)
+        for (int dims = 1; dims < (int)kernel->indexSpaceRank; dims++)
         {
-            kernel->inputTensorAccessPattern[i].dim[dims].dim      = dims;
-            kernel->inputTensorAccessPattern[i].dim[dims].start_a  = 1;
-            kernel->inputTensorAccessPattern[i].dim[dims].end_a    = 1;
-            kernel->inputTensorAccessPattern[i].dim[dims].start_b  = 0;
-            kernel->inputTensorAccessPattern[i].dim[dims].end_b    = 1 - 1;
+            kernel->inputTensorAccessPattern[i].mapping[dims].indexSpaceDim      = dims;
+            kernel->inputTensorAccessPattern[i].mapping[dims].a        = 1;
+            kernel->inputTensorAccessPattern[i].mapping[dims].start_b  = 0;
+            kernel->inputTensorAccessPattern[i].mapping[dims].end_b    = 1 - 1;
         }        
     }    
 
     // f_start f(i) = elementsInVec*i + 0;
     // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
     // Resource 0 (OFM) dim 0
-    kernel->outputTensorAccessPattern[0].dim[0].dim      = 0;
-    kernel->outputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
-    kernel->outputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
-    kernel->outputTensorAccessPattern[0].dim[0].start_b  = 0;
-    kernel->outputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
+    kernel->outputTensorAccessPattern[0].mapping[0].indexSpaceDim      = 0;
+    kernel->outputTensorAccessPattern[0].mapping[0].a        = elementsInVec;
+    kernel->outputTensorAccessPattern[0].mapping[0].start_b  = 0;
+    kernel->outputTensorAccessPattern[0].mapping[0].end_b    = elementsInVec - 1;
 	
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (OFM) dim 1-4
-    for (int dims = 1; dims < 5; dims++)
+    for (int dims = 1; dims < (int)kernel->indexSpaceRank; dims++)
     {
-        kernel->outputTensorAccessPattern[0].dim[dims].dim      = dims;
-        kernel->outputTensorAccessPattern[0].dim[dims].start_a  = 1;
-        kernel->outputTensorAccessPattern[0].dim[dims].end_a    = 1;
-        kernel->outputTensorAccessPattern[0].dim[dims].start_b  = 0;
-        kernel->outputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
+        kernel->outputTensorAccessPattern[0].mapping[dims].indexSpaceDim      = dims;
+        kernel->outputTensorAccessPattern[0].mapping[dims].a        = 1;
+        kernel->outputTensorAccessPattern[0].mapping[dims].start_b  = 0;
+        kernel->outputTensorAccessPattern[0].mapping[dims].end_b    = 1 - 1;
     }
 
 
@@ -150,22 +146,22 @@ gcapi::GlueCodeReturn_t CustomdivFwdF32::GetGcDefinitions(
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
     unsigned IsaSize = (&_binary___customdiv_fwd_f32_o_end - &_binary___customdiv_fwd_f32_o_start);
-    unsigned givenBinarySize = kernel->elfSize;
-    kernel->elfSize = IsaSize;
+    unsigned givenBinarySize = kernel->kernel.elfSize;
+    kernel->kernel.elfSize = IsaSize;
 
     if (givenBinarySize >= IsaSize)
     {
-        memcpy (kernel->kernelElf ,
+        memcpy (kernel->kernel.kernelElf ,
                     &_binary___customdiv_fwd_f32_o_start,
                     IsaSize);
     }
     else
     {
-        retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
+        retVal = tpc_lib_api::GLUE_INSUFFICIENT_ELF_BUFFER;
         return retVal;
     }
 
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
 

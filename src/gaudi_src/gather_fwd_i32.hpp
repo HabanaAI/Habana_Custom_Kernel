@@ -19,6 +19,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include <gc_interface.h>
 #include <cstring>
+#include "tpc_kernel_lib_interface.h"
 
 class GatherFwdI32
 {
@@ -33,12 +34,12 @@ public:
 
     virtual ~GatherFwdI32() {}
 
-    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
-            gcapi::HabanaKernelParams_t *params,
-            gcapi::HabanaKernelInstantiation_t *kernel);
+    virtual tpc_lib_api::GlueCodeReturn GetGcDefinitions(
+            tpc_lib_api::HabanaKernelParams *params,
+            tpc_lib_api::HabanaKernelInstantiation *kernel);
 
-    virtual gcapi::GlueCodeReturn_t GetKernelName(
-            char kernelName[gcapi::MAX_NODE_NAME]);
+    virtual tpc_lib_api::GlueCodeReturn GetKernelName(
+            char kernelName[tpc_lib_api::MAX_NODE_NAME]);
 
     struct GatherFwdParam
     {

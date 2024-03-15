@@ -21,11 +21,11 @@ extern unsigned char _binary___printf_test_o_start;
 extern unsigned char _binary___printf_test_o_end;
 
 
-gcapi::GlueCodeReturn_t PrintfTestKernel::GetGcDefinitions(
-                        gcapi::HabanaKernelParams_t* in_defs,
-                        gcapi::HabanaKernelInstantiation_t* out_defs)
+tpc_lib_api::GlueCodeReturn PrintfTestKernel::GetGcDefinitions(
+                        tpc_lib_api::HabanaKernelParams* in_defs,
+                        tpc_lib_api::HabanaKernelInstantiation* out_defs)
 {
-    gcapi::GlueCodeReturn_t retVal = gcapi::GLUE_SUCCESS;
+    tpc_lib_api::GlueCodeReturn retVal = tpc_lib_api::GLUE_SUCCESS;
 
     /*************************************************************************************
     *   Stage I - validate input
@@ -34,14 +34,14 @@ gcapi::GlueCodeReturn_t PrintfTestKernel::GetGcDefinitions(
     if (in_defs->inputTensorNr != 1)
     {
         in_defs->inputTensorNr  = 1;
-        return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_INPUT_COUNT;
     }
 
     //validate correct amount of output tensors
     if (in_defs->outputTensorNr != 0)
     {
         in_defs->outputTensorNr = 0;
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
 
 
@@ -49,8 +49,8 @@ gcapi::GlueCodeReturn_t PrintfTestKernel::GetGcDefinitions(
     *    Stage II -  Define index space geometry. In this example only one index space is
     *    used for printing
     **************************************************************************************/
-    out_defs->indexSpaceGeometry.dims = 1;
-    out_defs->indexSpaceGeometry.sizes[0] = 1;
+    out_defs->indexSpaceRank = 1;
+    out_defs->indexSpaceGeometry[0] = 1;
 
 
     /*************************************************************************************
@@ -62,18 +62,17 @@ gcapi::GlueCodeReturn_t PrintfTestKernel::GetGcDefinitions(
     int min_used_index = 0;
     int max_used_index = 64;
 
-    out_defs->inputTensorAccessPattern[0].dim[0].dim        = 0;
-    out_defs->inputTensorAccessPattern[0].dim[0].start_a    = 0;
-    out_defs->inputTensorAccessPattern[0].dim[0].end_a      = 0;
-    out_defs->inputTensorAccessPattern[0].dim[0].start_b    = min_used_index;
-    out_defs->inputTensorAccessPattern[0].dim[0].end_b      = max_used_index - 1;
+    out_defs->inputTensorAccessPattern[0].mapping[0].indexSpaceDim        = 0;
+    out_defs->inputTensorAccessPattern[0].mapping[0].a          = 0;
+    out_defs->inputTensorAccessPattern[0].mapping[0].start_b    = min_used_index;
+    out_defs->inputTensorAccessPattern[0].mapping[0].end_b      = max_used_index - 1;
 
 
     /*************************************************************************************
     *    Stage IV -  define scalar parameters
     **************************************************************************************/
     // special scalar structure for loadSrf function
-    PrintfTestParams* params = static_cast<PrintfTestParams*>(in_defs->NodeParams);
+    PrintfTestParams* params = static_cast<PrintfTestParams*>(in_defs->nodeParams.nodeParams);
     // copy out SRF content
     out_defs->kernel.paramsNr = sizeof(*params)/ sizeof(int);
     memcpy(&( out_defs->kernel.scalarParams[0]),params, sizeof(*params));
@@ -83,28 +82,28 @@ gcapi::GlueCodeReturn_t PrintfTestKernel::GetGcDefinitions(
     **************************************************************************************/
     // Load ISA into the descriptor.
     unsigned IsaSize = (&_binary___printf_test_o_end - &_binary___printf_test_o_start);
-    unsigned givenBinarySize = out_defs->elfSize;
-    out_defs->elfSize = IsaSize;
+    unsigned givenBinarySize = out_defs->kernel.elfSize;
+    out_defs->kernel.elfSize = IsaSize;
 
     if (givenBinarySize >= IsaSize)
     {
         // copy binary out
-        memcpy (out_defs->kernelElf ,
+        memcpy (out_defs->kernel.kernelElf ,
                &_binary___printf_test_o_start,
                IsaSize);
     }
     else
     {
-        retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
+        retVal = tpc_lib_api::GLUE_INSUFFICIENT_ELF_BUFFER;
         return retVal;
     }
     return retVal;
 }
 
-gcapi::GlueCodeReturn_t PrintfTestKernel::GetKernelName(char kernelName [gcapi::MAX_NODE_NAME])
+tpc_lib_api::GlueCodeReturn PrintfTestKernel::GetKernelName(char kernelName [tpc_lib_api::MAX_NODE_NAME])
 {
     strcpy(kernelName,"printf_test");
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
 

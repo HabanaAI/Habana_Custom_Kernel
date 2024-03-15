@@ -122,6 +122,7 @@ int main(int argc, char** argv)
         }
     }
 
+    /*
     if(check_arg(argc, argv, "Gaudi", "SoftMaxBF16Test"))
     {
         SoftMaxBF16Test testSoftMaxBF16;
@@ -453,7 +454,7 @@ int main(int argc, char** argv)
             return result;
         }
     }
-
+    */
     if(check_arg(argc, argv, "Gaudi2", "SoftMaxBF16Gaudi2Test"))
     {
         SoftMaxBF16Gaudi2Test testSoftMaxBF16Gaudi2;

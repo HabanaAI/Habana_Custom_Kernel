@@ -55,7 +55,7 @@ int SinF32Test::runTest()
     const int batch  = 1;
     const int rank4  = 2;
 
-    unsigned int fmInitializer[] = {depth, width, height, batch, rank4};
+    uint64_t fmInitializer[] = {depth, width, height, batch, rank4};
 
     float_5DTensor input(fmInitializer);
     input.InitRand(-10.0f, 10.0f);
@@ -67,8 +67,7 @@ int SinF32Test::runTest()
     sinf32_reference_implementation(input, output_ref);
 
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
-    //m_in_defs.NodeParams = &param;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
 
     m_in_defs.inputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input);
@@ -78,23 +77,23 @@ int SinF32Test::runTest()
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_SIN_F32]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_SIN_F32]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);

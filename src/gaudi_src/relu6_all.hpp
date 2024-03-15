@@ -18,6 +18,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #define _RELU6_ALL_HPP
 
 #include "gc_interface.h"
+#include "tpc_kernel_lib_interface.h"
 
 class Relu6All
 {
@@ -37,12 +38,12 @@ public:
     Relu6All(Relu6_mode_t mode=relu6_fwd_f32) {m_mode = mode;}
     virtual ~Relu6All() {}
 
-    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
-            gcapi::HabanaKernelParams_t* params,
-            gcapi::HabanaKernelInstantiation_t* kernel);
+    virtual tpc_lib_api::GlueCodeReturn GetGcDefinitions(
+            tpc_lib_api::HabanaKernelParams* params,
+            tpc_lib_api::HabanaKernelInstantiation* kernel);
 
-    virtual gcapi::GlueCodeReturn_t GetKernelName(
-            char kernelName [gcapi::MAX_NODE_NAME], Relu6_mode_t mode);
+    virtual tpc_lib_api::GlueCodeReturn GetKernelName(
+            char kernelName [tpc_lib_api::MAX_NODE_NAME], Relu6_mode_t mode);
 
 private:
     Relu6_mode_t m_mode;

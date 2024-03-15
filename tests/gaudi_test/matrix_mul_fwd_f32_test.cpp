@@ -59,9 +59,9 @@ int MatrixMulFwdF32Test::runTest()
     const int common = 4;
     const int batch  = 1;
 
-    unsigned int fmInitializer_a[] = {common, row, batch};
-    unsigned int fmInitializer_b[] = {col, common, batch};
-    unsigned int fmInitializer_c[] = {col, row, batch};
+    uint64_t fmInitializer_a[] = {common, row, batch};
+    uint64_t fmInitializer_b[] = {col, common, batch};
+    uint64_t fmInitializer_c[] = {col, row, batch};
 
     float_3DTensor a_matrix(fmInitializer_a);
     a_matrix.InitRand(1.0f, 10.0f);
@@ -76,7 +76,7 @@ int MatrixMulFwdF32Test::runTest()
     matrix_mul_reference_implementation(a_matrix, b_matrix, c_matrix_ref);
 
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
 
     m_in_defs.inputTensorNr = 2;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), a_matrix);
@@ -87,23 +87,23 @@ int MatrixMulFwdF32Test::runTest()
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_MATRIXMUL_FWD_F32]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_MATRIXMUL_FWD_F32]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);

@@ -22,19 +22,18 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "spatial_reduction_kernels.hpp"
 
 
-
 class FilterFwd2dBF16 : public SpatialReductionKernels
 {
 public:
     FilterFwd2dBF16() {}
     virtual ~FilterFwd2dBF16() {}
 
-    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
-                                  gcapi::HabanaKernelParams_t* in_defs,
-                                  gcapi::HabanaKernelInstantiation_t* out_defs);
+    virtual tpc_lib_api::GlueCodeReturn GetGcDefinitions(
+                                  tpc_lib_api::HabanaKernelParams* in_defs,
+                                  tpc_lib_api::HabanaKernelInstantiation* out_defs);
 
-     virtual gcapi::GlueCodeReturn_t GetKernelName(
-             char kernelName [gcapi::MAX_NODE_NAME]);
+     virtual tpc_lib_api::GlueCodeReturn GetKernelName(
+             char kernelName [tpc_lib_api::MAX_NODE_NAME]);
 private:
     FilterFwd2dBF16(const FilterFwd2dBF16& other) = delete;
     FilterFwd2dBF16& operator=(const FilterFwd2dBF16& other) = delete;

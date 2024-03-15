@@ -89,7 +89,7 @@ void CastGaudiTest::cast_f32_to_bf16_ref(
 
 
     // Initalize inputs
-    unsigned int ifmofmInitializer[] = {ofmifm_depth,ifm_width,ifm_height,batch};
+    uint64_t ifmofmInitializer[] = {ofmifm_depth,ifm_width,ifm_height,batch};
     bfloat16_4DTensor ifm(ifmofmInitializer);
     ifm.FillWithData();
     float_4DTensor ofm(ifmofmInitializer);
@@ -113,8 +113,8 @@ void CastGaudiTest::cast_f32_to_bf16_ref(
                                indexSpace);
 
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
-    m_in_defs.NodeParams = &def;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
+    m_in_defs.nodeParams.nodeParams = &def;
     m_in_defs.inputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]),ifm );
 
@@ -123,23 +123,23 @@ void CastGaudiTest::cast_f32_to_bf16_ref(
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_CAST_BF16_F32]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_CAST_BF16_F32]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
@@ -182,17 +182,17 @@ void CastGaudiTest::cast_f32_to_bf16_ref(
                               indexSpace);
 
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
-    m_in_defs.NodeParams = &def;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
+    m_in_defs.nodeParams.nodeParams = &def;
     m_in_defs.inputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]),input );
 
     m_in_defs.outputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]),out );
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_CAST_F32_BF16]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_CAST_F32_BF16]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);

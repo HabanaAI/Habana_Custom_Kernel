@@ -81,9 +81,9 @@ typedef enum
  *   @return                  The status of the operation.
  ***************************************************************************************************
  */
-gcapi::GlueCodeReturn_t GetKernelGuids(_OUT_ char**         names,
+tpc_lib_api::GlueCodeReturn GetKernelGuids(_OUT_ char**         names,
                                        unsigned*            kernelCount,
-                                       gcapi::DeviceId_t    deviceId);
+                                       tpc_lib_api::DeviceId    deviceId);
 
 /*
  ***************************************************************************************************
@@ -94,9 +94,9 @@ gcapi::GlueCodeReturn_t GetKernelGuids(_OUT_ char**         names,
  *   @return                  The status of the operation.
  ***************************************************************************************************
  */
-gcapi::GlueCodeReturn_t
-InstantiateTpcKernel(_IN_  gcapi::HabanaKernelParams_t* params,
-             _OUT_ gcapi::HabanaKernelInstantiation_t*instance);
+tpc_lib_api::GlueCodeReturn
+InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
+             _OUT_ tpc_lib_api::HabanaKernelInstantiation*instance);
 
 } // extern "C"
 #endif

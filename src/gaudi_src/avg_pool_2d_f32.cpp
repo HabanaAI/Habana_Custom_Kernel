@@ -24,8 +24,8 @@ extern unsigned char _binary___avg_pool_2d_fwd_f32_o_end;
 extern unsigned char _binary___avg_pool_2d_bwd_f32_o_start;
 extern unsigned char _binary___avg_pool_2d_bwd_f32_o_end;
 
- gcapi::GlueCodeReturn_t AvgPool2dF32::GetKernelName(
-             char kernelName [gcapi::MAX_NODE_NAME])
+ tpc_lib_api::GlueCodeReturn AvgPool2dF32::GetKernelName(
+             char kernelName [tpc_lib_api::MAX_NODE_NAME])
  {
 
     if(m_mode == fwd)
@@ -33,12 +33,12 @@ extern unsigned char _binary___avg_pool_2d_bwd_f32_o_end;
     else if(m_mode == bwd)
         strcpy(kernelName,"custom_avg_pool_2d_bwd_f32");
     else
-        return gcapi::GLUE_NODE_NOT_FOUND;
-     return gcapi::GLUE_SUCCESS;
+        return tpc_lib_api::GLUE_NODE_NOT_FOUND;
+     return tpc_lib_api::GLUE_SUCCESS;
  }
 
 
-gcapi::GlueCodeReturn_t AvgPool2dF32::fill_reciprocal_table(float* reciprocal_table, int num_elements) const
+tpc_lib_api::GlueCodeReturn AvgPool2dF32::fill_reciprocal_table(float* reciprocal_table, int num_elements) const
 {
     reciprocal_table[0] = 0;
     for (int i = 1; i < num_elements; i++)
@@ -46,15 +46,15 @@ gcapi::GlueCodeReturn_t AvgPool2dF32::fill_reciprocal_table(float* reciprocal_ta
         reciprocal_table[i] = (float)((double)1.0 / (double)i);
     }
 
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
-gcapi::GlueCodeReturn_t AvgPool2dF32::GetGcDefinitions(
-            gcapi::HabanaKernelParams_t* in_defs,
-            gcapi::HabanaKernelInstantiation_t* out_defs)
+tpc_lib_api::GlueCodeReturn AvgPool2dF32::GetGcDefinitions(
+            tpc_lib_api::HabanaKernelParams* in_defs,
+            tpc_lib_api::HabanaKernelInstantiation* out_defs)
 {
-    gcapi::GlueCodeReturn_t retVal;
-    AvgPool2DParam* def = static_cast<AvgPool2DParam*>(in_defs->NodeParams);
+    tpc_lib_api::GlueCodeReturn retVal;
+    AvgPool2DParam* def = static_cast<AvgPool2DParam*>(in_defs->nodeParams.nodeParams);
     /*************************************************************************************
     *   Stage I - validate input
     **************************************************************************************/
@@ -62,27 +62,27 @@ gcapi::GlueCodeReturn_t AvgPool2dF32::GetGcDefinitions(
     if (in_defs->inputTensorNr != 1)
     {
         in_defs->inputTensorNr  = 1;
-        return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_INPUT_COUNT;
     }
     //validate correct amount of output tensors
     if (in_defs->outputTensorNr !=1)
     {
         in_defs->outputTensorNr  = 1;
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
 
     retVal = ValidateTensorsDataType(in_defs->inputTensors,
                                         in_defs->inputTensorNr,
-                                        gcapi::DATA_F32);
-    if (retVal != gcapi::GLUE_SUCCESS)
+                                        tpc_lib_api::DATA_F32);
+    if (retVal != tpc_lib_api::GLUE_SUCCESS)
     {
         return retVal;
     }
 
     retVal = ValidateTensorsDataType(in_defs->outputTensors,
                                         in_defs->outputTensorNr,
-                                        gcapi::DATA_F32);
-    if (retVal != gcapi::GLUE_SUCCESS)
+                                        tpc_lib_api::DATA_F32);
+    if (retVal != tpc_lib_api::GLUE_SUCCESS)
     {
         return retVal;
     }
@@ -95,10 +95,10 @@ gcapi::GlueCodeReturn_t AvgPool2dF32::GetGcDefinitions(
     *    Stage II -  Define index space geometry. In this example the index space matches
     *    the dimensions of the output tensor, up to dim 0.
     **************************************************************************************/
-    unsigned int outputSizes[gcapi::MAX_TENSOR_DIM];
+    uint64_t outputSizes[gcapi::MAX_TENSOR_DIM];
 
-    out_defs->indexSpaceGeometry.dims = 4;
-    unsigned int* indexSpaceSizes         = in_defs->inputTensors[0].geometry.sizes;
+    out_defs->indexSpaceRank = 4;
+    uint64_t* indexSpaceSizes         = in_defs->inputTensors[0].geometry.maxSizes;
     outputSizes[0] = indexSpaceSizes[0];
     if(m_mode == fwd)
     {
@@ -112,18 +112,18 @@ gcapi::GlueCodeReturn_t AvgPool2dF32::GetGcDefinitions(
     }
     outputSizes[3] = indexSpaceSizes[3];
     // verify that output feature map dimension are correct
-    if (memcmp(in_defs->outputTensors[0].geometry.sizes,outputSizes,
-               in_defs->outputTensors[0].geometry.dims * sizeof(unsigned) ) != 0)
+    if (memcmp(in_defs->outputTensors[0].geometry.maxSizes,outputSizes,
+               in_defs->outputTensors[0].geometry.dims * sizeof(uint64_t) ) != 0)
     {
-        memcpy(in_defs->outputTensors[0].geometry.sizes,outputSizes,sizeof(outputSizes));
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
+        memcpy(in_defs->outputTensors[0].geometry.maxSizes,outputSizes,sizeof(outputSizes));
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
     }
 
     //round up to 64 and divide by 64.
-    out_defs->indexSpaceGeometry.sizes[0] = (outputSizes[0] + 63) /64;
-    out_defs->indexSpaceGeometry.sizes[1] = outputSizes[1];
-    out_defs->indexSpaceGeometry.sizes[2] = outputSizes[2];
-    out_defs->indexSpaceGeometry.sizes[3] = outputSizes[3];
+    out_defs->indexSpaceGeometry[0] = (outputSizes[0] + 63) /64;
+    out_defs->indexSpaceGeometry[1] = outputSizes[1];
+    out_defs->indexSpaceGeometry[2] = outputSizes[2];
+    out_defs->indexSpaceGeometry[3] = outputSizes[3];
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping
@@ -131,20 +131,21 @@ gcapi::GlueCodeReturn_t AvgPool2dF32::GetGcDefinitions(
     GetAccessPatterns(out_defs,&(def->srdef),64);
     if(m_mode == bwd)
     {
-        out_defs->inputTensorAccessPattern[0].dim[1].dim = 1;
-        out_defs->inputTensorAccessPattern[0].dim[1].start_a = (1.0/def->srdef.stride_w);
-        out_defs->inputTensorAccessPattern[0].dim[1].end_a = (1.0/def->srdef.stride_w);
-        out_defs->inputTensorAccessPattern[0].dim[1].start_b = -((def->srdef.kernel_w - 1) + (def->srdef.stride_w - 1)) * def->srdef.dilation_w / def->srdef.stride_w;;
-        out_defs->inputTensorAccessPattern[0].dim[1].end_b = (def->srdef.pad_w / (float)def->srdef.stride_w);
+        out_defs->inputTensorAccessPattern[0].mapping[1].indexSpaceDim = 1;
+        out_defs->inputTensorAccessPattern[0].mapping[1].a = (1.0/def->srdef.stride_w);
+        out_defs->inputTensorAccessPattern[0].mapping[1].start_b = -((def->srdef.kernel_w - 1) + (def->srdef.stride_w - 1)) * def->srdef.dilation_w / def->srdef.stride_w;;
+        out_defs->inputTensorAccessPattern[0].mapping[1].end_b = (def->srdef.pad_w / (float)def->srdef.stride_w);
 
         // start f(i) = stride*i + (-padh);
         // end f(i) = stride*i + (kernelh*dilationh - padh );
         // Resource 0 (IFM) dim 2 (height).
-        out_defs->inputTensorAccessPattern[0].dim[2].dim = 2;
-        out_defs->inputTensorAccessPattern[0].dim[2].start_a = (1.0/def->srdef.stride_h);
-        out_defs->inputTensorAccessPattern[0].dim[2].end_a = (1.0/def->srdef.stride_h);
-        out_defs->inputTensorAccessPattern[0].dim[2].start_b =  -((def->srdef.kernel_h - 1) + (def->srdef.stride_h - 1)) * def->srdef.dilation_h / def->srdef.stride_h;
-        out_defs->inputTensorAccessPattern[0].dim[2].end_b = (def->srdef.pad_h / (float)def->srdef.stride_h);
+        out_defs->inputTensorAccessPattern[0].mapping[2].indexSpaceDim = 2;
+        out_defs->inputTensorAccessPattern[0].mapping[2].a = (1.0/def->srdef.stride_h);
+        out_defs->inputTensorAccessPattern[0].mapping[2].start_b =  -((def->srdef.kernel_h - 1) + (def->srdef.stride_h - 1)) * def->srdef.dilation_h / def->srdef.stride_h;
+        out_defs->inputTensorAccessPattern[0].mapping[2].end_b = (def->srdef.pad_h / (float)def->srdef.stride_h);
+
+        out_defs->inputTensorAccessPattern[0].memsetBeforeExecution = 1;
+        out_defs->outputTensorAccessPattern[0].memsetBeforeExecution = 1;
 
     }
 
@@ -155,22 +156,22 @@ gcapi::GlueCodeReturn_t AvgPool2dF32::GetGcDefinitions(
     memcpy(&( out_defs->kernel.scalarParams[0]), def, sizeof(*def));
 
     const int maxWindowSize = def->srdef.kernel_h * def->srdef.kernel_w + 1;
-    out_defs->auxiliaryTensorCount = 1;
+    out_defs->auxiliaryTensorNr = 1;
     out_defs->auxiliaryTensors[0].geometry.dims = 1;
-    out_defs->auxiliaryTensors[0].geometry.sizes[0] = maxWindowSize;
-    out_defs->auxiliaryTensors[0].geometry.sizes[1] = 0;
-    out_defs->auxiliaryTensors[0].geometry.sizes[2] = 0;
-    out_defs->auxiliaryTensors[0].geometry.sizes[3] = 0;
-    out_defs->auxiliaryTensors[0].geometry.sizes[4] = 0;
+    out_defs->auxiliaryTensors[0].geometry.maxSizes[0] = maxWindowSize;
+    out_defs->auxiliaryTensors[0].geometry.maxSizes[1] = 0;
+    out_defs->auxiliaryTensors[0].geometry.maxSizes[2] = 0;
+    out_defs->auxiliaryTensors[0].geometry.maxSizes[3] = 0;
+    out_defs->auxiliaryTensors[0].geometry.maxSizes[4] = 0;
 
-    out_defs->auxiliaryTensors[0].dataType = gcapi::DATA_F32;
+    out_defs->auxiliaryTensors[0].geometry.dataType = tpc_lib_api::DATA_F32;
 
-    unsigned required_size = out_defs->auxiliaryTensors[0].geometry.sizes[0] * sizeof(float);
+    unsigned required_size = out_defs->auxiliaryTensors[0].geometry.maxSizes[0] * sizeof(float);
     // Check whether required memory is allocated for auxiliary tensor
     if (required_size > out_defs->auxiliaryTensors[0].bufferSize)
     {
         out_defs->auxiliaryTensors[0].bufferSize = required_size;
-        return gcapi::GLUE_INSUFICIENT_AUX_BUFFER_SIZE;
+        return tpc_lib_api::GLUE_INSUFFICIENT_AUX_BUFFER_SIZE;
     }
     out_defs->auxiliaryTensors[0].bufferSize = required_size;
     if (out_defs->auxiliaryTensors[0].bufferSize >= required_size)
@@ -184,7 +185,7 @@ gcapi::GlueCodeReturn_t AvgPool2dF32::GetGcDefinitions(
     }
     else
     {
-        return gcapi::GLUE_INSUFICIENT_AUX_BUFFER_SIZE;
+        return tpc_lib_api::GLUE_INSUFFICIENT_AUX_BUFFER_SIZE;
     }
 
     /*************************************************************************************
@@ -205,22 +206,22 @@ gcapi::GlueCodeReturn_t AvgPool2dF32::GetGcDefinitions(
             break;
 
     }
-    unsigned givenBinarySize = out_defs->elfSize;
-    out_defs->elfSize = IsaSize;
+    unsigned givenBinarySize = out_defs->kernel.elfSize;
+    out_defs->kernel.elfSize = IsaSize;
 
     if (givenBinarySize >= IsaSize)
     {
         // copy binary out
-        memcpy (out_defs->kernelElf,
+        memcpy (out_defs->kernel.kernelElf,
                 binary_kernel,
                 IsaSize);
     }
     else
     {
-       retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
+       retVal = tpc_lib_api::GLUE_INSUFFICIENT_ELF_BUFFER;
        return retVal;
     }
 
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 

@@ -19,18 +19,18 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 extern unsigned char _binary___sparse_lengths_sum_bf16_2D_f32_embed_o_start;
 extern unsigned char _binary___sparse_lengths_sum_bf16_2D_f32_embed_o_end;
 
-gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetKernelName(
-        char kernelName [gcapi::MAX_NODE_NAME])
+tpc_lib_api::GlueCodeReturn SparseLengthsSumBF16::GetKernelName(
+        char kernelName [tpc_lib_api::MAX_NODE_NAME])
 {
     strcpy(kernelName,"custom_sparse_lengths_sum_bf16_2D_embed_f32");
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
-gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetGcDefinitions(
-            gcapi::HabanaKernelParams_t* params,
-            gcapi::HabanaKernelInstantiation_t* kernel)
+tpc_lib_api::GlueCodeReturn SparseLengthsSumBF16::GetGcDefinitions(
+            tpc_lib_api::HabanaKernelParams* params,
+            tpc_lib_api::HabanaKernelInstantiation* kernel)
 {
-    gcapi::GlueCodeReturn_t retVal;
+    tpc_lib_api::GlueCodeReturn retVal;
     /*************************************************************************************
     *   Stage I - validate input
     **************************************************************************************/
@@ -38,14 +38,14 @@ gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetGcDefinitions(
     if (params->inputTensorNr != 3)
     {
         params->inputTensorNr  = 3;
-        return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_INPUT_COUNT;
     }
 
     // validate correct amount of output tensors
     if (params->outputTensorNr != 1)
     {
         params->outputTensorNr  = 1;
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
 
     // validate tensor dimensions
@@ -54,7 +54,7 @@ gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetGcDefinitions(
     {
         params->inputTensors[0].geometry.dims   = 2;
         params->outputTensors[0].geometry.dims  = 2;
-        return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_INPUT_SIZE;
     }
 
     // length tensor and index tensor are 1D
@@ -63,59 +63,59 @@ gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetGcDefinitions(
     {
         params->inputTensors[1].geometry.dims  = 1;
         params->inputTensors[2].geometry.dims  = 1;
-        return gcapi::GLUE_INCOMPATIBLE_INPUT_SIZE;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_INPUT_SIZE;
     }
 
     // output's dimension 0 size is equal to input's 0 dimension size,
     // minus the embed scale and zero-point size.
-    if (params->outputTensors[0].geometry.sizes[0] !=
-        (params->inputTensors[0].geometry.sizes[0] -
+    if (params->outputTensors[0].geometry.maxSizes[0] !=
+        (params->inputTensors[0].geometry.maxSizes[0] -
         (2 * sizeof(float) / sizeof(int8_t))))
     {
-        params->outputTensors[0].geometry.sizes[0] =
-                (params->inputTensors[0].geometry.sizes[0]
+        params->outputTensors[0].geometry.maxSizes[0] =
+                (params->inputTensors[0].geometry.maxSizes[0]
                 - (2 * sizeof(float) / sizeof(int8_t)));
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
     }
 
     //  output's dimension 1 size is equal to length tensor size
-    if (params->outputTensors[0].geometry.sizes[1] !=
-        params->inputTensors[2].geometry.sizes[0])
+    if (params->outputTensors[0].geometry.maxSizes[1] !=
+        params->inputTensors[2].geometry.maxSizes[0])
     {
-        params->outputTensors[0].geometry.sizes[1] =
-                params->inputTensors[2].geometry.sizes[0];
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
+        params->outputTensors[0].geometry.maxSizes[1] =
+                params->inputTensors[2].geometry.maxSizes[0];
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
     }
 
     // validate input data type
-    if (params->inputTensors[0].dataType != gcapi::DATA_BF16 ||
-        params->inputTensors[1].dataType != gcapi::DATA_I32 ||
-        params->inputTensors[2].dataType != gcapi::DATA_I32 ||
-        params->outputTensors[0].dataType != gcapi::DATA_F32)
+    if (params->inputTensors[0].geometry.dataType != tpc_lib_api::DATA_BF16 ||
+        params->inputTensors[1].geometry.dataType != tpc_lib_api::DATA_I32 ||
+        params->inputTensors[2].geometry.dataType != tpc_lib_api::DATA_I32 ||
+        params->outputTensors[0].geometry.dataType != tpc_lib_api::DATA_F32)
     {
-        params->inputTensors[0].dataType = gcapi::DATA_BF16;
-        params->inputTensors[1].dataType = gcapi::DATA_I32;
-        params->inputTensors[2].dataType = gcapi::DATA_I32;
-        params->outputTensors[0].dataType = gcapi::DATA_F32;
-        return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
+        params->inputTensors[0].geometry.dataType = tpc_lib_api::DATA_BF16;
+        params->inputTensors[1].geometry.dataType = tpc_lib_api::DATA_I32;
+        params->inputTensors[2].geometry.dataType = tpc_lib_api::DATA_I32;
+        params->outputTensors[0].geometry.dataType = tpc_lib_api::DATA_F32;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_DATA_TYPE;
     }
 
     /*************************************************************************************
     *    Stage II -  Define index space geometry. In this example the index space matches
     *    the dimensions of the output tensor
     **************************************************************************************/
-    kernel->indexSpaceGeometry.dims = 2;
+    kernel->indexSpaceRank = 2;
 
     unsigned eig = 128;
     unsigned unrollCount = 2;
 
     // round up to 256 and divide by 256 (int8 vec size).
-    unsigned depthIndex = (params->outputTensors[0].geometry.sizes[0] + eig - 1) / eig;
-    kernel->indexSpaceGeometry.sizes[0] = depthIndex;
+    uint64_t depthIndex = (params->outputTensors[0].geometry.maxSizes[0] + eig - 1) / eig;
+    kernel->indexSpaceGeometry[0] = depthIndex;
     // round up to 2 and divide by 2 (2 is the unroll count on dim 1).
-    unsigned widthIndex =
-            (params->outputTensors[0].geometry.sizes[1] + unrollCount - 1) / unrollCount;
-    kernel->indexSpaceGeometry.sizes[1] = widthIndex;
+    uint64_t widthIndex =
+            (params->outputTensors[0].geometry.maxSizes[1] + unrollCount - 1) / unrollCount;
+    kernel->indexSpaceGeometry[1] = widthIndex;
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping
@@ -127,25 +127,22 @@ gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetGcDefinitions(
     //Index tensor
     kernel->inputTensorAccessPattern[1].allRequired = true;
     //length tensor
-    kernel->inputTensorAccessPattern[2].dim[0].dim        = 1;
-    kernel->inputTensorAccessPattern[2].dim[0].start_a    = 0;
-    kernel->inputTensorAccessPattern[2].dim[0].end_a      = unrollCount;
-    kernel->inputTensorAccessPattern[2].dim[0].start_b    = 0;
-    kernel->inputTensorAccessPattern[2].dim[0].end_b      = unrollCount - 1;
+    kernel->inputTensorAccessPattern[2].mapping[0].indexSpaceDim        = 1;
+    kernel->inputTensorAccessPattern[2].mapping[0].a          = 0;
+    kernel->inputTensorAccessPattern[2].mapping[0].start_b    = 0;
+    kernel->inputTensorAccessPattern[2].mapping[0].end_b      = unrollCount - 1;
     //we need all elements from length tensor including and before the current lengths being used
 
     //OutputTensor
-    kernel->outputTensorAccessPattern[0].dim[0].dim       = 0;
-    kernel->outputTensorAccessPattern[0].dim[0].start_a   = eig;
-    kernel->outputTensorAccessPattern[0].dim[0].end_a     = eig;
-    kernel->outputTensorAccessPattern[0].dim[0].start_b   = 0;
-    kernel->outputTensorAccessPattern[0].dim[0].end_b     = eig - 1;
+    kernel->outputTensorAccessPattern[0].mapping[0].indexSpaceDim       = 0;
+    kernel->outputTensorAccessPattern[0].mapping[0].a         = eig;
+    kernel->outputTensorAccessPattern[0].mapping[0].start_b   = 0;
+    kernel->outputTensorAccessPattern[0].mapping[0].end_b     = eig - 1;
 
-    kernel->outputTensorAccessPattern[0].dim[1].dim       = 1;
-    kernel->outputTensorAccessPattern[0].dim[1].start_a   = unrollCount;
-    kernel->outputTensorAccessPattern[0].dim[1].end_a     = unrollCount;
-    kernel->outputTensorAccessPattern[0].dim[1].start_b   = 0;
-    kernel->outputTensorAccessPattern[0].dim[1].end_b     = unrollCount - 1;
+    kernel->outputTensorAccessPattern[0].mapping[1].indexSpaceDim       = 1;
+    kernel->outputTensorAccessPattern[0].mapping[1].a         = unrollCount;
+    kernel->outputTensorAccessPattern[0].mapping[1].start_b   = 0;
+    kernel->outputTensorAccessPattern[0].mapping[1].end_b     = unrollCount - 1;
 
     /*************************************************************************************
     *    Stage IV -  define scalar parameters
@@ -156,20 +153,20 @@ gcapi::GlueCodeReturn_t SparseLengthsSumBF16::GetGcDefinitions(
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
     unsigned IsaSize = (&_binary___sparse_lengths_sum_bf16_2D_f32_embed_o_end - &_binary___sparse_lengths_sum_bf16_2D_f32_embed_o_start);
-    unsigned givenBinarySize = kernel->elfSize;
-    kernel->elfSize = IsaSize;
+    unsigned givenBinarySize = kernel->kernel.elfSize;
+    kernel->kernel.elfSize = IsaSize;
 
     if (givenBinarySize >= IsaSize)
     {
         // copy binary out
-        memcpy (kernel->kernelElf ,
+        memcpy (kernel->kernel.kernelElf ,
                 &_binary___sparse_lengths_sum_bf16_2D_f32_embed_o_start,
                 IsaSize);
     }
     else
     {
-        retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
+        retVal = tpc_lib_api::GLUE_INSUFFICIENT_ELF_BUFFER;
         return retVal;
     }
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }

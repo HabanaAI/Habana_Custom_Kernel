@@ -69,10 +69,10 @@ void SparseLengthsSumBF16Test::SparseLengthsSumRefImplementation(
 int SparseLengthsSumBF16Test::runTest()
 {
 
-    uint32_t input_size[2]      = { 23, 15 };
-    uint32_t indices_size[1]    = {19};
-    uint32_t lengths_size[1]    = { 5 };
-    uint32_t output_size[4]     = { 15, 5};
+    uint64_t input_size[2]      = { 23, 15 };
+    uint64_t indices_size[1]    = {19};
+    uint64_t lengths_size[1]    = { 5 };
+    uint64_t output_size[4]     = { 15, 5};
 
     bfloat16_2DTensor input_tensor;
     int32_1DTensor indices_tensor;
@@ -89,7 +89,7 @@ int SparseLengthsSumBF16Test::runTest()
 
     // generate input for query call
     m_in_defs.inputTensorNr = 3;
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input_tensor);
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]), indices_tensor);
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[2]), lengths_tensor);
@@ -150,23 +150,23 @@ int SparseLengthsSumBF16Test::runTest()
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_SPARSE_LEN_SUM_BF16]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_SPARSE_LEN_SUM_BF16]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);

@@ -86,13 +86,13 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
     layer_def.dilation_h = 1;
 
     //input
-    unsigned int ifmInitializer[] = {fm_depth, fm_width, fm_height, fm_batch};
+    uint64_t ifmInitializer[] = {fm_depth, fm_width, fm_height, fm_batch};
     float_4DTensor ifm(ifmInitializer);
     //ifm.FillWithValue(1);
     ifm.FillWithData();
 
     //filter
-    unsigned int filterInitialize[] = {(unsigned)fm_depth,
+    uint64_t filterInitialize[] = {(unsigned)fm_depth,
                                        (unsigned)fm_filterK,
                                        (unsigned)layer_def.kernel_w,
                                        (unsigned)layer_def.kernel_h};
@@ -104,7 +104,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
     //output
     const unsigned int ofm_w = ((fm_width + 2 * layer_def.pad_w - layer_def.dilation_w * (layer_def.kernel_w-1) - 1) / layer_def.stride_w) + 1;
     const unsigned int ofm_h = ((fm_height+ 2 * layer_def.pad_h - layer_def.dilation_h * (layer_def.kernel_h-1) - 1) / layer_def.stride_h) + 1;
-    unsigned int ofmInitializer[] = {(unsigned)fm_filterK, ofm_w, ofm_h, fm_batch};
+    uint64_t ofmInitializer[] = {(unsigned)fm_filterK, ofm_w, ofm_h, fm_batch};
     float_4DTensor ofm(ofmInitializer);
     float_4DTensor ofm_ref(ofmInitializer);
 
@@ -123,7 +123,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
                                     indexSpace);
 
     // generate input for query call
-    m_in_defs.NodeParams = &layer_def;
+    m_in_defs.nodeParams.nodeParams = &layer_def;
     m_in_defs.inputTensorNr = 2;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]),ifm );
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]),filter );
@@ -131,27 +131,27 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
     m_in_defs.outputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]),ofm );
 
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_SPATIAL_CONV_F32]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_SPATIAL_CONV_F32]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);

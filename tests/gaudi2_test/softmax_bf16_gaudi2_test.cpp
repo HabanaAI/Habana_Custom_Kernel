@@ -115,7 +115,7 @@ void SoftMaxBF16Gaudi2Test::softmax_reference_implementation(
     const int fm_dim2  = 4;
     bfloat16 tmp;
 
-    unsigned int fmInitializer[] = {fm_dim1, fm_dim2};
+    uint64_t fmInitializer[] = {fm_dim1, fm_dim2};
     bfloat16_2DTensor input(fmInitializer);
     input.FillWithData();
 
@@ -133,34 +133,34 @@ void SoftMaxBF16Gaudi2Test::softmax_reference_implementation(
                                      def.axis);
 
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI2;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI2;
     m_in_defs.inputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]),input );
 
     m_in_defs.outputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]),ofm );
 
-    m_in_defs.NodeParams = &def;
+    m_in_defs.nodeParams.nodeParams = &def;
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI2);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI2);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI2_KERNEL_SOFTMAX_FCD_BF16]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI2_KERNEL_SOFTMAX_FCD_BF16]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "glue test failed!!" << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
@@ -201,12 +201,12 @@ void SoftMaxBF16Gaudi2Test::softmax_reference_implementation(
                                      ofm_ref,
                                      def.axis);
 
-    m_in_defs.NodeParams = &def;
+    m_in_defs.nodeParams.nodeParams = &def;
 
     // make the call into the glue code.
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI2_KERNEL_SOFTMAX_NONFCD_BF16]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI2_KERNEL_SOFTMAX_NONFCD_BF16]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);

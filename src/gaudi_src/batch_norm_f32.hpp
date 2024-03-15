@@ -21,6 +21,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include <cstring>
 #include <cmath>
 #include "gc_interface.h"
+#include "tpc_kernel_lib_interface.h"
 
 class BatchNormF32
 {
@@ -28,17 +29,17 @@ public:
     BatchNormF32() {};
     virtual ~BatchNormF32() {};
 
-    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
-                                 gcapi::HabanaKernelParams_t* in_defs,
-                                 gcapi::HabanaKernelInstantiation_t* out_defs);
+    virtual tpc_lib_api::GlueCodeReturn GetGcDefinitions(
+                                 tpc_lib_api::HabanaKernelParams* in_defs,
+                                 tpc_lib_api::HabanaKernelInstantiation* out_defs);
 
-    virtual gcapi::GlueCodeReturn_t GetKernelName(
-            char kernelName [gcapi::MAX_NODE_NAME]);
+    virtual tpc_lib_api::GlueCodeReturn GetKernelName(
+            char kernelName [tpc_lib_api::MAX_NODE_NAME]);
 
-    gcapi::GlueCodeReturn_t  ValidateTensorsDataType(
-                                gcapi::Tensor_t* pTensors,
+    tpc_lib_api::GlueCodeReturn  ValidateTensorsDataType(
+                                tpc_lib_api::Tensor* pTensors,
                                 int tensorCount,
-                                gcapi::TensorDataType_t expected);
+                                tpc_lib_api::TensorDataType expected);
 
     // This struct is common between the TPC kernel writer and the framework
     // layer writer. The programmer who adds a new layer to the framework-backend
