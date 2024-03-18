@@ -21,31 +21,60 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "test_base.hpp"
 #include "tpc_test_core_api.h"
 
+#define MAX_ALLOCATED_TENSOR 16
+
 void TestBase::SetUp()
 {
-    // clear in/out structures.
-    memset(&m_in_defs,0,sizeof(m_in_defs));
-    memset(&m_out_defs,0,sizeof(m_out_defs));
 
-    // allocate memory for ISA
-    m_out_defs.kernel.elfSize = c_default_isa_buffer_size;
-    m_out_defs.kernel.kernelElf = malloc(c_default_isa_buffer_size);
+    // clear in/out structures.
+   memset(&m_in_defs,0,sizeof(m_in_defs));
+   memset(&m_out_defs,0,sizeof(m_out_defs));
+
+   // allocate the tensor space
+   m_in_defs.inputTensors = (tpc_lib_api::Tensor*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::Tensor));
+   m_in_defs.outputTensors = (tpc_lib_api::Tensor*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::Tensor));
+
+   // allocate the accesspatten
+   m_out_defs.inputTensorAccessPattern = (tpc_lib_api::TensorAccessPattern*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::TensorAccessPattern*));
+   m_out_defs.outputTensorAccessPattern = (tpc_lib_api::TensorAccessPattern*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::TensorAccessPattern*));
+
+   m_out_defs.auxiliaryTensors = (tpc_lib_api::AuxTensor*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::AuxTensor*));
+   for(int i=0;i< MAX_ALLOCATED_TENSOR;i++)
+      m_out_defs.auxiliaryTensors[i].pData =NULL;
+   // allocate memory for ISA
+   m_out_defs.kernel.elfSize = c_default_isa_buffer_size;
+   m_out_defs.kernel.kernelElf = malloc(c_default_isa_buffer_size);
 }
 
 void TestBase::TearDown()
 {
-    free (m_out_defs.kernel.kernelElf);
-    m_out_defs.kernel.kernelElf = NULL;
-    m_out_defs.kernel.elfSize = 0;
+
+   for(int i=0;i< MAX_ALLOCATED_TENSOR;i++)
+   {
+      if(m_out_defs.auxiliaryTensors[i].pData)
+         free(m_out_defs.auxiliaryTensors[i].pData);
+   }
+   free(m_in_defs.inputTensors);
+   free(m_in_defs.outputTensors);
+
+   free(m_out_defs.inputTensorAccessPattern);
+   free(m_out_defs.outputTensorAccessPattern);
+
+   free(m_out_defs.auxiliaryTensors);
+
+   free (m_out_defs.kernel.kernelElf);
+   m_out_defs.kernel.kernelElf = NULL;
+   m_out_defs.kernel.elfSize = 0;
 }
 
-unsigned int TestBase::RunSimulation(   std::vector<TensorDesc>& descriptors,
+unsigned int TestBase::RunSimulation(   std::vector<TensorDesc2>& descriptors,
                                         const tpc_lib_api::HabanaKernelParams& gc_input,
                                         const tpc_lib_api::HabanaKernelInstantiation& gc_output,
                                         IndexSpaceMappingTest_t testMode)
 {
    unsigned int  retVal= 0;
    //debug prints of glue code input and output.
+ 
    PrintKernelInputParams(&gc_input);
    PrintKernelOutputParams(&gc_input,&gc_output);    
 
@@ -62,6 +91,7 @@ unsigned int TestBase::RunSimulation(   std::vector<TensorDesc>& descriptors,
 
 static const std::string dataType[] = {"float32", "float16", "int32", "int16", "int8", "uint8", "bfloat16"};
 
+
 void TestBase::PrintKernelInputParams(const tpc_lib_api::HabanaKernelParams* gc_input)
 {
     std::stringstream ss;
@@ -70,7 +100,7 @@ void TestBase::PrintKernelInputParams(const tpc_lib_api::HabanaKernelParams* gc_
     for (unsigned i = 0; i < gc_input->inputTensorNr; i++)
     {
         ss << "\tinputTensors[" << i << "]."
-           << dataType[gc_input->inputTensors[i].geometry.dataType] << "_"
+           //<< dataType[gc_input->inputTensors[i].geometry.dataType] << "_"
            << gc_input->inputTensors[i].geometry.dims     << "DTensor[] = {"
            << gc_input->inputTensors[i].geometry.maxSizes[0] << ", "
            << gc_input->inputTensors[i].geometry.maxSizes[1] << ", "
@@ -90,7 +120,7 @@ void TestBase::PrintKernelInputParams(const tpc_lib_api::HabanaKernelParams* gc_
     for (unsigned i = 0; i < gc_input->outputTensorNr; i++)
     {
         ss << "\toutputTensors[" << i << "]."
-           << dataType[gc_input->outputTensors[i].geometry.dataType] << "_"
+           //<< dataType[gc_input->outputTensors[i].geometry.dataType] << "_"
            << gc_input->outputTensors[i].geometry.dims     << "DTensor[] = {"
            << gc_input->outputTensors[i].geometry.maxSizes[0] << ", "
            << gc_input->outputTensors[i].geometry.maxSizes[1] << ", "

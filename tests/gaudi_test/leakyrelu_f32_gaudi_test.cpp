@@ -101,7 +101,7 @@ int LeakyReluF32GaudiTest::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(input.GetTensorDescriptor());
     vec.push_back(output.GetTensorDescriptor());
     // execute a simulation of the kernel using TPC simulator,

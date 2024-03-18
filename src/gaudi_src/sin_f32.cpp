@@ -62,7 +62,7 @@ tpc_lib_api::GlueCodeReturn SinF32::GetGcDefinitions(
     // The semantics of the input tensors and their order is a convention
     // between TPC kernel writer and the write of the layer at the
     // framework level.
-    unsigned int outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
+    uint64_t outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
 
     std::copy(params->inputTensors[0].geometry.maxSizes,
               params->inputTensors[0].geometry.maxSizes + gcapi::MAX_TENSOR_DIM,

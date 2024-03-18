@@ -108,7 +108,7 @@ int CustomdivFwdF32Test::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(input0.GetTensorDescriptor());
     vec.push_back(input1.GetTensorDescriptor());
     vec.push_back(output.GetTensorDescriptor());

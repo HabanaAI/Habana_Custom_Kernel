@@ -93,7 +93,7 @@ tpc_lib_api::GlueCodeReturn SpatialConvF32::GetGcDefinitions(
 
     // verify that output feature map dimension are correct
     if (memcmp(in_defs->outputTensors[0].geometry.maxSizes,outputSizes,
-               in_defs->outputTensors[0].geometry.dims * sizeof(unsigned) ) != 0)
+               in_defs->outputTensors[0].geometry.dims * sizeof(uint64_t) ) != 0)
     {
         memcpy(in_defs->outputTensors[0].geometry.maxSizes,outputSizes,sizeof(outputSizes));
         return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;

@@ -180,8 +180,9 @@ tpc_lib_api::GlueCodeReturn AvgPool2dF32::GetGcDefinitions(
         float* reciprocalTable = (float*)malloc(required_size);
         fill_reciprocal_table(reciprocalTable, maxWindowSize);
         // Initialize the auxiliary tensor with reduction_fcd_tab
-        memcpy(out_defs->auxiliaryTensors[0].pData, reciprocalTable, required_size);
-        free(reciprocalTable);
+        out_defs->auxiliaryTensors[0].pData = reciprocalTable;
+        //memcpy(out_defs->auxiliaryTensors[0].pData, reciprocalTable, required_size);
+        //free(reciprocalTable);
     }
     else
     {

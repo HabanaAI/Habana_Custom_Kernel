@@ -330,9 +330,9 @@ public:
     }
 
     // @brief returns tensor descriptor for TPC simulator
-    TensorDesc GetTensorDescriptor() const
+    TensorDesc2 GetTensorDescriptor() const
     {
-        TensorDesc tensorDesc;
+        TensorDesc2 tensorDesc;
         tensorDesc.baseAddrUnion.baseAddr = (uint64_t)m_pdata;
 
         uint32_t validDimMask = 0;

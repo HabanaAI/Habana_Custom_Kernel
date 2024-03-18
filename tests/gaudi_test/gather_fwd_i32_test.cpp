@@ -210,7 +210,7 @@ int GatherFwdI32Test::runTest(Gaudi_Kernel_Name_e NameofKernel)
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(input_tensor.GetTensorDescriptor());
     vec.push_back(index_tensor.GetTensorDescriptor());
     vec.push_back(out_tensor.GetTensorDescriptor());

@@ -76,7 +76,6 @@ tpc_lib_api::GlueCodeReturn FilterFwd2dBF16::GetGcDefinitions(
     {
         return retVal;
     }
-
     // Tensor 0 should be input feature map.
     // The semantics of the input tensors and their order is a convention
     // between TPC kernel writer and the write of the layer at the
@@ -88,9 +87,10 @@ tpc_lib_api::GlueCodeReturn FilterFwd2dBF16::GetGcDefinitions(
         return tpc_lib_api::GLUE_UNSUPPORTED_LAYER_CONFIGURATION;
     }
 
+    
     // verify that output feature map dimension are correct
     if (memcmp(in_defs->outputTensors[0].geometry.maxSizes,outputSizes,
-               in_defs->outputTensors[0].geometry.dims * sizeof(unsigned) ) != 0)
+               in_defs->outputTensors[0].geometry.dims * sizeof(uint64_t) ) != 0)
     {
         memcpy(in_defs->outputTensors[0].geometry.maxSizes,outputSizes,sizeof(outputSizes));
         return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;

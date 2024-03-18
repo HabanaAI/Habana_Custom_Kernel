@@ -38,7 +38,7 @@ public:
         e_partialReadWriteMode  = 4,
     } IndexSpaceMappingTest_t;
 
-    unsigned int RunSimulation( std::vector<TensorDesc>& descriptors,
+    unsigned int RunSimulation( std::vector<TensorDesc2>& descriptors,
                                 const tpc_lib_api::HabanaKernelParams& gc_input,
                                 const tpc_lib_api::HabanaKernelInstantiation& gc_output,
                                 IndexSpaceMappingTest_t testMode = e_defaultMode);
@@ -51,13 +51,14 @@ public:
     static void LoadTensorToGcDescriptor(tpc_lib_api::Tensor* pTargetTensor,
                                  const test::Tensor<T,DIM>& inputTensor)
     {
-        pTargetTensor->geometry.dataType = test::getGcDataType(inputTensor);
         pTargetTensor->geometry.dims = DIM;
+        pTargetTensor->geometry.dataType = test::getGcDataType(inputTensor);
         for (int i = 0 ; i < DIM ; i++)
         {
             pTargetTensor->geometry.maxSizes[i] = inputTensor.Size(i);
             pTargetTensor->geometry.minSizes[i] = inputTensor.Size(i);
         }
+
     }
 
        

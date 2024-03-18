@@ -159,7 +159,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(ifm.GetTensorDescriptor());
     vec.push_back(filter.GetTensorDescriptor());
     vec.push_back(ofm.GetTensorDescriptor());

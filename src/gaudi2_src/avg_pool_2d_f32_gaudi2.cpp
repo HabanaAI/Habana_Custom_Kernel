@@ -53,6 +53,7 @@ tpc_lib_api::GlueCodeReturn AvgPool2dF32Gaudi2::GetGcDefinitions(
             tpc_lib_api::HabanaKernelParams* in_defs,
             tpc_lib_api::HabanaKernelInstantiation* out_defs)
 {
+    
     tpc_lib_api::GlueCodeReturn retVal;
     AvgPool2DParam* def = static_cast<AvgPool2DParam*>(in_defs->nodeParams.nodeParams);
     /*************************************************************************************
@@ -71,6 +72,7 @@ tpc_lib_api::GlueCodeReturn AvgPool2dF32Gaudi2::GetGcDefinitions(
         return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
 
+    
     retVal = ValidateTensorsDataType(in_defs->inputTensors,
                                         1,
                                         tpc_lib_api::DATA_F32);
@@ -172,7 +174,7 @@ tpc_lib_api::GlueCodeReturn AvgPool2dF32Gaudi2::GetGcDefinitions(
     out_defs->auxiliaryTensors[0].geometry.maxSizes[4] = 0;
 
     out_defs->auxiliaryTensors[0].geometry.dataType = tpc_lib_api::DATA_F32;
-
+    
     unsigned required_size = out_defs->auxiliaryTensors[0].geometry.maxSizes[0] * sizeof(float);
     // Check whether required memory is allocated for auxiliary tensor
     if (required_size > out_defs->auxiliaryTensors[0].bufferSize)
@@ -187,8 +189,9 @@ tpc_lib_api::GlueCodeReturn AvgPool2dF32Gaudi2::GetGcDefinitions(
         float* reciprocalTable = (float*)malloc(required_size);
         fill_reciprocal_table(reciprocalTable, maxWindowSize);
         // Initialize the auxiliary tensor with reduction_fcd_tab
-        memcpy(out_defs->auxiliaryTensors[0].pData, reciprocalTable, required_size);
-        free(reciprocalTable);
+        out_defs->auxiliaryTensors[0].pData = reciprocalTable;
+        //memcpy(out_defs->auxiliaryTensors[0].pData, reciprocalTable, required_size);
+        //free(reciprocalTable);
     }
     else
     {

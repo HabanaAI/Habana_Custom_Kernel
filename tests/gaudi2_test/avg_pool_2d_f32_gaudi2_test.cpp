@@ -315,6 +315,7 @@ int AvgPool2DF32Gaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
         avg_pool_2d_bwd_reference_implementation(ifm, validCountfm, ofm_ref, numOfSourcefm, def, indexSpace);
     }
 
+
     // generate input for query call
     m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI2;
     m_in_defs.nodeParams.nodeParams = &def;
@@ -334,6 +335,7 @@ int AvgPool2DF32Gaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
         kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
     result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI2);
+    
     if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
@@ -372,7 +374,7 @@ int AvgPool2DF32Gaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(ifm.GetTensorDescriptor());
     vec.push_back(validCountfm.GetTensorDescriptor());
     vec.push_back(ofm.GetTensorDescriptor());

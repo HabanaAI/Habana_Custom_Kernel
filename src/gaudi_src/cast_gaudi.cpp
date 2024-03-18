@@ -88,13 +88,13 @@ tpc_lib_api::GlueCodeReturn CastGaudi::GetGcDefinitions(
     // The semantics of the input tensors and their order is a convention
     // between TPC kernel writer and the write of the layer at the
     // framework level.
-    unsigned int outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
+    uint64_t outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
 
     memcpy(outputSizes, in_defs->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
 
     // verify that output feature map dimension are correct
     if (memcmp(in_defs->outputTensors[0].geometry.maxSizes, outputSizes,
-               in_defs->outputTensors[0].geometry.dims * sizeof(unsigned) ) != 0)
+               in_defs->outputTensors[0].geometry.dims * sizeof(uint64_t) ) != 0)
     {
         memcpy(in_defs->outputTensors[0].geometry.maxSizes, in_defs->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
         return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;

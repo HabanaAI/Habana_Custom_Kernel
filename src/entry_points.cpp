@@ -36,7 +36,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "kl_div_all.hpp"
 
 #include "entry_points.hpp"
-
+#include <stdio.h>
 extern "C"
 {
 
@@ -359,6 +359,7 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     avgpool2dfwdf32g2Instance.GetKernelName(kernelName);
     if (strcmp(params->guid.name, kernelName) == 0)
     {
+        printf("inside of entry ZZZZZ\n");
         return avgpool2dfwdf32g2Instance.GetGcDefinitions(params, instance);
     }
 

@@ -171,7 +171,7 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(inputX.GetTensorDescriptor());
     vec.push_back(inputY.GetTensorDescriptor());
     if(NameofKernel == GAUDI_KERNEL_KL_DIV_BWD_F32)

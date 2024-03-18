@@ -72,7 +72,7 @@ tpc_lib_api::GlueCodeReturn SearchSortedF32::GetGcDefinitions(
     **************************************************************************************/
     int elementsInVec = 64;
     const int c_unrollCount = 1;
-    unsigned int outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
+    uint64_t outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
     memcpy(outputSizes, params->inputTensors[1].geometry.maxSizes, sizeof(outputSizes));
 
     //round up to elementsInVec and divide by elementsInVec.

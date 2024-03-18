@@ -74,7 +74,7 @@ tpc_lib_api::GlueCodeReturn AddF32::GetGcDefinitions(
     *    the dimensions of the output tensor, up to dim 0.
     **************************************************************************************/
     int elementsInVec = 64;
-    unsigned int outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
+    uint64_t outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
     memcpy(outputSizes, in_defs->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
 
     //round up to elementsInVec and divide by elementsInVec.
