@@ -138,6 +138,24 @@ tpc_lib_api::GlueCodeReturn AvgPool2dF32Gaudi2::GetGcDefinitions(
     /*************************************************************************************
     *    Stage III -  Define index space mapping
     **************************************************************************************/
+    for (unsigned i = 0; i < in_defs->inputTensorNr; i++)
+    {
+        for (unsigned j = 0; j < out_defs->indexSpaceRank; j++)
+        {
+            out_defs->inputTensorAccessPattern[i].mapping[j].indexSpaceDim     = 0;
+            out_defs->inputTensorAccessPattern[i].mapping[j].a = 0;
+            out_defs->inputTensorAccessPattern[i].mapping[j].start_b = 0;
+            out_defs->inputTensorAccessPattern[i].mapping[j].end_b   = 0;
+        }
+    }
+    for (unsigned int i = 0; i < out_defs->indexSpaceRank; i++)
+    {
+        out_defs->outputTensorAccessPattern[0].mapping[i].indexSpaceDim     = i;
+        out_defs->outputTensorAccessPattern[0].mapping[i].a = 0;
+        out_defs->outputTensorAccessPattern[0].mapping[i].start_b = 0;
+        out_defs->outputTensorAccessPattern[0].mapping[i].end_b   = 0;
+    }
+
     GetAccessPatterns(out_defs,&(def->srdef),64);
     if(m_mode == bwd)
     {

@@ -183,6 +183,7 @@ int KLDivAllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         vec.push_back(output1D.GetTensorDescriptor());
                     
     // execute a simulation of the kernel using TPC simulator,
+
     TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
     ReleaseKernelNames(kernelNames, kernelCount);
 

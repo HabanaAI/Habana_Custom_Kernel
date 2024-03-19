@@ -359,7 +359,6 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     avgpool2dfwdf32g2Instance.GetKernelName(kernelName);
     if (strcmp(params->guid.name, kernelName) == 0)
     {
-        printf("inside of entry ZZZZZ\n");
         return avgpool2dfwdf32g2Instance.GetGcDefinitions(params, instance);
     }
 

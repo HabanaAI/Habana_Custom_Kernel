@@ -49,11 +49,11 @@ void TestBase::SetUp()
 void TestBase::TearDown()
 {
 
-   for(int i=0;i< MAX_ALLOCATED_TENSOR;i++)
+   /*for(int i=0;i< MAX_ALLOCATED_TENSOR;i++)
    {
       if(m_out_defs.auxiliaryTensors[i].pData)
          free(m_out_defs.auxiliaryTensors[i].pData);
-   }
+   }*/
    free(m_in_defs.inputTensors);
    free(m_in_defs.outputTensors);
 
@@ -79,6 +79,7 @@ unsigned int TestBase::RunSimulation(   std::vector<TensorDesc2>& descriptors,
    PrintKernelOutputParams(&gc_input,&gc_output);    
 
    VPEStats stat;
+
    retVal = tpc_tests::RunSimulation(gc_input, gc_output, descriptors, stat);
    const char* env = getenv("TPC_RUNNER");
    if(env != nullptr && strcmp(env, "1") == 0)
