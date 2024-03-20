@@ -186,7 +186,6 @@ void main(tensor aMatrix,
                     {
                         for (int j=0;j<2;j++)
                         {
-                            printf("ZZZ aValue[%d]", ii);
                             printf("[%d] ", j);
                             printf("is %f \n", aValue[ii][j]);
                         }

@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2022 Habana Labs.
+Copyright (c) 2024 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -21,7 +21,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include "tensor.h"
 #include "gc_interface.h"
-
+#include "tpc_kernel_lib_interface.h"
 class TestBase
 {
 public:
@@ -38,9 +38,9 @@ public:
         e_partialReadWriteMode  = 4,
     } IndexSpaceMappingTest_t;
 
-    unsigned int RunSimulation( std::vector<TensorDesc>& descriptors,
-                                const gcapi::HabanaKernelParams_t& gc_input,
-                                const gcapi::HabanaKernelInstantiation_t& gc_output,
+    unsigned int RunSimulation( std::vector<TensorDesc2>& descriptors,
+                                const tpc_lib_api::HabanaKernelParams& gc_input,
+                                const tpc_lib_api::HabanaKernelInstantiation& gc_output,
                                 IndexSpaceMappingTest_t testMode = e_defaultMode);
 
     virtual void SetUp();
@@ -48,15 +48,17 @@ public:
     virtual void TearDown();
 
     template <class T, int DIM>
-    static void LoadTensorToGcDescriptor(gcapi::Tensor_t* pTargetTensor,
+    static void LoadTensorToGcDescriptor(tpc_lib_api::Tensor* pTargetTensor,
                                  const test::Tensor<T,DIM>& inputTensor)
     {
-        pTargetTensor->dataType = test::getGcDataType(inputTensor);
         pTargetTensor->geometry.dims = DIM;
+        pTargetTensor->geometry.dataType = test::getGcDataType(inputTensor);
         for (int i = 0 ; i < DIM ; i++)
         {
-            pTargetTensor->geometry.sizes[i] = inputTensor.Size(i);
+            pTargetTensor->geometry.maxSizes[i] = inputTensor.Size(i);
+            pTargetTensor->geometry.minSizes[i] = inputTensor.Size(i);
         }
+
     }
 
        
@@ -70,14 +72,14 @@ public:
         delete[] kernelNames;
     }    
 
-    gcapi::HabanaKernelParams_t         m_in_defs;
-    gcapi::HabanaKernelInstantiation_t  m_out_defs;
+    tpc_lib_api::HabanaKernelParams         m_in_defs;
+    tpc_lib_api::HabanaKernelInstantiation  m_out_defs;
 private:
     // this is a debug helper function to print glue code outputs.
-    void PrintKernelOutputParams(const gcapi::HabanaKernelParams_t* gc_input,
-                                 const gcapi::HabanaKernelInstantiation_t*gc_output);
+    void PrintKernelOutputParams(const tpc_lib_api::HabanaKernelParams* gc_input,
+                                 const tpc_lib_api::HabanaKernelInstantiation*gc_output);
     // this is a debug helper function to print glue code inputs.
-    void PrintKernelInputParams(const gcapi::HabanaKernelParams_t* gc_input);
+    void PrintKernelInputParams(const tpc_lib_api::HabanaKernelParams* gc_input);
     TestBase(const TestBase& other) = delete;
     TestBase& operator=(const TestBase& other) = delete;
 };

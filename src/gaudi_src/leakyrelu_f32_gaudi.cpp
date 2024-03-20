@@ -21,19 +21,19 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 extern unsigned char _binary___leakyrelu_f32_gaudi_o_start;
 extern unsigned char _binary___leakyrelu_f32_gaudi_o_end;
 
-gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::GetKernelName(
-        char kernelName [gcapi::MAX_NODE_NAME])
+tpc_lib_api::GlueCodeReturn LeakyReluF32Gaudi::GetKernelName(
+        char kernelName [tpc_lib_api::MAX_NODE_NAME])
 {
     strcpy(kernelName,"custom_leakyrelu_f32_gaudi");
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
-gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::GetGcDefinitions(
-        gcapi::HabanaKernelParams_t* params,
-        gcapi::HabanaKernelInstantiation_t* kernel)
+tpc_lib_api::GlueCodeReturn LeakyReluF32Gaudi::GetGcDefinitions(
+        tpc_lib_api::HabanaKernelParams* params,
+        tpc_lib_api::HabanaKernelInstantiation* kernel)
 {
 	const int c_unrollCount = 4;
-    gcapi::GlueCodeReturn_t retVal;
+    tpc_lib_api::GlueCodeReturn retVal;
     /*************************************************************************************
     *   Stage I - validate input
     **************************************************************************************/
@@ -41,38 +41,38 @@ gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::GetGcDefinitions(
     if (params->inputTensorNr != 1)
     {
         params->inputTensorNr  = 1;
-        return gcapi::GLUE_INCOMPATIBLE_INPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_INPUT_COUNT;
     }
     //validate correct amount of output tensors
     if (params->outputTensorNr != 1)
     {
         params->outputTensorNr  = 1;
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
 
     // validate input and output data type
-    if (params->inputTensors[0].dataType != gcapi::DATA_F32 ||
-        params->outputTensors[0].dataType != gcapi::DATA_F32)
+    if (params->inputTensors[0].geometry.dataType != tpc_lib_api::DATA_F32 ||
+        params->outputTensors[0].geometry.dataType != tpc_lib_api::DATA_F32)
     {
-        params->inputTensors[0].dataType = gcapi::DATA_F32;
-        params->outputTensors[0].dataType = gcapi::DATA_F32;
-        return gcapi::GLUE_INCOMPATIBLE_DATA_TYPE;
+        params->inputTensors[0].geometry.dataType = tpc_lib_api::DATA_F32;
+        params->outputTensors[0].geometry.dataType = tpc_lib_api::DATA_F32;
+        return tpc_lib_api::GLUE_INCOMPATIBLE_DATA_TYPE;
     }
 
     // Tensor 0 should be input feature map.
     // The semantics of the input tensors and their order is a convention
     // between TPC kernel writer and the write of the layer at the
     // framework level.
-    unsigned int outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
+    uint64_t outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
 
-    memcpy(outputSizes, params->inputTensors[0].geometry.sizes, sizeof(outputSizes));
+    memcpy(outputSizes, params->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
 
     // verify that output feature map dimension are correct
-    if (memcmp(params->outputTensors[0].geometry.sizes, outputSizes,
-               params->outputTensors[0].geometry.dims * sizeof(unsigned) ) != 0)
+    if (memcmp(params->outputTensors[0].geometry.maxSizes, outputSizes,
+               params->outputTensors[0].geometry.dims * sizeof(uint64_t) ) != 0)
     {
-        memcpy(params->outputTensors[0].geometry.sizes, params->inputTensors[0].geometry.sizes, sizeof(outputSizes));
-        return gcapi::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
+        memcpy(params->outputTensors[0].geometry.maxSizes, params->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
+        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
     }
 
     /*************************************************************************************
@@ -83,12 +83,12 @@ gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::GetGcDefinitions(
 
     //round up to elementsInVec and divide by elementsInVec.
     unsigned depthIndex = (outputSizes[0] + (elementsInVec - 1)) / elementsInVec;
-    kernel->indexSpaceGeometry.dims = 4;
-    kernel->indexSpaceGeometry.sizes[0] = depthIndex;
+    kernel->indexSpaceRank = 4;
+    kernel->indexSpaceGeometry[0] = depthIndex;
 	//reduce index space due to unroll.
-    kernel->indexSpaceGeometry.sizes[1] = (outputSizes[1] +(c_unrollCount-1)) / c_unrollCount; 
-    kernel->indexSpaceGeometry.sizes[2] = outputSizes[2];
-    kernel->indexSpaceGeometry.sizes[3] = outputSizes[3];
+    kernel->indexSpaceGeometry[1] = (outputSizes[1] +(c_unrollCount-1)) / c_unrollCount; 
+    kernel->indexSpaceGeometry[2] = outputSizes[2];
+    kernel->indexSpaceGeometry[3] = outputSizes[3];
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping
@@ -96,62 +96,56 @@ gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::GetGcDefinitions(
     // f_start f(i) = elementsInVec*i + 0;
     // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
     // Resource 0 (IFM) dim 0
-    kernel->inputTensorAccessPattern[0].dim[0].dim      = 0;
-    kernel->inputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
-    kernel->inputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
-    kernel->inputTensorAccessPattern[0].dim[0].start_b  = 0;
-    kernel->inputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
+    kernel->inputTensorAccessPattern[0].mapping[0].indexSpaceDim      = 0;
+    kernel->inputTensorAccessPattern[0].mapping[0].a        = elementsInVec;
+    kernel->inputTensorAccessPattern[0].mapping[0].start_b  = 0;
+    kernel->inputTensorAccessPattern[0].mapping[0].end_b    = elementsInVec - 1;
 
-	kernel->inputTensorAccessPattern[0].dim[1].dim      = 1;
-    kernel->inputTensorAccessPattern[0].dim[1].start_a  = c_unrollCount;
-    kernel->inputTensorAccessPattern[0].dim[1].end_a    = c_unrollCount;
-    kernel->inputTensorAccessPattern[0].dim[1].start_b  = 0;
-    kernel->inputTensorAccessPattern[0].dim[1].end_b    = c_unrollCount - 1;
+	kernel->inputTensorAccessPattern[0].mapping[1].indexSpaceDim      = 1;
+    kernel->inputTensorAccessPattern[0].mapping[1].a        = c_unrollCount;
+    kernel->inputTensorAccessPattern[0].mapping[1].start_b  = 0;
+    kernel->inputTensorAccessPattern[0].mapping[1].end_b    = c_unrollCount - 1;
 	
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (IFM) dim 1-4
     for (int dims = 2; dims < 4; dims++)
     {
-        kernel->inputTensorAccessPattern[0].dim[dims].dim      = dims;
-        kernel->inputTensorAccessPattern[0].dim[dims].start_a  = 1;
-        kernel->inputTensorAccessPattern[0].dim[dims].end_a    = 1;
-        kernel->inputTensorAccessPattern[0].dim[dims].start_b  = 0;
-        kernel->inputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
+        kernel->inputTensorAccessPattern[0].mapping[dims].indexSpaceDim      = dims;
+        kernel->inputTensorAccessPattern[0].mapping[dims].a        = 1;
+        kernel->inputTensorAccessPattern[0].mapping[dims].start_b  = 0;
+        kernel->inputTensorAccessPattern[0].mapping[dims].end_b    = 1 - 1;
     }
 
     // f_start f(i) = elementsInVec*i + 0;
     // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
     // Resource 0 (OFM) dim 0
-    kernel->outputTensorAccessPattern[0].dim[0].dim      = 0;
-    kernel->outputTensorAccessPattern[0].dim[0].start_a  = elementsInVec;
-    kernel->outputTensorAccessPattern[0].dim[0].end_a    = elementsInVec;
-    kernel->outputTensorAccessPattern[0].dim[0].start_b  = 0;
-    kernel->outputTensorAccessPattern[0].dim[0].end_b    = elementsInVec - 1;
+    kernel->outputTensorAccessPattern[0].mapping[0].indexSpaceDim      = 0;
+    kernel->outputTensorAccessPattern[0].mapping[0].a        = elementsInVec;
+    kernel->outputTensorAccessPattern[0].mapping[0].start_b  = 0;
+    kernel->outputTensorAccessPattern[0].mapping[0].end_b    = elementsInVec - 1;
 	
-	kernel->outputTensorAccessPattern[0].dim[1].dim      = 1;
-    kernel->outputTensorAccessPattern[0].dim[1].start_a  = c_unrollCount;
-    kernel->outputTensorAccessPattern[0].dim[1].end_a    = c_unrollCount;
-    kernel->outputTensorAccessPattern[0].dim[1].start_b  = 0;
-    kernel->outputTensorAccessPattern[0].dim[1].end_b    = c_unrollCount - 1;
+	kernel->outputTensorAccessPattern[0].mapping[1].indexSpaceDim      = 1;
+    kernel->outputTensorAccessPattern[0].mapping[1].a           = c_unrollCount;
+    kernel->outputTensorAccessPattern[0].mapping[1].start_b  = 0;
+    kernel->outputTensorAccessPattern[0].mapping[1].end_b    = c_unrollCount - 1;
 
     // f_start f(i) = 1*i + 0;
     // f_end   f(i) = 1*i + 0;
     // Resource 0 (OFM) dim 1-4
     for (int dims = 2; dims < 4; dims++)
     {
-        kernel->outputTensorAccessPattern[0].dim[dims].dim      = dims;
-        kernel->outputTensorAccessPattern[0].dim[dims].start_a  = 1;
-        kernel->outputTensorAccessPattern[0].dim[dims].end_a    = 1;
-        kernel->outputTensorAccessPattern[0].dim[dims].start_b  = 0;
-        kernel->outputTensorAccessPattern[0].dim[dims].end_b    = 1 - 1;
+        kernel->outputTensorAccessPattern[0].mapping[dims].indexSpaceDim      = dims;
+        kernel->outputTensorAccessPattern[0].mapping[dims].a        = 1;
+        kernel->outputTensorAccessPattern[0].mapping[dims].start_b  = 0;
+        kernel->outputTensorAccessPattern[0].mapping[dims].end_b    = 1 - 1;
     }
 
 
     /*************************************************************************************
     *    Stage IV -  define scalar parameters
     **************************************************************************************/
-    LeakyReluParam* lrParam = static_cast<LeakyReluParam*>(params->NodeParams);
+    LeakyReluParam* lrParam = static_cast<LeakyReluParam*>(params->nodeParams.nodeParams);
     kernel->kernel.paramsNr = sizeof(*lrParam) / sizeof(float);
     memcpy(&(kernel->kernel.scalarParams[0]), lrParam, sizeof(*lrParam));
 
@@ -159,22 +153,22 @@ gcapi::GlueCodeReturn_t LeakyReluF32Gaudi::GetGcDefinitions(
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
     unsigned IsaSize = (&_binary___leakyrelu_f32_gaudi_o_end - &_binary___leakyrelu_f32_gaudi_o_start);
-    unsigned givenBinarySize = kernel->elfSize;
-    kernel->elfSize = IsaSize;
+    unsigned givenBinarySize = kernel->kernel.elfSize;
+    kernel->kernel.elfSize = IsaSize;
 
     if (givenBinarySize >= IsaSize)
     {
-        memcpy (kernel->kernelElf ,
+        memcpy (kernel->kernel.kernelElf ,
                     &_binary___leakyrelu_f32_gaudi_o_start,
                     IsaSize);
     }
     else
     {
-        retVal = gcapi::GLUE_INSUFICIENT_ELF_BUFFER;
+        retVal = tpc_lib_api::GLUE_INSUFFICIENT_ELF_BUFFER;
         return retVal;
     }
 
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
 

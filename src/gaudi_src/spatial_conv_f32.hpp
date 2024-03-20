@@ -28,20 +28,20 @@ public:
     SpatialConvF32() {}
     virtual ~SpatialConvF32() {}
 
-    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
-                                  gcapi::HabanaKernelParams_t* in_defs,
-                                  gcapi::HabanaKernelInstantiation_t* out_defs);
+    virtual tpc_lib_api::GlueCodeReturn GetGcDefinitions(
+                                  tpc_lib_api::HabanaKernelParams* in_defs,
+                                  tpc_lib_api::HabanaKernelInstantiation* out_defs);
 
-     virtual gcapi::GlueCodeReturn_t GetKernelName(
-             char kernelName [gcapi::MAX_NODE_NAME]);
+     virtual tpc_lib_api::GlueCodeReturn GetKernelName(
+             char kernelName [tpc_lib_api::MAX_NODE_NAME]);
 
      static bool GetSpatialConvOfmSize(
-             unsigned int IfmSize [gcapi::MAX_TENSOR_DIM],
-             unsigned int FilterSize [gcapi::MAX_TENSOR_DIM],
+             uint64_t IfmSize [gcapi::MAX_TENSOR_DIM],
+             uint64_t FilterSize [gcapi::MAX_TENSOR_DIM],
              const SpatialReduction2DDef* def,
-             unsigned int OfmSize [gcapi::MAX_TENSOR_DIM]);
+             uint64_t OfmSize [gcapi::MAX_TENSOR_DIM]);
 
-     static void GetSpatialConvAccessPatterns(gcapi::HabanaKernelInstantiation_t* out_defs,
+     static void GetSpatialConvAccessPatterns(tpc_lib_api::HabanaKernelInstantiation* out_defs,
                            const SpatialReduction2DDef * def,
                            unsigned int channelSize);
 

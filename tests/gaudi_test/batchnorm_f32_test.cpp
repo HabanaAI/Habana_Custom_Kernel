@@ -139,8 +139,8 @@ int BatchNormF32Test::runTest()
     const int fm_depth = 100;
     const int fm_batch = 1;
 
-    unsigned int fmInitializer[] = {fm_depth, fm_width, fm_height, fm_batch};
-    unsigned int fmInitializer_dep[] = {fm_depth};
+    uint64_t fmInitializer[] = {fm_depth, fm_width, fm_height, fm_batch};
+    uint64_t fmInitializer_dep[] = {fm_depth};
     float_4DTensor input(fmInitializer);
     float_1DTensor beta(fmInitializer_dep);
     float_1DTensor gamma(fmInitializer_dep);
@@ -168,7 +168,7 @@ int BatchNormF32Test::runTest()
                                      beta,
                                      gamma,
                                      def.momentum);
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
 
     // generate input for query call
     m_in_defs.inputTensorNr = 3;
@@ -181,27 +181,27 @@ int BatchNormF32Test::runTest()
     LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[1]),mean );
     LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[2]),istd );
 
-    m_in_defs.NodeParams = &def;
+    m_in_defs.nodeParams.nodeParams = &def;
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_BATCH_NORM_F32]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_BATCH_NORM_F32]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
@@ -210,7 +210,7 @@ int BatchNormF32Test::runTest()
 
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(input.GetTensorDescriptor());
     vec.push_back(beta.GetTensorDescriptor());
     vec.push_back(gamma.GetTensorDescriptor());;

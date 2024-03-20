@@ -75,7 +75,7 @@ int CastF16toI16Gaudi2Test::runTest()
 
 
     // Initalize inputs
-    unsigned int ifmofmInitializer[] = {ofmifm_depth,ifm_width,ifm_height,batch,fifdim};
+    uint64_t ifmofmInitializer[] = {ofmifm_depth,ifm_width,ifm_height,batch,fifdim};
     float16_5DTensor ifm(ifmofmInitializer);
     ifm.FillWithData_f16();
     int16_5DTensor ofm(ifmofmInitializer);
@@ -98,8 +98,8 @@ int CastF16toI16Gaudi2Test::runTest()
     this->cast_f16_to_i16_ref(ifm, ofm_ref, indexSpace, def.roundingMode);
 
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI2;
-    m_in_defs.NodeParams = &def;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI2;
+    m_in_defs.nodeParams.nodeParams = &def;
     m_in_defs.inputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]),ifm );
 
@@ -108,23 +108,23 @@ int CastF16toI16Gaudi2Test::runTest()
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI2);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI2);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI2);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI2_KERNEL_CAST_F16_TO_I16]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI2_KERNEL_CAST_F16_TO_I16]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
@@ -132,7 +132,7 @@ int CastF16toI16Gaudi2Test::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(ifm.GetTensorDescriptor());
     vec.push_back(ofm.GetTensorDescriptor());
 

@@ -51,7 +51,7 @@ int LeakyReluF32GaudiTest::runTest()
     const int depth  = 100;
     const int batch  = 1;
 
-    unsigned int fmInitializer[] = {depth, width, height, batch};
+    uint64_t fmInitializer[] = {depth, width, height, batch};
 
     float_4DTensor input(fmInitializer);
     input.InitRand(-10.0f, 10.0f);
@@ -66,8 +66,8 @@ int LeakyReluF32GaudiTest::runTest()
     leakyrelu_reference_implementation(input, output_ref, param.alpha);
 
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
-    m_in_defs.NodeParams = &param;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
+    m_in_defs.nodeParams.nodeParams = &param;
 
     m_in_defs.inputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]), input);
@@ -77,23 +77,23 @@ int LeakyReluF32GaudiTest::runTest()
 
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_LEAKU_RELU_F32]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_LEAKU_RELU_F32]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
@@ -101,7 +101,7 @@ int LeakyReluF32GaudiTest::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(input.GetTensorDescriptor());
     vec.push_back(output.GetTensorDescriptor());
     // execute a simulation of the kernel using TPC simulator,

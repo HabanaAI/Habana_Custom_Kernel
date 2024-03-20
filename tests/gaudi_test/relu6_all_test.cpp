@@ -154,9 +154,9 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
     const int batch  = 2;
     const int fifthdim  = 1;
 
-    unsigned int fmInitializer[] = {depth, width, height, batch, fifthdim};
+    uint64_t fmInitializer[] = {depth, width, height, batch, fifthdim};
     unsigned kernelCount;
-    gcapi::GlueCodeReturn_t result;
+    tpc_lib_api::GlueCodeReturn result;
     char**   kernelNames = nullptr;
 
     if((NameofKernel == GAUDI_KERNEL_RELU6_FWD_F32) || (NameofKernel == GAUDI_KERNEL_RELU6_BWD_F32)
@@ -170,7 +170,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         float_5DTensor output_ref(fmInitializer);
 
         // generate input for query call
-        m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
+        m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
 
         if(NameofKernel == GAUDI_KERNEL_RELU6_FWD_F32 || NameofKernel == GAUDI_KERNEL_RELU_FWD_F32)
         {
@@ -192,23 +192,23 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
 
         kernelCount = 0;
-        result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+        result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
         kernelNames = new char*[kernelCount];
         for (unsigned i = 0; i < kernelCount; i++)
         {
-            kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+            kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
         }    
-        result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-        if (result != gcapi::GLUE_SUCCESS)
+        result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+        if (result != tpc_lib_api::GLUE_SUCCESS)
         {
             std::cout << "Can't get kernel name!! " << result << std::endl;
             ReleaseKernelNames(kernelNames, kernelCount);
             return -1;
         }
 
-        strcpy(m_in_defs.nodeName, kernelNames[NameofKernel]);
+        strcpy(m_in_defs.guid.name, kernelNames[NameofKernel]);
         result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-        if (result != gcapi::GLUE_SUCCESS)
+        if (result != tpc_lib_api::GLUE_SUCCESS)
         {
             std::cout << "Glue test failed, can't load kernel " << result << std::endl;
             ReleaseKernelNames(kernelNames, kernelCount);
@@ -216,7 +216,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         }
 
         // generate and load tensor descriptors
-        std::vector<TensorDesc> vec;
+        std::vector<TensorDesc2> vec;
         if(NameofKernel == GAUDI_KERNEL_RELU6_BWD_F32 || NameofKernel == GAUDI_KERNEL_RELU_BWD_F32)
             vec.push_back(gradin.GetTensorDescriptor());
         vec.push_back(input.GetTensorDescriptor());
@@ -262,7 +262,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         bfloat16_5DTensor output_ref(fmInitializer);
 
         // generate input for query call
-        m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
+        m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
 
         if(NameofKernel == GAUDI_KERNEL_RELU6_FWD_BF16 || NameofKernel == GAUDI_KERNEL_RELU_FWD_BF16)
         {
@@ -282,23 +282,23 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
 
         kernelCount = 0;
-        result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+        result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
         kernelNames = new char*[kernelCount];
         for (unsigned i = 0; i < kernelCount; i++)
         {
-            kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+            kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
         }    
-        result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-        if (result != gcapi::GLUE_SUCCESS)
+        result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+        if (result != tpc_lib_api::GLUE_SUCCESS)
         {
             std::cout << "Can't get kernel name!! " << result << std::endl;
             ReleaseKernelNames(kernelNames, kernelCount);
             return -1;
         }
 
-        strcpy(m_in_defs.nodeName, kernelNames[NameofKernel]);
+        strcpy(m_in_defs.guid.name, kernelNames[NameofKernel]);
         result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-        if (result != gcapi::GLUE_SUCCESS)
+        if (result != tpc_lib_api::GLUE_SUCCESS)
         {
             std::cout << "Glue test failed, can't load kernel " << result << std::endl;
             ReleaseKernelNames(kernelNames, kernelCount);
@@ -306,7 +306,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         }
 
         // generate and load tensor descriptors
-        std::vector<TensorDesc> vec;
+        std::vector<TensorDesc2> vec;
         if(NameofKernel == GAUDI_KERNEL_RELU6_BWD_BF16 || NameofKernel == GAUDI_KERNEL_RELU_BWD_BF16)
             vec.push_back(gradin.GetTensorDescriptor());
         vec.push_back(input.GetTensorDescriptor());

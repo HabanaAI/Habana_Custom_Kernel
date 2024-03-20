@@ -21,6 +21,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include <cstring>
 #include <cmath>
 #include "gc_interface.h"
+#include "tpc_kernel_lib_interface.h"
 
 class KLDivAll
 {
@@ -35,20 +36,20 @@ public:
     KLDivAll(KLDiv_mode_t mode=fwd_f32) {m_mode = mode;}
     virtual ~KLDivAll() {};
 
-    virtual gcapi::GlueCodeReturn_t GetGcDefinitions(
-                                 gcapi::HabanaKernelParams_t* in_defs,
-                                 gcapi::HabanaKernelInstantiation_t* out_defs);
+    virtual tpc_lib_api::GlueCodeReturn GetGcDefinitions(
+                                 tpc_lib_api::HabanaKernelParams* in_defs,
+                                 tpc_lib_api::HabanaKernelInstantiation* out_defs);
 
-    virtual gcapi::GlueCodeReturn_t GetKernelName(
-            char kernelName [gcapi::MAX_NODE_NAME]);
+    virtual tpc_lib_api::GlueCodeReturn GetKernelName(
+            char kernelName [tpc_lib_api::MAX_NODE_NAME]);
 
-    void SetGeometryAlongAxis(  gcapi::HabanaKernelParams_t* in_defs,
-                                gcapi::HabanaKernelInstantiation_t* out_defs, int axis,
+    void SetGeometryAlongAxis(  tpc_lib_api::HabanaKernelParams* in_defs,
+                                tpc_lib_api::HabanaKernelInstantiation* out_defs, int axis,
                                 int pixels_per_loop, uint32_t inpTensorMask,
                                 uint32_t outTensorMask);
 
-    gcapi::GlueCodeReturn_t  ValidateTensorsDataType(
-                                gcapi::Tensor_t* pTensors,
+    tpc_lib_api::GlueCodeReturn  ValidateTensorsDataType(
+                                tpc_lib_api::Tensor* pTensors,
                                 int tensorCount);
 
     // This struct is common between the TPC kernel writer and the framework layer writer

@@ -19,7 +19,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 
 #include <gc_interface.h>
-
+#include "tpc_kernel_lib_interface.h"
 
 class SpatialReductionKernels
 {
@@ -45,25 +45,25 @@ public:
     };
 
     // function common to all host glue code
-    static bool GetOfmSize(unsigned int IfmSize [gcapi::MAX_TENSOR_DIM],
+    static bool GetOfmSize(uint64_t IfmSize [gcapi::MAX_TENSOR_DIM],
                                    const SpatialReduction2DDef * def,
-                                   unsigned int OfmSize [gcapi::MAX_TENSOR_DIM]);
+                                   uint64_t OfmSize [gcapi::MAX_TENSOR_DIM]);
 
-    static void GetAccessPatterns(gcapi::HabanaKernelInstantiation_t* out_defs,
+    static void GetAccessPatterns(tpc_lib_api::HabanaKernelInstantiation* out_defs,
                            const SpatialReduction2DDef * def,
                            unsigned int elementsInVector);
 
-    void OverrideAccessPatternForMultipleElements(gcapi::HabanaKernelInstantiation_t* out_defs,
+    void OverrideAccessPatternForMultipleElements(tpc_lib_api::HabanaKernelInstantiation* out_defs,
                                                   const SpatialReduction2DDef* def,
                                                   unsigned int dim,
                                                   unsigned int elementsNr);
 
     unsigned int ElementsInVector() const;
 
-    gcapi::GlueCodeReturn_t  ValidateTensorsDataType(
-                                gcapi::Tensor_t* pTensors,
+    tpc_lib_api::GlueCodeReturn  ValidateTensorsDataType(
+                                tpc_lib_api::Tensor* pTensors,
                                 int tensorCount,
-                                gcapi::TensorDataType_t expected);
+                                tpc_lib_api::TensorDataType expected);
 
 
 protected:

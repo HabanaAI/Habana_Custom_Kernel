@@ -84,11 +84,10 @@ int FilterFwd2DBF16Test::runTest()
     layer_def.dilation_w = 1;
     layer_def.dilation_h = 1;
 
-
-    unsigned int fmInitializer[] = {fm_depth, fm_width, fm_height, fm_batch};
+    uint64_t fmInitializer[] = {fm_depth, fm_width, fm_height, fm_batch};
     bfloat16_4DTensor ifm(fmInitializer);
     ifm.FillWithData();
-    unsigned int filterInitialize[] = {(unsigned)fm_depth,
+    uint64_t filterInitialize[] = {(unsigned)fm_depth,
                                        (unsigned)layer_def.kernel_w,
                                        (unsigned)layer_def.kernel_h};
 
@@ -112,34 +111,35 @@ int FilterFwd2DBF16Test::runTest()
                                     layer_def,
                                     indexSpace);
     // generate input for query call
-    m_in_defs.deviceId = gcapi::DEVICE_ID_GAUDI;
-    m_in_defs.NodeParams = &layer_def;
+    m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
+    m_in_defs.nodeParams.nodeParams = &layer_def;
     m_in_defs.inputTensorNr = 2;
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[0]),ifm );
     LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[1]),filter );
 
+    
     m_in_defs.outputTensorNr = 1;
     LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]),ofm );
-
     char**   kernelNames = nullptr;
     unsigned kernelCount = 0;
-    gcapi::GlueCodeReturn_t result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
     kernelNames = new char*[kernelCount];
     for (unsigned i = 0; i < kernelCount; i++)
     {
-        kernelNames[i] = new char[gcapi::MAX_NODE_NAME];
+        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
     }    
-    result = GetKernelGuids(kernelNames, &kernelCount, gcapi::DEVICE_ID_GAUDI);
-    if (result != gcapi::GLUE_SUCCESS)
+    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.nodeName, kernelNames[GAUDI_KERNEL_FILTER_FWD_2D_BF16]);
+    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_FILTER_FWD_2D_BF16]);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    if (result != gcapi::GLUE_SUCCESS)
+    if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
         ReleaseKernelNames(kernelNames, kernelCount);
@@ -147,7 +147,7 @@ int FilterFwd2DBF16Test::runTest()
     }
 
     // generate and load tensor descriptors
-    std::vector<TensorDesc> vec;
+    std::vector<TensorDesc2> vec;
     vec.push_back(ifm.GetTensorDescriptor());
     vec.push_back(filter.GetTensorDescriptor());
     vec.push_back(ofm.GetTensorDescriptor());

@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2022 Habana Labs.
+Copyright (c) 2024 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -36,15 +36,15 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "kl_div_all.hpp"
 
 #include "entry_points.hpp"
-
+#include <stdio.h>
 extern "C"
 {
 
-gcapi::GlueCodeReturn_t GetKernelGuids(_OUT_ char**         names,
+tpc_lib_api::GlueCodeReturn GetKernelGuids(_OUT_ char**         names,
                                        unsigned*            kernelCount,
-                                       gcapi::DeviceId_t    deviceId)
+                                       tpc_lib_api::DeviceId    deviceId)
 {
-    if (deviceId == gcapi::DEVICE_ID_GAUDI)
+    if (deviceId == tpc_lib_api::DEVICE_ID_GAUDI)
     {
         if (names != nullptr )
         {
@@ -111,7 +111,7 @@ gcapi::GlueCodeReturn_t GetKernelGuids(_OUT_ char**         names,
             *kernelCount = GAUDI_KERNEL_MAX_EXAMPLE_KERNEL;
         }
     }
-    else if (deviceId == gcapi::DEVICE_ID_GAUDI2)
+    else if (deviceId == tpc_lib_api::DEVICE_ID_GAUDI2)
     {
         if (names != nullptr )
         {
@@ -143,207 +143,207 @@ gcapi::GlueCodeReturn_t GetKernelGuids(_OUT_ char**         names,
             *kernelCount = 0;
         }
     }
-    return gcapi::GLUE_SUCCESS;
+    return tpc_lib_api::GLUE_SUCCESS;
 }
 
 
-gcapi::GlueCodeReturn_t
-InstantiateTpcKernel(_IN_  gcapi::HabanaKernelParams_t* params,
-             _OUT_ gcapi::HabanaKernelInstantiation_t*instance)
+tpc_lib_api::GlueCodeReturn
+InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
+             _OUT_ tpc_lib_api::HabanaKernelInstantiation* instance)
 {
-    char kernelName [gcapi::MAX_NODE_NAME];
+    char kernelName [tpc_lib_api::MAX_NODE_NAME];
 
     ///////---Gaudi---
     ///////////////////////////////
     PrintfTestKernel printfInstance;
     printfInstance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return printfInstance.GetGcDefinitions(params, instance);
     }
 
     BatchNormF32 batchNormInstance;
     batchNormInstance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return batchNormInstance.GetGcDefinitions(params, instance);
     }
     FilterFwd2dBF16 filterBF16Instance;
     filterBF16Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return filterBF16Instance.GetGcDefinitions(params, instance);
     }
     CastGaudi castGaudiInstancebff(CastGaudi::bf16_to_f32);
     castGaudiInstancebff.GetKernelName(kernelName, CastGaudi::bf16_to_f32);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return castGaudiInstancebff.GetGcDefinitions(params,instance);
     }
     CastGaudi castGaudiInstancefbf(CastGaudi::f32_to_bf16);
     castGaudiInstancefbf.GetKernelName(kernelName, CastGaudi::f32_to_bf16);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return castGaudiInstancefbf.GetGcDefinitions(params,instance);
     }
     LeakyReluF32Gaudi leakyReluGaudiInstance;
     leakyReluGaudiInstance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return leakyReluGaudiInstance.GetGcDefinitions(params,instance);
     }
     SoftMaxBF16 softmaxBf16Instance;
     softmaxBf16Instance.GetKernelNameFcd(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return softmaxBf16Instance.GetGcDefinitions(params,instance);
     }
     softmaxBf16Instance.GetKernelNameNonFcd(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return softmaxBf16Instance.GetGcDefinitions(params,instance);
     }
     SparseLengthsSumBF16 sparseLengthsSumBf16Instance;
     sparseLengthsSumBf16Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return sparseLengthsSumBf16Instance.GetGcDefinitions(params, instance);
     }
     CustomdivFwdF32 customdivFwdF32Instance;
     customdivFwdF32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return customdivFwdF32Instance.GetGcDefinitions(params,instance);
     }
     Relu6All Relu6FwdF32Instance(Relu6All::relu6_fwd_f32);
     Relu6FwdF32Instance.GetKernelName(kernelName, Relu6All::relu6_fwd_f32);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return Relu6FwdF32Instance.GetGcDefinitions(params,instance);
     }
 
     Relu6All Relu6BwdF32Instance(Relu6All::relu6_bwd_f32);
     Relu6BwdF32Instance.GetKernelName(kernelName, Relu6All::relu6_bwd_f32);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return Relu6BwdF32Instance.GetGcDefinitions(params,instance);
     }
 
     Relu6All Relu6FwdBF16Instance(Relu6All::relu6_fwd_bf16);
     Relu6FwdBF16Instance.GetKernelName(kernelName, Relu6All::relu6_fwd_bf16);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return Relu6FwdBF16Instance.GetGcDefinitions(params,instance);
     }
 
     Relu6All Relu6BwdBF16Instance(Relu6All::relu6_bwd_bf16);
     Relu6BwdBF16Instance.GetKernelName(kernelName, Relu6All::relu6_bwd_bf16);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return Relu6BwdBF16Instance.GetGcDefinitions(params,instance);
     }
 
     Relu6All ReluFwdF32Instance(Relu6All::relu_fwd_f32);
     ReluFwdF32Instance.GetKernelName(kernelName, Relu6All::relu_fwd_f32);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return ReluFwdF32Instance.GetGcDefinitions(params,instance);
     }
 
     Relu6All ReluBwdF32Instance(Relu6All::relu_bwd_f32);
     ReluBwdF32Instance.GetKernelName(kernelName, Relu6All::relu_bwd_f32);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return ReluBwdF32Instance.GetGcDefinitions(params,instance);
     }
 
     Relu6All ReluFwdBF16Instance(Relu6All::relu_fwd_bf16);
     ReluFwdBF16Instance.GetKernelName(kernelName, Relu6All::relu_fwd_bf16);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return ReluFwdBF16Instance.GetGcDefinitions(params,instance);
     }
 
     Relu6All ReluBwdBF16Instance(Relu6All::relu_bwd_bf16);
     ReluBwdBF16Instance.GetKernelName(kernelName, Relu6All::relu_bwd_bf16);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return ReluBwdBF16Instance.GetGcDefinitions(params,instance);
     }
 
     MatrixMulFwdF32 MatrixMulFwdF32Instance;
     MatrixMulFwdF32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return MatrixMulFwdF32Instance.GetGcDefinitions(params,instance);
     }
 
     SpatialConvF32 spatialConvInstance;
     spatialConvInstance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return spatialConvInstance.GetGcDefinitions(params, instance);
     }
 
     SinF32 sinf32Instance;
     sinf32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return sinf32Instance.GetGcDefinitions(params, instance);
     }
 
     AddF32 addf32Instance;
     addf32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return addf32Instance.GetGcDefinitions(params, instance);
     }
 
     AvgPool2dF32 avgpool2dfwdf32Instance(AvgPool2dF32::fwd);
     avgpool2dfwdf32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return avgpool2dfwdf32Instance.GetGcDefinitions(params, instance);
     }
 
     AvgPool2dF32 avgpool2dbwdf32Instance(AvgPool2dF32::bwd);
     avgpool2dbwdf32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return avgpool2dbwdf32Instance.GetGcDefinitions(params, instance);
     }
 
     SearchSortedF32 searchsortedfwdf32Instance;
     searchsortedfwdf32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return searchsortedfwdf32Instance.GetGcDefinitions(params, instance);
     }
     
     GatherFwdI32 gatherfwddim0i32Instance(GatherFwdI32::gather_fwd_dim0);
     gatherfwddim0i32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return gatherfwddim0i32Instance.GetGcDefinitions(params, instance);
     }
 
     GatherFwdI32 gatherfwddim1i32Instance(GatherFwdI32::gather_fwd_dim1);
     gatherfwddim1i32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return gatherfwddim1i32Instance.GetGcDefinitions(params, instance);
     }
 
     KLDivAll KLDivFwdF32Instance(KLDivAll::fwd_f32);
     KLDivFwdF32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return KLDivFwdF32Instance.GetGcDefinitions(params,instance);
     }
 
     KLDivAll KLDivBwdF32Instance(KLDivAll::bwd_f32);
     KLDivBwdF32Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return KLDivBwdF32Instance.GetGcDefinitions(params,instance);
     }
@@ -351,43 +351,43 @@ InstantiateTpcKernel(_IN_  gcapi::HabanaKernelParams_t* params,
     ///////////////////////////////
     KLDivAll KLDivFwdF32Instance2(KLDivAll::fwd_f32_gaudi2);
     KLDivFwdF32Instance2.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return KLDivFwdF32Instance2.GetGcDefinitions(params,instance);
     }    
     AvgPool2dF32Gaudi2 avgpool2dfwdf32g2Instance(AvgPool2dF32Gaudi2::fwd);
     avgpool2dfwdf32g2Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return avgpool2dfwdf32g2Instance.GetGcDefinitions(params, instance);
     }
 
     AvgPool2dF32Gaudi2 avgpool2dbwdf32g2Instance(AvgPool2dF32Gaudi2::bwd);
     avgpool2dbwdf32g2Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return avgpool2dbwdf32g2Instance.GetGcDefinitions(params, instance);
     }
 
     Castf16toi16Gaudi2 castf16toi16g2Instance;
     castf16toi16g2Instance.GetKernelName(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return castf16toi16g2Instance.GetGcDefinitions(params, instance);
     }
     SoftMaxBF16Gaudi2 softmaxBf16g2Instance;
     softmaxBf16g2Instance.GetKernelNameFcd(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return softmaxBf16g2Instance.GetGcDefinitions(params,instance);
     }
     softmaxBf16g2Instance.GetKernelNameNonFcd(kernelName);
-    if (strcmp(params->nodeName, kernelName) == 0)
+    if (strcmp(params->guid.name, kernelName) == 0)
     {
         return softmaxBf16g2Instance.GetGcDefinitions(params,instance);
     }
 
-    return gcapi::GLUE_NODE_NOT_FOUND;
+    return tpc_lib_api::GLUE_NODE_NOT_FOUND;
 }
 
 } // extern "C"

@@ -30,6 +30,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "float16.h"
 #include "tpc_test_core_types.h"
 #include "gc_interface.h"
+#include "tpc_kernel_lib_interface.h"
 
 #define GATHER_INDEX 1
 using namespace tpc_tests;
@@ -60,11 +61,11 @@ public:
     {
 
     }
-    Tensor(const unsigned sizes [DIM], T* data = NULL, int32_t padValue = 0)
+    Tensor(const uint64_t sizes [DIM], T* data = NULL, int32_t padValue = 0)
     :
             m_pdata(nullptr)
     {
-        std::vector<unsigned> stdSizes ;
+        std::vector<uint64_t> stdSizes ;
         for (int i = 0 ; i < DIM; i++)
         {
             stdSizes.push_back(sizes[i]);
@@ -72,23 +73,23 @@ public:
         Init(stdSizes,data,padValue);
     }
 
-    Tensor(const std::vector<unsigned>& sizes, T* data = NULL, int32_t padValue = 0)
+    Tensor(const std::vector<uint64_t>& sizes, T* data = NULL, int32_t padValue = 0)
     :
             m_pdata(nullptr)
     {
         Init(sizes,data,padValue);
     }
 
-    void Init(const unsigned sizes[DIM], T* data = NULL, int32_t padValue = 0)
+    void Init(const uint64_t sizes[DIM], T* data = NULL, int32_t padValue = 0)
     {
-        std::vector<unsigned> stdSizes;
+        std::vector<uint64_t> stdSizes;
         for (int i = 0; i < DIM; i++)
         {
             stdSizes.push_back(sizes[i]);
         }
         Init(stdSizes, data, padValue);
     }
-    void Init(const std::vector<unsigned>& sizes, T* data = NULL,  int32_t padValue = 0)
+    void Init(const std::vector<uint64_t>& sizes, T* data = NULL,  int32_t padValue = 0)
     {
         if (m_pdata)
         {
@@ -329,9 +330,9 @@ public:
     }
 
     // @brief returns tensor descriptor for TPC simulator
-    TensorDesc GetTensorDescriptor() const
+    TensorDesc2 GetTensorDescriptor() const
     {
-        TensorDesc tensorDesc;
+        TensorDesc2 tensorDesc = {};
         tensorDesc.baseAddrUnion.baseAddr = (uint64_t)m_pdata;
 
         uint32_t validDimMask = 0;
@@ -414,39 +415,39 @@ template <class T, int DIM>
 inline bool operator!=(const Tensor<T,DIM>& lhs, const Tensor<T,DIM>& rhs){ return !(lhs == rhs); }
 
 template<int NUM>
-gcapi::TensorDataType_t getGcDataType(const Tensor<signed char,NUM>& a)
+tpc_lib_api::TensorDataType getGcDataType(const Tensor<signed char,NUM>& a)
 {
-   return gcapi::DATA_I8;
+   return tpc_lib_api::DATA_I8;
 }
 
 template<int NUM>
-gcapi::TensorDataType_t getGcDataType(const Tensor<signed int,NUM>& a)
+tpc_lib_api::TensorDataType getGcDataType(const Tensor<signed int,NUM>& a)
 {
-   return gcapi::DATA_I32;
+   return tpc_lib_api::DATA_I32;
 }
 
 template<int NUM>
-gcapi::TensorDataType_t getGcDataType(const Tensor<signed short,NUM>& a)
+tpc_lib_api::TensorDataType getGcDataType(const Tensor<signed short,NUM>& a)
 {
-   return gcapi::DATA_I16;
+   return tpc_lib_api::DATA_I16;
 }
 
 template<int NUM>
-gcapi::TensorDataType_t getGcDataType(const Tensor<float,NUM>& a)
+tpc_lib_api::TensorDataType getGcDataType(const Tensor<float,NUM>& a)
 {
-   return gcapi::DATA_F32;
+   return tpc_lib_api::DATA_F32;
 }
 
 template<int NUM>
-gcapi::TensorDataType_t getGcDataType(const Tensor<bfloat16,NUM>& a)
+tpc_lib_api::TensorDataType getGcDataType(const Tensor<bfloat16,NUM>& a)
 {
-   return gcapi::DATA_BF16;
+   return tpc_lib_api::DATA_BF16;
 }
 
 template<int NUM>
-gcapi::TensorDataType_t getGcDataType(const Tensor<float16,NUM>& a)
+tpc_lib_api::TensorDataType getGcDataType(const Tensor<float16,NUM>& a)
 {
-   return gcapi::DATA_F16;
+   return tpc_lib_api::DATA_F16;
 }
 
 static const unsigned MAX_TENSOR_DIM = 5;
