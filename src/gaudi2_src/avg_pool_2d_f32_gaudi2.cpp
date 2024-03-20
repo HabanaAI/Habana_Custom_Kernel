@@ -128,12 +128,11 @@ tpc_lib_api::GlueCodeReturn AvgPool2dF32Gaudi2::GetGcDefinitions(
         memcpy(in_defs->outputTensors[0].geometry.maxSizes,outputSizes,sizeof(outputSizes));
         return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
     }
-
     //round up to 64 and divide by 64.
     out_defs->indexSpaceGeometry[0] = (outputSizes[0] + 63) /64;
     out_defs->indexSpaceGeometry[1] = outputSizes[1];
     out_defs->indexSpaceGeometry[2] = outputSizes[2];
-    out_defs->indexSpaceGeometry[3] = outputSizes[3];
+    out_defs->indexSpaceGeometry[3] = outputSizes[3] ? outputSizes[3] : 1;
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping

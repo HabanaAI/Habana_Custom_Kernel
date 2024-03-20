@@ -344,16 +344,28 @@ int AvgPool2DF32Gaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
     }
 
     strcpy(m_in_defs.guid.name, kernelNames[NameofKernel]);
-    //result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
+    result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
 
     // Declaration of auxiliary tensor
     float_1DTensor aux_tensor({100});
     // Allocate memory for aux tensor if not allocated
 
-    result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
-    // AUXILIARY TENSOR init based on parameters got from glue code
-    aux_tensor.Init(&(m_out_defs.auxiliaryTensors[0].bufferSize),
+    if (result == tpc_lib_api::GLUE_INSUFFICIENT_AUX_BUFFER_SIZE)
+    {
+        if (m_out_defs.auxiliaryTensors[0].pData)
+        {
+            delete [] (int8_t*)m_out_defs.auxiliaryTensors[0].pData;
+            m_out_defs.auxiliaryTensors[0].pData = NULL;
+        }
+
+        m_out_defs.auxiliaryTensors[0].pData =
+                                    new float[m_out_defs.auxiliaryTensors[0].bufferSize / sizeof(float)];
+        // second call of glue-code to load Auxiliary data.
+        result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
+        // AUXILIARY TENSOR init based on parameters got from glue code
+        aux_tensor.Init(m_out_defs.auxiliaryTensors[0].geometry.maxSizes,
                                     (float*)m_out_defs.auxiliaryTensors[0].pData);
+    }
     
 
     if (result != tpc_lib_api::GLUE_SUCCESS)
@@ -375,10 +387,16 @@ int AvgPool2DF32Gaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
     ReleaseKernelNames(kernelNames, kernelCount);
     std::cout << std::endl;
     std::cout << "ofm data shown below " << std::endl;
-    ofm.Print(2);
+    ofm.Print(1); ofm.Print(2);
     std::cout << std::endl;
     std::cout << "ofm_ref data shown below " << std::endl;
-    ofm_ref.Print(2);
+    ofm_ref.Print(1); ofm_ref.Print(2);
+
+    if (m_out_defs.auxiliaryTensors[0].pData)
+    {
+        delete [] (int8_t*)m_out_defs.auxiliaryTensors[0].pData;
+        m_out_defs.auxiliaryTensors[0].pData = NULL;
+    }    
     for (int element = 0 ; element <  ofm_ref.ElementCount() ; element++)
     {
         if (abs(ofm.Data()[element] - ofm_ref.Data()[element]) > 1e-6)

@@ -15,6 +15,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #include "kl_div_all.hpp"
+#include <iostream>
 
 extern unsigned char _binary___kl_div_fwd_f32_o_start;
 extern unsigned char _binary___kl_div_fwd_f32_o_end;
@@ -219,8 +220,9 @@ tpc_lib_api::GlueCodeReturn KLDivAll::GetGcDefinitions(
     // Resource 0-4 (IFM) dim 0
     if(m_mode == fwd_f32 || m_mode == fwd_f32_gaudi2)    
     {
+        std::cout << "in_defs->inputTensorNr is " << in_defs->inputTensorNr << std::endl;
         for(unsigned int ii = 0;ii < in_defs->inputTensorNr; ii++) {
-            out_defs->inputTensorAccessPattern[ii].allRequired = true;
+            //out_defs->inputTensorAccessPattern[ii].allRequired = true;
             out_defs->inputTensorAccessPattern[ii].mapping[0].indexSpaceDim      = 0;
             out_defs->inputTensorAccessPattern[ii].mapping[0].a        = 0;
             out_defs->inputTensorAccessPattern[ii].mapping[0].start_b  = 0;

@@ -31,14 +31,14 @@ void TestBase::SetUp()
    memset(&m_out_defs,0,sizeof(m_out_defs));
 
    // allocate the tensor space
-   m_in_defs.inputTensors = (tpc_lib_api::Tensor*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::Tensor));
-   m_in_defs.outputTensors = (tpc_lib_api::Tensor*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::Tensor));
+   m_in_defs.inputTensors = (tpc_lib_api::Tensor*)calloc(MAX_ALLOCATED_TENSOR,  sizeof(tpc_lib_api::Tensor));
+   m_in_defs.outputTensors = (tpc_lib_api::Tensor*)calloc(MAX_ALLOCATED_TENSOR,  sizeof(tpc_lib_api::Tensor));
 
    // allocate the accesspatten
-   m_out_defs.inputTensorAccessPattern = (tpc_lib_api::TensorAccessPattern*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::TensorAccessPattern*));
-   m_out_defs.outputTensorAccessPattern = (tpc_lib_api::TensorAccessPattern*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::TensorAccessPattern*));
+   m_out_defs.inputTensorAccessPattern = (tpc_lib_api::TensorAccessPattern*)calloc(MAX_ALLOCATED_TENSOR, sizeof(tpc_lib_api::TensorAccessPattern));
+   m_out_defs.outputTensorAccessPattern = (tpc_lib_api::TensorAccessPattern*)calloc(MAX_ALLOCATED_TENSOR, sizeof(tpc_lib_api::TensorAccessPattern));
 
-   m_out_defs.auxiliaryTensors = (tpc_lib_api::AuxTensor*)malloc(MAX_ALLOCATED_TENSOR * sizeof(tpc_lib_api::AuxTensor*));
+   m_out_defs.auxiliaryTensors = (tpc_lib_api::AuxTensor*)calloc(MAX_ALLOCATED_TENSOR, sizeof(tpc_lib_api::AuxTensor));
    for(int i=0;i< MAX_ALLOCATED_TENSOR;i++)
       m_out_defs.auxiliaryTensors[i].pData =NULL;
    // allocate memory for ISA
@@ -48,12 +48,11 @@ void TestBase::SetUp()
 
 void TestBase::TearDown()
 {
-
-   /*for(int i=0;i< MAX_ALLOCATED_TENSOR;i++)
+   for(int i=0;i< MAX_ALLOCATED_TENSOR;i++)
    {
       if(m_out_defs.auxiliaryTensors[i].pData)
          free(m_out_defs.auxiliaryTensors[i].pData);
-   }*/
+   }
    free(m_in_defs.inputTensors);
    free(m_in_defs.outputTensors);
 

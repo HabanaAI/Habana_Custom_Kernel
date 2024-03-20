@@ -429,11 +429,12 @@ int main(int argc, char** argv)
         }
     }
 
+    AvgPool2DF32Gaudi2Test avgpool2dbf32Gaudi2ins;
     if(check_arg(argc, argv, "Gaudi2", "AvgPool2DBwdF32Gaudi2Test"))
     {
-        avgpool2df32Gaudi2ins.SetUp();
-        result = avgpool2df32Gaudi2ins.runTest(GAUDI2_KERNEL_AVG_POOL_2D_BWD_F32);
-        avgpool2df32Gaudi2ins.TearDown();
+        avgpool2dbf32Gaudi2ins.SetUp();
+        result = avgpool2dbf32Gaudi2ins.runTest(GAUDI2_KERNEL_AVG_POOL_2D_BWD_F32);
+        avgpool2dbf32Gaudi2ins.TearDown();
         testCount ++;
         if (result != 0)
         {
