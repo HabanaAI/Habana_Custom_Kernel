@@ -98,5 +98,8 @@ tpc_lib_api::GlueCodeReturn
 InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
              _OUT_ tpc_lib_api::HabanaKernelInstantiation*instance);
 
+tpc_lib_api::GlueCodeReturn 
+GetShapeInference(_IN_ tpc_lib_api::DeviceId deviceId,  _IN_ tpc_lib_api::ShapeInferenceParams* inputParams,  _OUT_ tpc_lib_api::ShapeInferenceOutput* outputData);
+
 } // extern "C"
 #endif

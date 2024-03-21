@@ -390,4 +390,9 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     return tpc_lib_api::GLUE_NODE_NOT_FOUND;
 }
 
+tpc_lib_api::GlueCodeReturn GetShapeInference(tpc_lib_api::DeviceId deviceId,  tpc_lib_api::ShapeInferenceParams* inputParams,  tpc_lib_api::ShapeInferenceOutput* outputData)
+{
+    return tpc_lib_api::GLUE_SUCCESS;
+}
+
 } // extern "C"
