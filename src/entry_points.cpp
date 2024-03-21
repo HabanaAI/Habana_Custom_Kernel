@@ -34,6 +34,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "cast_f16_to_i16_gaudi2.hpp"
 #include "searchsorted_f32.hpp"
 #include "kl_div_all.hpp"
+#include "outer_product_fwd_f32_gaudi2.hpp"
 
 #include "entry_points.hpp"
 #include <stdio.h>
@@ -126,6 +127,9 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids(_OUT_ char**         names,
            SoftMaxBF16Gaudi2 softmaxInstance;
            softmaxInstance.GetKernelNameFcd(names[GAUDI2_KERNEL_SOFTMAX_FCD_BF16]);
            softmaxInstance.GetKernelNameNonFcd(names[GAUDI2_KERNEL_SOFTMAX_NONFCD_BF16]);
+
+           OuterProductFwdF32Gaudi2 OuterProductFwdF32Instance;
+           OuterProductFwdF32Instance.GetKernelName(names[GAUDI2_KERNEL_OUTER_PRODUCT_FWD_F32]);
 
         }
 
@@ -385,6 +389,14 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     if (strcmp(params->guid.name, kernelName) == 0)
     {
         return softmaxBf16g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    OuterProductFwdF32Gaudi2 OuterProductFwdF32Instance;
+    OuterProductFwdF32Instance.GetKernelName(kernelName);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        printf("Inside of InstantiateTpcKernel ZZZZZ\n");
+        return OuterProductFwdF32Instance.GetGcDefinitions(params,instance);
     }
 
     return tpc_lib_api::GLUE_NODE_NOT_FOUND;
