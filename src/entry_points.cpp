@@ -41,69 +41,69 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 extern "C"
 {
 
-tpc_lib_api::GlueCodeReturn GetKernelGuids(_OUT_ char**         names,
-                                       unsigned*            kernelCount,
-                                       tpc_lib_api::DeviceId    deviceId)
+tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId        deviceId,
+                                            _INOUT_ uint32_t*       kernelCount,
+                                            _OUT_   tpc_lib_api::GuidInfo*       guids)
 {
     if (deviceId == tpc_lib_api::DEVICE_ID_GAUDI)
     {
-        if (names != nullptr )
+        if (guids != nullptr )
         {
            BatchNormF32 batchNormInstance;
-           batchNormInstance.GetKernelName(names[GAUDI_KERNEL_BATCH_NORM_F32]);
+           batchNormInstance.GetKernelName(guids[GAUDI_KERNEL_BATCH_NORM_F32].name);
            CastGaudi castInstance(CastGaudi::bf16_to_f32);
-           castInstance.GetKernelName(names[GAUDI_KERNEL_CAST_BF16_F32], CastGaudi::bf16_to_f32);
+           castInstance.GetKernelName(guids[GAUDI_KERNEL_CAST_BF16_F32].name, CastGaudi::bf16_to_f32);
            CastGaudi castInstance2(CastGaudi::f32_to_bf16);
-           castInstance2.GetKernelName(names[GAUDI_KERNEL_CAST_F32_BF16], CastGaudi::f32_to_bf16);
+           castInstance2.GetKernelName(guids[GAUDI_KERNEL_CAST_F32_BF16].name, CastGaudi::f32_to_bf16);
            FilterFwd2dBF16 filterInstance;
-           filterInstance.GetKernelName(names[GAUDI_KERNEL_FILTER_FWD_2D_BF16]);
+           filterInstance.GetKernelName(guids[GAUDI_KERNEL_FILTER_FWD_2D_BF16].name);
            LeakyReluF32Gaudi leakyReluInstance;
-           leakyReluInstance.GetKernelName(names[GAUDI_KERNEL_LEAKU_RELU_F32]);
+           leakyReluInstance.GetKernelName(guids[GAUDI_KERNEL_LEAKU_RELU_F32].name);
            SoftMaxBF16 softmaxInstance;
-           softmaxInstance.GetKernelNameFcd(names[GAUDI_KERNEL_SOFTMAX_FCD_BF16]);
-           softmaxInstance.GetKernelNameNonFcd(names[GAUDI_KERNEL_SOFTMAX_NONFCD_BF16]);
+           softmaxInstance.GetKernelNameFcd(guids[GAUDI_KERNEL_SOFTMAX_FCD_BF16].name);
+           softmaxInstance.GetKernelNameNonFcd(guids[GAUDI_KERNEL_SOFTMAX_NONFCD_BF16].name);
            SparseLengthsSumBF16 sparseLengthsSumInstance;
-           sparseLengthsSumInstance.GetKernelName(names[GAUDI_KERNEL_SPARSE_LEN_SUM_BF16]);
+           sparseLengthsSumInstance.GetKernelName(guids[GAUDI_KERNEL_SPARSE_LEN_SUM_BF16].name);
            CustomdivFwdF32 customdivFwdF32Instance;
-           customdivFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_CUSTOMDIV_FWD_F32]);
+           customdivFwdF32Instance.GetKernelName(guids[GAUDI_KERNEL_CUSTOMDIV_FWD_F32].name);
            Relu6All Relu6FwdF32Instance(Relu6All::relu6_fwd_f32);
-           Relu6FwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_F32], Relu6All::relu6_fwd_f32);
+           Relu6FwdF32Instance.GetKernelName(guids[GAUDI_KERNEL_RELU6_FWD_F32].name, Relu6All::relu6_fwd_f32);
            Relu6All Relu6BwdF32Instance(Relu6All::relu6_bwd_f32);
-           Relu6BwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_F32], Relu6All::relu6_bwd_f32);
+           Relu6BwdF32Instance.GetKernelName(guids[GAUDI_KERNEL_RELU6_BWD_F32].name, Relu6All::relu6_bwd_f32);
            Relu6All Relu6FwdBF16Instance(Relu6All::relu6_fwd_bf16);
-           Relu6FwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_FWD_BF16], Relu6All::relu6_fwd_bf16);
+           Relu6FwdBF16Instance.GetKernelName(guids[GAUDI_KERNEL_RELU6_FWD_BF16].name, Relu6All::relu6_fwd_bf16);
            Relu6All Relu6BwdBF16Instance(Relu6All::relu6_bwd_bf16);
-           Relu6BwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU6_BWD_BF16], Relu6All::relu6_bwd_bf16);
+           Relu6BwdBF16Instance.GetKernelName(guids[GAUDI_KERNEL_RELU6_BWD_BF16].name, Relu6All::relu6_bwd_bf16);
            Relu6All ReluFwdF32Instance(Relu6All::relu_fwd_f32);
-           ReluFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU_FWD_F32], Relu6All::relu_fwd_f32);
+           ReluFwdF32Instance.GetKernelName(guids[GAUDI_KERNEL_RELU_FWD_F32].name, Relu6All::relu_fwd_f32);
            Relu6All ReluBwdF32Instance(Relu6All::relu_bwd_f32);
-           ReluBwdF32Instance.GetKernelName(names[GAUDI_KERNEL_RELU_BWD_F32], Relu6All::relu_bwd_f32);
+           ReluBwdF32Instance.GetKernelName(guids[GAUDI_KERNEL_RELU_BWD_F32].name, Relu6All::relu_bwd_f32);
            Relu6All ReluFwdBF16Instance(Relu6All::relu_fwd_bf16);
-           ReluFwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU_FWD_BF16], Relu6All::relu_fwd_bf16);
+           ReluFwdBF16Instance.GetKernelName(guids[GAUDI_KERNEL_RELU_FWD_BF16].name, Relu6All::relu_fwd_bf16);
            Relu6All ReluBwdBF16Instance(Relu6All::relu_bwd_bf16);
-           ReluBwdBF16Instance.GetKernelName(names[GAUDI_KERNEL_RELU_BWD_BF16], Relu6All::relu_bwd_bf16);
+           ReluBwdBF16Instance.GetKernelName(guids[GAUDI_KERNEL_RELU_BWD_BF16].name, Relu6All::relu_bwd_bf16);
            MatrixMulFwdF32 MatrixMulFwdF32Instance;
-           MatrixMulFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_MATRIXMUL_FWD_F32]);
+           MatrixMulFwdF32Instance.GetKernelName(guids[GAUDI_KERNEL_MATRIXMUL_FWD_F32].name);
            SpatialConvF32 spatialConvInstance;
-           spatialConvInstance.GetKernelName(names[GAUDI_KERNEL_SPATIAL_CONV_F32]);
+           spatialConvInstance.GetKernelName(guids[GAUDI_KERNEL_SPATIAL_CONV_F32].name);
            SinF32 sinf32Instance;
-           sinf32Instance.GetKernelName(names[GAUDI_KERNEL_SIN_F32]);
+           sinf32Instance.GetKernelName(guids[GAUDI_KERNEL_SIN_F32].name);
            AddF32 addf32Instance;
-           addf32Instance.GetKernelName(names[GAUDI_KERNEL_ADD_F32]);
+           addf32Instance.GetKernelName(guids[GAUDI_KERNEL_ADD_F32].name);
            AvgPool2dF32 avgpool2dfwdf32Instance(AvgPool2dF32::fwd);
-           avgpool2dfwdf32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_FWD_F32]);
+           avgpool2dfwdf32Instance.GetKernelName(guids[GAUDI_KERNEL_AVG_POOL_2D_FWD_F32].name);
            AvgPool2dF32 avgpool2dbwdf32Instance(AvgPool2dF32::bwd);
-           avgpool2dbwdf32Instance.GetKernelName(names[GAUDI_KERNEL_AVG_POOL_2D_BWD_F32]);
+           avgpool2dbwdf32Instance.GetKernelName(guids[GAUDI_KERNEL_AVG_POOL_2D_BWD_F32].name);
            SearchSortedF32 searchsortedfwdf32Instance;
-           searchsortedfwdf32Instance.GetKernelName(names[GAUDI_KERNEL_SEARCH_SORTED_FWD_F32]);
+           searchsortedfwdf32Instance.GetKernelName(guids[GAUDI_KERNEL_SEARCH_SORTED_FWD_F32].name);
            GatherFwdI32 gatherfwddim0i32Instance(GatherFwdI32::gather_fwd_dim0);
-           gatherfwddim0i32Instance.GetKernelName(names[GAUDI_KERNEL_GATHER_FWD_DIM0_I32]);
+           gatherfwddim0i32Instance.GetKernelName(guids[GAUDI_KERNEL_GATHER_FWD_DIM0_I32].name);
            GatherFwdI32 gatherfwddim1i32Instance(GatherFwdI32::gather_fwd_dim1);
-           gatherfwddim1i32Instance.GetKernelName(names[GAUDI_KERNEL_GATHER_FWD_DIM1_I32]);
+           gatherfwddim1i32Instance.GetKernelName(guids[GAUDI_KERNEL_GATHER_FWD_DIM1_I32].name);
            KLDivAll KLDivFwdF32Instance(KLDivAll::fwd_f32);
-           KLDivFwdF32Instance.GetKernelName(names[GAUDI_KERNEL_KL_DIV_FWD_F32]);
+           KLDivFwdF32Instance.GetKernelName(guids[GAUDI_KERNEL_KL_DIV_FWD_F32].name);
            KLDivAll KLDivBwdF32Instance(KLDivAll::bwd_f32);
-           KLDivBwdF32Instance.GetKernelName(names[GAUDI_KERNEL_KL_DIV_BWD_F32]);
+           KLDivBwdF32Instance.GetKernelName(guids[GAUDI_KERNEL_KL_DIV_BWD_F32].name);
         }
 
         if (kernelCount != nullptr)
@@ -114,22 +114,22 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids(_OUT_ char**         names,
     }
     else if (deviceId == tpc_lib_api::DEVICE_ID_GAUDI2)
     {
-        if (names != nullptr )
+        if (guids != nullptr )
         {
            KLDivAll KLDivFwdF32Instance2(KLDivAll::fwd_f32_gaudi2); 
-           KLDivFwdF32Instance2.GetKernelName(names[GAUDI2_KERNEL_KL_DIV_FWD_F32]);            
+           KLDivFwdF32Instance2.GetKernelName(guids[GAUDI2_KERNEL_KL_DIV_FWD_F32].name);            
            AvgPool2dF32Gaudi2 avgpool2dfwdf32g2Instance(AvgPool2dF32Gaudi2::fwd);
-           avgpool2dfwdf32g2Instance.GetKernelName(names[GAUDI2_KERNEL_AVG_POOL_2D_FWD_F32]);
+           avgpool2dfwdf32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_AVG_POOL_2D_FWD_F32].name);
            AvgPool2dF32Gaudi2 avgpool2dbwdf32g2Instance(AvgPool2dF32Gaudi2::bwd);
-           avgpool2dbwdf32g2Instance.GetKernelName(names[GAUDI2_KERNEL_AVG_POOL_2D_BWD_F32]);
+           avgpool2dbwdf32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_AVG_POOL_2D_BWD_F32].name);
            Castf16toi16Gaudi2 castf16toi16g2Instance;
-           castf16toi16g2Instance.GetKernelName(names[GAUDI2_KERNEL_CAST_F16_TO_I16]);
+           castf16toi16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_CAST_F16_TO_I16].name);
            SoftMaxBF16Gaudi2 softmaxInstance;
-           softmaxInstance.GetKernelNameFcd(names[GAUDI2_KERNEL_SOFTMAX_FCD_BF16]);
-           softmaxInstance.GetKernelNameNonFcd(names[GAUDI2_KERNEL_SOFTMAX_NONFCD_BF16]);
+           softmaxInstance.GetKernelNameFcd(guids[GAUDI2_KERNEL_SOFTMAX_FCD_BF16].name);
+           softmaxInstance.GetKernelNameNonFcd(guids[GAUDI2_KERNEL_SOFTMAX_NONFCD_BF16].name);
 
            OuterProductFwdF32Gaudi2 OuterProductFwdF32Instance;
-           OuterProductFwdF32Instance.GetKernelName(names[GAUDI2_KERNEL_OUTER_PRODUCT_FWD_F32]);
+           OuterProductFwdF32Instance.GetKernelName(guids[GAUDI2_KERNEL_OUTER_PRODUCT_FWD_F32].name);
 
         }
 
@@ -395,7 +395,6 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     OuterProductFwdF32Instance.GetKernelName(kernelName);
     if (strcmp(params->guid.name, kernelName) == 0)
     {
-        printf("Inside of InstantiateTpcKernel ZZZZZ\n");
         return OuterProductFwdF32Instance.GetGcDefinitions(params,instance);
     }
 

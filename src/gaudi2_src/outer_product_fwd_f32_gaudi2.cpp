@@ -27,7 +27,6 @@ extern unsigned char _binary___outer_product_fwd_f32_gaudi2_o_end;
              char kernelName [tpc_lib_api::MAX_NODE_NAME])
  {
      strcpy(kernelName,"custom_outer_product_fwd_f32_gaudi2");
-     printf("ZZZZZZZZ getname are fine !!!!!");
      return tpc_lib_api::GLUE_SUCCESS;
  }
 
@@ -182,7 +181,6 @@ tpc_lib_api::GlueCodeReturn OuterProductFwdF32Gaudi2::GetGcDefinitions(
        return retVal;
     }
 
-    printf("ZZZZZZZZ glue codes are fine !!!!!");
     return tpc_lib_api::GLUE_SUCCESS;
 }
 

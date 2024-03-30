@@ -157,7 +157,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
     uint64_t fmInitializer[] = {depth, width, height, batch, fifthdim};
     unsigned kernelCount;
     tpc_lib_api::GlueCodeReturn result;
-    char**   kernelNames = nullptr;
+    tpc_lib_api::GuidInfo *guids = nullptr;
 
     if((NameofKernel == GAUDI_KERNEL_RELU6_FWD_F32) || (NameofKernel == GAUDI_KERNEL_RELU6_BWD_F32)
       || (NameofKernel == GAUDI_KERNEL_RELU_FWD_F32) || (NameofKernel == GAUDI_KERNEL_RELU_BWD_F32))
@@ -192,26 +192,23 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
 
         kernelCount = 0;
-        result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
-        kernelNames = new char*[kernelCount];
-        for (unsigned i = 0; i < kernelCount; i++)
-        {
-            kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
-        }    
-        result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+        result = GetKernelGuids(tpc_lib_api::DEVICE_ID_GAUDI, &kernelCount, guids);
+        guids = new tpc_lib_api::GuidInfo[kernelCount];
+   
+        result = GetKernelGuids(tpc_lib_api::DEVICE_ID_GAUDI, &kernelCount, guids);
         if (result != tpc_lib_api::GLUE_SUCCESS)
         {
             std::cout << "Can't get kernel name!! " << result << std::endl;
-            ReleaseKernelNames(kernelNames, kernelCount);
+            ReleaseKernelNames(guids, kernelCount);
             return -1;
         }
 
-        strcpy(m_in_defs.guid.name, kernelNames[NameofKernel]);
+        strcpy(m_in_defs.guid.name, guids[NameofKernel].name);
         result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
         if (result != tpc_lib_api::GLUE_SUCCESS)
         {
             std::cout << "Glue test failed, can't load kernel " << result << std::endl;
-            ReleaseKernelNames(kernelNames, kernelCount);
+            ReleaseKernelNames(guids, kernelCount);
             return -1;
         }
 
@@ -223,7 +220,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         vec.push_back(output.GetTensorDescriptor());
         // execute a simulation of the kernel using TPC simulator,
         TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
-        ReleaseKernelNames(kernelNames, kernelCount);
+        ReleaseKernelNames(guids, kernelCount);
         output.Print(0);
         output_ref.Print(0);
         for (int element = 0 ; element <  output_ref.ElementCount() ; element++)
@@ -282,26 +279,22 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]), output);
 
         kernelCount = 0;
-        result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
-        kernelNames = new char*[kernelCount];
-        for (unsigned i = 0; i < kernelCount; i++)
-        {
-            kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
-        }    
-        result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+        result = GetKernelGuids(tpc_lib_api::DEVICE_ID_GAUDI, &kernelCount, guids);
+        guids = new tpc_lib_api::GuidInfo[kernelCount];
+        result = GetKernelGuids(tpc_lib_api::DEVICE_ID_GAUDI, &kernelCount, guids);
         if (result != tpc_lib_api::GLUE_SUCCESS)
         {
             std::cout << "Can't get kernel name!! " << result << std::endl;
-            ReleaseKernelNames(kernelNames, kernelCount);
+            ReleaseKernelNames(guids, kernelCount);
             return -1;
         }
 
-        strcpy(m_in_defs.guid.name, kernelNames[NameofKernel]);
+        strcpy(m_in_defs.guid.name, guids[NameofKernel].name);
         result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
         if (result != tpc_lib_api::GLUE_SUCCESS)
         {
             std::cout << "Glue test failed, can't load kernel " << result << std::endl;
-            ReleaseKernelNames(kernelNames, kernelCount);
+            ReleaseKernelNames(guids, kernelCount);
             return -1;
         }
 
@@ -313,7 +306,7 @@ int Relu6AllTest::runTest(Gaudi_Kernel_Name_e NameofKernel)
         vec.push_back(output.GetTensorDescriptor());
         // execute a simulation of the kernel using TPC simulator,
         TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
-        ReleaseKernelNames(kernelNames, kernelCount);
+        ReleaseKernelNames(guids, kernelCount);
         output.Print(0);
         output_ref.Print(0);
         bfloat16 tmp;
