@@ -72,18 +72,18 @@ typedef enum
  ***************************************************************************************************
  *   @brief This function returns exported kernel names
  *
- *   @param names       [out]  List of strings to be filled with kernel names.
+ *   @param deviceId    [in] The type of device E.g. dali/gaudi etc.* 
  *   @param kernelCount [in/out] The number of strings in 'names' argument.
  *                      If the list is too short, the library will return the
  *                      required list length.
- *   @param deviceId    [in] The type of device E.g. dali/gaudi etc.
+ *   @param guids       [out]  List of structure to be filled with kernel guids.
  *
  *   @return                  The status of the operation.
  ***************************************************************************************************
  */
-tpc_lib_api::GlueCodeReturn GetKernelGuids(_OUT_ char**         names,
-                                       unsigned*            kernelCount,
-                                       tpc_lib_api::DeviceId    deviceId);
+tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId        deviceId,
+                                            _INOUT_ uint32_t*                    kernelCount,
+                                            _OUT_   tpc_lib_api::GuidInfo*       guids);
 
 /*
  ***************************************************************************************************
@@ -97,6 +97,9 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids(_OUT_ char**         names,
 tpc_lib_api::GlueCodeReturn
 InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
              _OUT_ tpc_lib_api::HabanaKernelInstantiation*instance);
+
+tpc_lib_api::GlueCodeReturn 
+GetShapeInference(_IN_ tpc_lib_api::DeviceId deviceId,  _IN_ tpc_lib_api::ShapeInferenceParams* inputParams,  _OUT_ tpc_lib_api::ShapeInferenceOutput* outputData);
 
 } // extern "C"
 #endif

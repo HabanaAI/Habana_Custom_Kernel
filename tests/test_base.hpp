@@ -62,14 +62,14 @@ public:
     }
 
        
-    void ReleaseKernelNames(char** kernelNames, unsigned kernelCount)
+    void ReleaseKernelNames(tpc_lib_api::GuidInfo *guids, unsigned kernelCount)
     {
         // release memory
-        for (size_t i = 0; i < kernelCount; i++)
+        /*for (size_t i = 0; i < kernelCount; i++)
         {
             delete[] kernelNames[i];
-        }
-        delete[] kernelNames;
+        }*/
+        delete[] guids;
     }    
 
     tpc_lib_api::HabanaKernelParams         m_in_defs;

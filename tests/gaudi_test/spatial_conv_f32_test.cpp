@@ -133,28 +133,24 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
     m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI;
 
-    char**   kernelNames = nullptr;
+    tpc_lib_api::GuidInfo *guids = nullptr;
     unsigned kernelCount = 0;
-    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
-    kernelNames = new char*[kernelCount];
-    for (unsigned i = 0; i < kernelCount; i++)
-    {
-        kernelNames[i] = new char[tpc_lib_api::MAX_NODE_NAME];
-    }    
-    result = GetKernelGuids(kernelNames, &kernelCount, tpc_lib_api::DEVICE_ID_GAUDI);
+    tpc_lib_api::GlueCodeReturn result = GetKernelGuids(tpc_lib_api::DEVICE_ID_GAUDI, &kernelCount, guids);
+    guids = new tpc_lib_api::GuidInfo[kernelCount];
+    result = GetKernelGuids(tpc_lib_api::DEVICE_ID_GAUDI, &kernelCount, guids);
     if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Can't get kernel name!! " << result << std::endl;
-        ReleaseKernelNames(kernelNames, kernelCount);
+        ReleaseKernelNames(guids, kernelCount);
         return -1;
     }
 
-    strcpy(m_in_defs.guid.name, kernelNames[GAUDI_KERNEL_SPATIAL_CONV_F32]);
+    strcpy(m_in_defs.guid.name, guids[GAUDI_KERNEL_SPATIAL_CONV_F32].name);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
     if (result != tpc_lib_api::GLUE_SUCCESS)
     {
         std::cout << "Glue test failed, can't load kernel " << result << std::endl;
-        ReleaseKernelNames(kernelNames, kernelCount);
+        ReleaseKernelNames(guids, kernelCount);
         return -1;
     }
 
@@ -165,7 +161,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
     vec.push_back(ofm.GetTensorDescriptor());
     // execute a simulation of the kernel using TPC simulator,
     TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
-    ReleaseKernelNames(kernelNames, kernelCount);
+    ReleaseKernelNames(guids, kernelCount);
     std::cout << std::endl;
     std::cout << "ofm data shown below " << std::endl;
     ofm.Print(0);
