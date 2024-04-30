@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2024 Habana Labs.
+Copyright (c) 2021 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -14,4 +14,29 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#include "add_f32.h"
+#ifndef _ADD_F32_GAUDI2_HPP
+#define _ADD_F32_GAUDI2_HPP
+
+#include "gc_interface.h"
+#include "tpc_kernel_lib_interface.h"
+
+class AddF32Gaudi2
+{
+    public:
+        AddF32Gaudi2() {}
+        virtual ~AddF32Gaudi2() {}
+
+        virtual tpc_lib_api::GlueCodeReturn
+        GetGcDefinitions(tpc_lib_api::HabanaKernelParams*      in_defs,
+                     tpc_lib_api::HabanaKernelInstantiation* out_defs);
+
+        virtual tpc_lib_api::GlueCodeReturn GetKernelName(
+                char kernelName [tpc_lib_api::MAX_NODE_NAME]);                            
+
+    private:
+        AddF32Gaudi2(const AddF32Gaudi2& other) = delete;
+        AddF32Gaudi2& operator=(const AddF32Gaudi2& other) = delete;
+};
+
+#endif
+
