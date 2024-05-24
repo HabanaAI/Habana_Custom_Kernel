@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2023 Habana Labs.
+Copyright (c) 2024 Habana Labs.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -64,6 +64,10 @@ typedef enum
     GAUDI2_KERNEL_SOFTMAX_FCD_BF16,
     GAUDI2_KERNEL_SOFTMAX_NONFCD_BF16,
     GAUDI2_KERNEL_ADD_F32,
+    GAUDI2_KERNEL_RELU_FWD_F32,
+    GAUDI2_KERNEL_RELU_BWD_F32,
+    GAUDI2_KERNEL_RELU_FWD_BF16,
+    GAUDI2_KERNEL_RELU_BWD_BF16,    
 
     GAUDI2_KERNEL_MAX_EXAMPLE_KERNEL
 
