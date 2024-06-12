@@ -13,9 +13,9 @@ The Tensor Processor Core™ (**TPC**) is a fully programmable VLIW4 processor d
 TPC is designed for workloads that do not map to Matrix Multiplication Engine (**MME**). Those workloads or operators can be implemented using TPC kernels. 
 
 ## Install Habanatools For Ubuntu
-To retrieve the package please visit [Habana Vault](https://vault.habana.ai/artifactory/debian/jammy/pool/main/h/habanatools/habanatools_1.14.0-493_amd64.deb), click Artifact, find habanatools and download the latest release package for Ubuntu 20.04. You can find different packages for different OS you used. 
+To retrieve the package please visit [Habana Vault](https://vault.habana.ai/artifactory/debian/jammy/pool/main/h/habanatools/habanatools_1.16.0-526_amd64.deb), click Artifact, find habanatools and download the latest release package for Ubuntu 22.04. You can find different packages for different OS you used. 
 ```  
-  sudo dpkg -i ./habanatools_1.14.0-493_amd64.deb
+  sudo dpkg -i ./habanatools_1.16.0-526_amd64.deb
 ```
 - Once installed the following files will be added to your machine 
   
@@ -26,8 +26,9 @@ To retrieve the package please visit [Habana Vault](https://vault.habana.ai/arti
   |3 | /usr/lib/habanatools/libtpcsim_shared.so | TPC simulator|
   |4 | /usr/lib/habanatools/libtpc_tests_core.so | Test core library |  
   |5 | /usr/lib/habanatools/include/gc_interface.h | Glue code interface header |
-  |6 | /usr/lib/habanatools/include/tpc_test_core_api.h |Test core APIs |
-  |7 | /usr/lib/habanatools/include/tpc_test_core_types.h | Test core type defines |  
+  |6 | /usr/lib/habanatools/include/tpc_kernel_lib_interface.h | New TPC kernel GC2.0 interface header |
+  |7 | /usr/lib/habanatools/include/tpc_test_core_api.h |Test core APIs |
+  |8 | /usr/lib/habanatools/include/tpc_test_core_types.h | Test core type defines |  
       
 - Compiler usage example
 The compiler supports a single translation unit, hence ‘-c’ argument should be defined.
