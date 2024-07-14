@@ -34,6 +34,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "searchsorted_f32_test.hpp"
 #include "gather_fwd_i32_test.hpp"
 #include "kl_div_all_test.hpp"
+#include "user_lut_gaudi2_test.hpp"
 
 int check_arg(int argc, char** argv, const char* device, const char* test)
 {
@@ -99,7 +100,8 @@ int main(int argc, char** argv)
             "AvgPool2DFwdF32Gaudi2Test  Run AvgPool2DFwdF32Gaudi2Test only   " << std::endl <<
             "AvgPool2DBwdF32Gaudi2Test  Run AvgPool2DBwdF32Gaudi2Test only   " << std::endl <<
             "CastF16toI16Gaudi2Test     Run CastF16toI16Gaudi2Test only   " << std::endl <<
-            "SoftMaxBF16Gaudi2Test      Run SoftMaxBF16Gaudi2Test only   " << std::endl;
+            "SoftMaxBF16Gaudi2Test      Run SoftMaxBF16Gaudi2Test only   " << std::endl <<
+            "UserLutGaudi2Test          Run UserLutGaudi2Test only   " << std::endl;
 
         exit(0);
     }
@@ -468,6 +470,20 @@ int main(int argc, char** argv)
             return result;
         }
     }
+
+    if(check_arg(argc, argv, "Gaudi2", "UserLutGaudi2Test"))
+    {
+        UserLutGaudi2Test userLutTest;
+        userLutTest.SetUp();
+        result = userLutTest.runTest();
+        userLutTest.TearDown();
+        testCount++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
     if(testCount > 0)
         std::cout << "All " << testCount  <<" tests pass!" <<std::endl;
     else
