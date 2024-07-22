@@ -36,6 +36,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "kl_div_all.hpp"
 #include "add_f32_gaudi2.hpp"
 #include "relu_all_gaudi2.hpp"
+#include "user_lut_gaudi2.hpp"
 
 #include "entry_points.hpp"
 #include <stdio.h>
@@ -138,7 +139,8 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId       
            ReluFwdBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_RELU_FWD_BF16].name, ReluAllGaudi2::relu_fwd_bf16);
            ReluAllGaudi2 ReluBwdBF16g2Instance(ReluAllGaudi2::relu_bwd_bf16);
            ReluBwdBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_RELU_BWD_BF16].name, ReluAllGaudi2::relu_bwd_bf16);
-
+           UserLutGaudi2 userLutInstance;
+           userLutInstance.GetKernelName(guids[GAUDI2_KERNEL_USER_LUT].name);
         }
 
         if (kernelCount != nullptr)
@@ -430,6 +432,13 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     if (strcmp(params->guid.name, kernelName) == 0)
     {
         return ReluBwdBF16g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    UserLutGaudi2 userLutInstance;
+    userLutInstance.GetKernelName(kernelName);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return userLutInstance.GetGcDefinitions(params,instance);
     }
 
     return tpc_lib_api::GLUE_NODE_NOT_FOUND;
