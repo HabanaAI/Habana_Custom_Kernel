@@ -24,7 +24,7 @@ To retrieve the package please visit [Habana Vault](https://vault.habana.ai/arti
   |1 | /usr/bin/tpc-clang | TPC-C compiler and assembler |
   |2 | /usr/bin/tpc-llvm-objdump | TPC dis-assembler|
   |3 | /usr/lib/habanatools/libtpcsim_shared.so | TPC simulator|
-  |4 | /usr/lib/habanatools/libtpc_tests_core.so | Test core library |  
+  |4 | /usr/lib/habanatools/libtpc_tests_core_ext.so | Test core library |  
   |5 | /usr/lib/habanatools/include/gc_interface.h | Glue code interface header |
   |6 | /usr/lib/habanatools/include/tpc_kernel_lib_interface.h | New TPC kernel GC2.0 interface header |
   |7 | /usr/lib/habanatools/include/tpc_test_core_api.h |Test core APIs |
