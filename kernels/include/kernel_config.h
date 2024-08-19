@@ -14,6 +14,8 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
+typedef char                int8_t;
+
 #if defined(FLOAT32)
 #define VECTOR                      float64
 #define VECTOR_SIZE                 64
@@ -40,7 +42,20 @@ typedef float                       SCALAR;
 #define exp(a)                      exp_f32(a)
 #define V_LANE_ID                   read_lane_id_4b_b()
 #define v_sel_leq_v_v_v_v(a, b, c, d) v_f32_sel_leq_f32_b(a, b, c, d)
-
+#define v_mac_v_v(a,b,c)            v_f32_mac_b(a,b,c)
+#define v_mac_v_v_b(a, b, source, neg, predicate, predicatePolarity) \
+                v_f32_mac_b(a, b, source, neg, predicate, predicatePolarity)
+#define sigmoid(a)                  v_sigmoid_f32(a)
+#define v_mul_v_v_b(a, b, source, predicate, predicatePolarity) \
+                v_f32_mul_b(a, b, 0, source, predicate, predicatePolarity)
+#define st_tnsr_rmw_i_v(a, b, c, rmw_op, rmw, tnsr_dt_location) \
+                v_f32_st_tnsr_rmw(a, b, c, MkRMW(\
+                    e_rmw_bf16, \
+                    rmw_op, rmw, tnsr_dt_location \
+                ), 0, 1, 0);
+#define v_mov_v_b(a, b, predicate, predicatePolarity)\
+                v_f32_mov_b(a, 0, b, predicate, predicatePolarity)
+#define v_add_v_v(a, b, st)            v_f32_add_b(a, b)
 #endif
 
 #if defined(BFLOAT16)
@@ -55,5 +70,24 @@ typedef bf16                        SCALAR;
 #define v_sel_geq_v_s_v_v_b(a, b, c, d, i, p, o)  v_bf16_sel_geq_bf16_b(a, b, c, d, 0, i, p, o)
 #define v_sel_less_v_s_v_v_b(a, b, c, d, i, p, o) v_bf16_sel_less_bf16_b(a, b, c, d, 0, i, p, o)
 #define st_tnsr_i_v(a,b,c)          v_bf16_st_tnsr(a,b,c)
+#define v_mac_v_v(a,b,c)            v_bf16_mac_b(a,b,c)
+#define v_mac_v_v_b(a, b, source, neg, predicate, predicatePolarity) \
+                v_bf16_mac_b(a, b, source, neg, predicate, predicatePolarity)
+#define exp(a)                      exp_bf16(a)
+#define log(a)                      log_bf16(a)
+#define sigmoid(a)                  v_sigmoid_bf16(a)
+#define v_mul_v_v_b(a, b, source, predicate, predicatePolarity) \
+                v_bf16_mul_b(a, b, 0, source, predicate, predicatePolarity)
+#define st_tnsr_rmw_i_v(a, b, c, rmw_op, rmw, tnsr_dt_location) \
+                v_bf16_st_tnsr_rmw(a, b, c, MkRMW(\
+                    e_rmw_bf16, \
+                    rmw_op, rmw, tnsr_dt_location \
+                ), 0, 1, 0);
+#define v_mov_v_b(a, b, predicate, predicatePolarity)\
+                v_bf16_mov_b(a, 0, b, predicate, predicatePolarity) 
+#define v_add_v_v(a, b, st)            v_bf16_add_b(a, b)
+#define v_mul_v_v(a, b)                v_bf16_mul_b(a, b)
+#define v_add_v_v_b(a, b, source, predicate, predicatePolarity) \
+                v_bf16_add_b(a, b, 0, source, predicate, predicatePolarity)
 
 #endif

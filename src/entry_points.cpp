@@ -37,6 +37,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "add_f32_gaudi2.hpp"
 #include "relu_all_gaudi2.hpp"
 #include "user_lut_gaudi2.hpp"
+#include "selective_state_update_gaudi2.hpp"
 
 #include "entry_points.hpp"
 #include <stdio.h>
@@ -141,6 +142,23 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId       
            ReluBwdBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_RELU_BWD_BF16].name, ReluAllGaudi2::relu_bwd_bf16);
            UserLutGaudi2 userLutInstance;
            userLutInstance.GetKernelName(guids[GAUDI2_KERNEL_USER_LUT].name);
+           SelectiveStateUpdateGaudi2 SSUF32g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_f32);
+           SSUF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_F32].name, SelectiveStateUpdateGaudi2::sel_state_update_f32);
+           SelectiveStateUpdateGaudi2 SSUNoSPF32g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_nosp_f32);
+           SSUNoSPF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_F32].name, SelectiveStateUpdateGaudi2::sel_state_update_nosp_f32);
+           SelectiveStateUpdateGaudi2 SSUNozF32g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_noz_f32);
+           SSUNozF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOZ_F32].name, SelectiveStateUpdateGaudi2::sel_state_update_noz_f32);
+           SelectiveStateUpdateGaudi2 SSUNoSPNozF32g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_f32);
+           SSUNoSPNozF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_NOZ_F32].name, SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_f32);
+           SelectiveStateUpdateGaudi2 SSUBF16g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_bf16);
+           SSUBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_BF16].name, SelectiveStateUpdateGaudi2::sel_state_update_bf16);
+           SelectiveStateUpdateGaudi2 SSUNoSPBF16g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_nosp_bf16);
+           SSUNoSPBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_BF16].name, SelectiveStateUpdateGaudi2::sel_state_update_nosp_bf16);
+           SelectiveStateUpdateGaudi2 SSUNozBF16g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_noz_bf16);
+           SSUNozBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOZ_BF16].name, SelectiveStateUpdateGaudi2::sel_state_update_noz_bf16);
+           SelectiveStateUpdateGaudi2 SSUNoSPNozBF16g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_bf16);
+           SSUNoSPNozBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_NOZ_BF16].name, SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_bf16);
+
         }
 
         if (kernelCount != nullptr)
@@ -439,6 +457,62 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     if (strcmp(params->guid.name, kernelName) == 0)
     {
         return userLutInstance.GetGcDefinitions(params,instance);
+    }
+
+    SelectiveStateUpdateGaudi2 SSUF32g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_f32);
+    SSUF32g2Instance.GetKernelName(kernelName, SelectiveStateUpdateGaudi2::sel_state_update_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return SSUF32g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    SelectiveStateUpdateGaudi2 SSUNoSPF32g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_nosp_f32);
+    SSUNoSPF32g2Instance.GetKernelName(kernelName, SelectiveStateUpdateGaudi2::sel_state_update_nosp_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return SSUNoSPF32g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    SelectiveStateUpdateGaudi2 SSUNozF32g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_noz_f32);
+    SSUNozF32g2Instance.GetKernelName(kernelName, SelectiveStateUpdateGaudi2::sel_state_update_noz_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return SSUNozF32g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    SelectiveStateUpdateGaudi2 SSUNoSPNozF32g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_f32);
+    SSUNoSPNozF32g2Instance.GetKernelName(kernelName, SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return SSUNoSPNozF32g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    SelectiveStateUpdateGaudi2 SSUBF16g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_bf16);
+    SSUBF16g2Instance.GetKernelName(kernelName, SelectiveStateUpdateGaudi2::sel_state_update_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return SSUBF16g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    SelectiveStateUpdateGaudi2 SSUNoSPBF16g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_nosp_bf16);
+    SSUNoSPBF16g2Instance.GetKernelName(kernelName, SelectiveStateUpdateGaudi2::sel_state_update_nosp_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return SSUNoSPBF16g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    SelectiveStateUpdateGaudi2 SSUNozBF16g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_noz_bf16);
+    SSUNozBF16g2Instance.GetKernelName(kernelName, SelectiveStateUpdateGaudi2::sel_state_update_noz_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return SSUNozBF16g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    SelectiveStateUpdateGaudi2 SSUNoSPNozBF16g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_bf16);
+    SSUNoSPNozBF16g2Instance.GetKernelName(kernelName, SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return SSUNoSPNozBF16g2Instance.GetGcDefinitions(params,instance);
     }
 
     return tpc_lib_api::GLUE_NODE_NOT_FOUND;
