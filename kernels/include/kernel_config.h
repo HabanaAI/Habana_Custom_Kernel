@@ -50,7 +50,7 @@ typedef float                       SCALAR;
                 v_f32_mul_b(a, b, 0, source, predicate, predicatePolarity)
 #define st_tnsr_rmw_i_v(a, b, c, rmw_op, rmw, tnsr_dt_location) \
                 v_f32_st_tnsr_rmw(a, b, c, MkRMW(\
-                    e_rmw_bf16, \
+                    e_rmw_fp32, \
                     rmw_op, rmw, tnsr_dt_location \
                 ), 0, 1, 0);
 #define v_mov_v_b(a, b, predicate, predicatePolarity)\
