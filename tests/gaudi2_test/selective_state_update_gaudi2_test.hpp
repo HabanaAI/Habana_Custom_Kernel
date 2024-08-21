@@ -29,17 +29,17 @@ public:
     ~SelectiveStateUpdateGaudi2Test() {}
     int runTest(Gaudi2_Kernel_Name_e NameofKernel);
 
-    static void selective_state_update_f32_ref(
-         const test::Tensor<float,4>& state_M,
-         const test::Tensor<float,4>& x_M,
-         const test::Tensor<float,4>& dt_M,
-         const test::Tensor<float,4>& A_M,
-         const test::Tensor<float,4>& B_M,
-         const test::Tensor<float,4>& C_M,
-         const test::Tensor<float,4>& D_M,
-         const test::Tensor<float,4>& dt_bias_M,
-         const test::Tensor<float,4>& z_M,
-         test::Tensor<float,4>& output,
+    template <typename T> static void selective_state_update_T_ref(
+         const test::Tensor<T,4>& state_M,
+         const test::Tensor<T,4>& x_M,
+         const test::Tensor<T,4>& dt_M,
+         const test::Tensor<T,4>& A_M,
+         const test::Tensor<T,4>& B_M,
+         const test::Tensor<T,4>& C_M,
+         const test::Tensor<T,4>& D_M,
+         const test::Tensor<T,4>& dt_bias_M,
+         const test::Tensor<T,4>& z_M,
+         test::Tensor<T,4>& output,
          const IndexSpace& indexSpace, SelectiveStateUpdateGaudi2::SSUParam def, Gaudi2_Kernel_Name_e NameofKernel);
 
 private:

@@ -139,9 +139,8 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
                     dA = exp(temp);                    
 
                     VECTOR dB;
-                    // need to double check since dim is 1
-                    scl_B = v_ld_tnsr_i(ifm_B_Coords, ifm_B);
-                    scl_C = v_ld_tnsr_i(ifm_C_Coords, ifm_C);
+                    scl_B = v_ld_g_a(gen_addr(ifm_B_Coords, ifm_B));
+                    scl_C = v_ld_g_a(gen_addr(ifm_C_Coords, ifm_C));
                     dB = v_mul_v_v(vec_dt, scl_B);
 
                     vec_state = v_ld_tnsr_i(ifm_state_Coords, ifm_state);
@@ -165,7 +164,7 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
                 vec_z = v_mul_v_v(tp_sig, temp);
                 vec_out = v_mul_v_v(vec_out, vec_z);
 #endif
-                st_tnsr_rmw_i_v(ofm_out_Coords, ofm_out, vec_out, e_rmw_add, e_rmw_atomic, e_tnsr_dt_srf);
+                st_tnsr_rmw_i_v(ofm_out_Coords, ofm_out, vec_out, e_rmw_add, e_rmw_atomic, e_tnsr_dt_srf);          
             } // end of dim loop
         }
     }

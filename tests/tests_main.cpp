@@ -103,7 +103,10 @@ int main(int argc, char** argv)
             "CastF16toI16Gaudi2Test     Run CastF16toI16Gaudi2Test only   " << std::endl <<
             "SoftMaxBF16Gaudi2Test      Run SoftMaxBF16Gaudi2Test only   " << std::endl <<
             "UserLutGaudi2Test          Run UserLutGaudi2Test only   " << std::endl <<
-            "SelStateUpdateGaudi2Test1  Run SelStateUpdateGaudi2Test only   " << std::endl;
+            "SelStateUpdateGaudi2Test1  Run SelStateUpdateGaudi2Test1 only   " << std::endl <<
+            "SelStateUpdateGaudi2Testsp Run SelStateUpdateGaudi2Testsp only   " << std::endl <<
+            "SelStateUpdateGaudi2Testz  Run SelStateUpdateGaudi2Testz only   " << std::endl <<
+            "SelStateUpdateGaudi2Test2  Run SelStateUpdateGaudi2Test2 only   " << std::endl;
 
         exit(0);
     }
@@ -491,6 +494,42 @@ int main(int argc, char** argv)
     {
         testSSU.SetUp();
         result = testSSU.runTest(GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_NOZ_F32);
+        testSSU.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(check_arg(argc, argv, "Gaudi2", "SelStateUpdateGaudi2Test2"))
+    {
+        testSSU.SetUp();
+        result = testSSU.runTest(GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_NOZ_BF16);
+        testSSU.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(check_arg(argc, argv, "Gaudi2", "SelStateUpdateGaudi2Testsp"))
+    {
+        testSSU.SetUp();
+        result = testSSU.runTest(GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOZ_F32);
+        testSSU.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(check_arg(argc, argv, "Gaudi2", "SelStateUpdateGaudi2Testz"))
+    {
+        testSSU.SetUp();
+        result = testSSU.runTest(GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_F32);
         testSSU.TearDown();
         testCount ++;
         if (result != 0)

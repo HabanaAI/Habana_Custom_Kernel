@@ -16,17 +16,17 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #include "selective_state_update_gaudi2_test.hpp"
 
-void SelectiveStateUpdateGaudi2Test::selective_state_update_f32_ref(
-         const test::Tensor<float,4>& state_M,
-         const test::Tensor<float,4>& x_M,
-         const test::Tensor<float,4>& dt_M,
-         const test::Tensor<float,4>& A_M,
-         const test::Tensor<float,4>& B_M,
-         const test::Tensor<float,4>& C_M,
-         const test::Tensor<float,4>& D_M,
-         const test::Tensor<float,4>& dt_bias_M,
-         const test::Tensor<float,4>& z_M,
-         test::Tensor<float,4>& output,
+template <typename T> void SelectiveStateUpdateGaudi2Test::selective_state_update_T_ref(
+         const test::Tensor<T,4>& state_M,
+         const test::Tensor<T,4>& x_M,
+         const test::Tensor<T,4>& dt_M,
+         const test::Tensor<T,4>& A_M,
+         const test::Tensor<T,4>& B_M,
+         const test::Tensor<T,4>& C_M,
+         const test::Tensor<T,4>& D_M,
+         const test::Tensor<T,4>& dt_bias_M,
+         const test::Tensor<T,4>& z_M,
+         test::Tensor<T,4>& output,
          const IndexSpace& indexSpace, 
          SelectiveStateUpdateGaudi2::SSUParam def,
          Gaudi2_Kernel_Name_e NameofKernel)
@@ -81,8 +81,8 @@ void SelectiveStateUpdateGaudi2Test::selective_state_update_f32_ref(
                 coords_z[0] = d;
                 coords_out[0] = d;
 
-                float ofmVal = 0;
-                float ifmVal_x = x_M.ElementAt(coords_x);
+                T ofmVal = 0;
+                T ifmVal_x = x_M.ElementAt(coords_x);
                 for (int n = indexSpace.offset[1]; n < indexSpace.offset[1] + indexSpace.size[1]; n += 1)
                 {
                     coords_state[1] = n;
@@ -96,39 +96,39 @@ void SelectiveStateUpdateGaudi2Test::selective_state_update_f32_ref(
                     coords_z[1] = 0;
                     coords_out[1] = 0;
                     
-                    float ifmVal_dt = dt_M.ElementAt(coords_dt);   
+                    T ifmVal_dt = dt_M.ElementAt(coords_dt);   
                     if(NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_F32 || NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOZ_F32)                                     
                     {
                         ifmVal_dt = logf(1 + expf(ifmVal_dt));
                     }
                     if(def.using_dt_bias)
                     {
-                        float ifmVal_dt_bias = dt_bias_M.ElementAt(coords_dt_bias);
+                        T ifmVal_dt_bias = dt_bias_M.ElementAt(coords_dt_bias);
                         ifmVal_dt += ifmVal_dt_bias;
 
                     }
-                    float ifmVal_state = state_M.ElementAt(coords_state);
+                    T ifmVal_state = state_M.ElementAt(coords_state);
 
 
                     
-                    float ifmVal_A = A_M.ElementAt(coords_A);
-                    float ifmVal_B = B_M.ElementAt(coords_B);
-                    float ifmVal_C = C_M.ElementAt(coords_C);
-                    float dA = expf(ifmVal_dt * ifmVal_A);
-                    float dB = ifmVal_dt * ifmVal_B;
-                    float temp = (ifmVal_state * dA) + (dB * ifmVal_x);
+                    T ifmVal_A = A_M.ElementAt(coords_A);
+                    T ifmVal_B = B_M.ElementAt(coords_B);
+                    T ifmVal_C = C_M.ElementAt(coords_C);
+                    T dA = expf(ifmVal_dt * ifmVal_A);
+                    T dB = ifmVal_dt * ifmVal_B;
+                    T temp = (ifmVal_state * dA) + (dB * ifmVal_x);
 
-                    float tmp_out = temp * ifmVal_C;
+                    T tmp_out = temp * ifmVal_C;
                     ofmVal += tmp_out;
 
                 }
-                float ifmVal_D = D_M.ElementAt(coords_D);
+                T ifmVal_D = D_M.ElementAt(coords_D);
                 if(def.using_D)
                     ofmVal += ifmVal_D * ifmVal_x;
                 if(NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_F32 || NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_F32)
                 {
-                    float ifmVal_z = z_M.ElementAt(coords_z);
-                    float z_temp = ifmVal_z / (1 + expf(-ifmVal_z));
+                    T ifmVal_z = z_M.ElementAt(coords_z);
+                    T z_temp = ifmVal_z / (1 + expf(-ifmVal_z));
                     ofmVal = ofmVal * z_temp;
                 }
                 output.SetElement(coords_out, ofmVal);
@@ -142,7 +142,7 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
 
     // Initalize input size
     const int ofmifm_dim = 128;
-    const int ifm_dstate = 2;
+    const int ifm_dstate = 10;
     const int ifm_nhead  = 8;
     const int batch = 2;
 
@@ -153,17 +153,37 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
     uint64_t ifm_B_C_Initializer[] = {1, ifm_dstate, ifm_nhead, batch};
     uint64_t ifm_D_dtbias_Initializer[] = {ofmifm_dim, 1, ifm_nhead, 1};
     uint64_t ofm_out_Initializer[] = {ofmifm_dim, 1, ifm_nhead, batch};
-    float_4DTensor ifm_state(ifm_state_Initializer);
-    float_4DTensor ifm_x(ifm_x_dt_z_Initializer);
-    float_4DTensor ifm_dt(ifm_x_dt_z_Initializer);
-    float_4DTensor ifm_A(ifm_A_Initializer);
-    float_4DTensor ifm_B(ifm_B_C_Initializer);
-    float_4DTensor ifm_C(ifm_B_C_Initializer);
-    float_4DTensor ifm_D(ifm_D_dtbias_Initializer);
-    float_4DTensor ifm_z(ifm_x_dt_z_Initializer);
-    float_4DTensor ifm_dt_bias(ifm_D_dtbias_Initializer);
-    float_4DTensor ofm_out(ofm_out_Initializer);
-    float_4DTensor ofm_out_ref(ofm_out_Initializer);
+    
+    if((NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_F32) || (NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_F32)
+        || (NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_NOZ_F32) || (NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOZ_F32))
+    {
+        float_4DTensor ifm_state(ifm_state_Initializer);
+        float_4DTensor ifm_x(ifm_x_dt_z_Initializer);
+        float_4DTensor ifm_dt(ifm_x_dt_z_Initializer);
+        float_4DTensor ifm_A(ifm_A_Initializer);
+        float_4DTensor ifm_B(ifm_B_C_Initializer);
+        float_4DTensor ifm_C(ifm_B_C_Initializer);
+        float_4DTensor ifm_D(ifm_D_dtbias_Initializer);
+        float_4DTensor ifm_z(ifm_x_dt_z_Initializer);
+        float_4DTensor ifm_dt_bias(ifm_D_dtbias_Initializer);
+        float_4DTensor ofm_out(ofm_out_Initializer);
+        float_4DTensor ofm_out_ref(ofm_out_Initializer);
+    }
+    else
+    {
+        bfloat16_4DTensor ifm_state(ifm_state_Initializer);
+        bfloat16_4DTensor ifm_x(ifm_x_dt_z_Initializer);
+        bfloat16_4DTensor ifm_dt(ifm_x_dt_z_Initializer);
+        bfloat16_4DTensor ifm_A(ifm_A_Initializer);
+        bfloat16_4DTensor ifm_B(ifm_B_C_Initializer);
+        bfloat16_4DTensor ifm_C(ifm_B_C_Initializer);
+        bfloat16_4DTensor ifm_D(ifm_D_dtbias_Initializer);
+        bfloat16_4DTensor ifm_z(ifm_x_dt_z_Initializer);
+        bfloat16_4DTensor ifm_dt_bias(ifm_D_dtbias_Initializer);
+        bfloat16_4DTensor ofm_out(ofm_out_Initializer);
+        bfloat16_4DTensor ofm_out_ref(ofm_out_Initializer);
+
+    }
 
     ifm_state.FillWithData();
     ifm_x.FillWithData();
@@ -184,11 +204,15 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
 
     // Define the two flags
     SelectiveStateUpdateGaudi2::SSUParam sdef;
-    sdef.using_D = 0;
+    sdef.using_D = 1;
     sdef.using_dt_bias = 0;
 
     // execute reference implementation of the kernel.
-    this->selective_state_update_f32_ref(ifm_state, ifm_x, ifm_dt, ifm_A, ifm_B, ifm_C, ifm_D, ifm_dt_bias, ifm_z, ofm_out_ref, indexSpace, sdef, NameofKernel);
+    if((NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_F32) || (NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_F32)
+        || (NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_NOZ_F32) || (NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOZ_F32))    
+        this->selective_state_update_f32_ref<float>(ifm_state, ifm_x, ifm_dt, ifm_A, ifm_B, ifm_C, ifm_D, ifm_dt_bias, ifm_z, ofm_out_ref, indexSpace, sdef, NameofKernel);
+    else
+        this->selective_state_update_bf16_ref<bfloat16>(ifm_state, ifm_x, ifm_dt, ifm_A, ifm_B, ifm_C, ifm_D, ifm_dt_bias, ifm_z, ofm_out_ref, indexSpace, sdef, NameofKernel);
 
     // generate input for query call
     m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI2;
@@ -226,7 +250,7 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
         return -1;
     }
 
-    strcpy(m_in_defs.guid.name, guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_NOZ_F32].name);
+    strcpy(m_in_defs.guid.name, guids[NameofKernel].name);
     result  = InstantiateTpcKernel(&m_in_defs,&m_out_defs);
     if (result != tpc_lib_api::GLUE_SUCCESS)
     {
@@ -258,9 +282,13 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
     ReleaseKernelNames(guids, kernelCount);
     ofm_out.Print(0);
     ofm_out_ref.Print(0);
+
     for (int element = 0 ; element <  ofm_out_ref.ElementCount() ; element++)
     {
-        if (ofm_out.Data()[element] != ofm_out_ref.Data()[element])
+        float ofmVal = ofm_out.Data()[element];
+        float ofmRefVal = ofm_out_ref.Data()[element];
+        float absDiff = std::abs(ofmVal - ofmRefVal);        
+        if (absDiff/ofmVal > 0.005)
         {
             std::cout << "Selective State Update test failed!!" << std::endl;
             return -1;

@@ -10,6 +10,6 @@
  ******************************************************************************
 */
 
-#define FLOAT32
+#define BFLOAT16
 #define USE_Z_TENSOR
 #include "selective_state_update.h"

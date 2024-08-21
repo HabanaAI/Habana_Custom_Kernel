@@ -146,21 +146,23 @@ tpc_lib_api::GlueCodeReturn SelectiveStateUpdateGaudi2::GetGcDefinitions(
     // The semantics of the input tensors and their order is a convention
     // between TPC kernel writer and the write of the layer at the
     // framework level.
-    uint64_t outputSizes[gcapi::MAX_TENSOR_DIM] = {0};
+    uint64_t inputSizes[gcapi::MAX_TENSOR_DIM] = {0};
 
-    memcpy(outputSizes, in_defs->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
-    for(int hh=0;hh<4;hh++)
-        printf("outputSizes[%d] is %ld \n", hh, outputSizes[hh]);
-
-    /*
+    memcpy(inputSizes, in_defs->inputTensors[0].geometry.maxSizes, sizeof(inputSizes));
+ 
     // verify that output feature map dimension are correct
-    if (memcmp(in_defs->outputTensors[0].geometry.maxSizes, outputSizes,
-               in_defs->outputTensors[0].geometry.dims * sizeof(uint64_t) ) != 0)
+    for(uint64_t i=0;i<in_defs->outputTensors[0].geometry.dims;i++)
     {
-        memcpy(in_defs->outputTensors[0].geometry.maxSizes, in_defs->inputTensors[0].geometry.maxSizes, sizeof(outputSizes));
-        printf("ZZZ GLUE_INCOMPATIBLE_OUTPUT_SIZE");
-        return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
-    }*/
+        if (i == 1) // the output tensor dimension 1 is fixed 1, not the same as first input tensor
+            continue;
+        if (memcmp(&(in_defs->outputTensors[0].geometry.maxSizes[i]), &(inputSizes[i]),
+                    sizeof(uint64_t) ) != 0)
+        {
+            memcpy(in_defs->outputTensors[0].geometry.maxSizes, in_defs->inputTensors[0].geometry.maxSizes, sizeof(inputSizes));
+
+            return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_SIZE;
+        }
+    }
 
     /*************************************************************************************
     *    Stage II -  Define index space geometry. In this example the index space matches
@@ -173,13 +175,12 @@ tpc_lib_api::GlueCodeReturn SelectiveStateUpdateGaudi2::GetGcDefinitions(
         elementsInVec = 128;
 
     //round up to elementsInVec and divide by elementsInVec.
-    unsigned depthIndex = (outputSizes[0] + (elementsInVec - 1)) / elementsInVec;
+    unsigned depthIndex = (inputSizes[0] + (elementsInVec - 1)) / elementsInVec;
     out_defs->indexSpaceRank = 4;
     out_defs->indexSpaceGeometry[0] = depthIndex;
-	//reduce index space due to unroll.
-    out_defs->indexSpaceGeometry[1] = 1; //
-    out_defs->indexSpaceGeometry[2] = outputSizes[2];
-    out_defs->indexSpaceGeometry[3] = outputSizes[3];
+    out_defs->indexSpaceGeometry[1] = inputSizes[1]; //
+    out_defs->indexSpaceGeometry[2] = inputSizes[2];
+    out_defs->indexSpaceGeometry[3] = inputSizes[3];
 
 
     /*************************************************************************************
@@ -241,6 +242,7 @@ tpc_lib_api::GlueCodeReturn SelectiveStateUpdateGaudi2::GetGcDefinitions(
 
     }
 
+    out_defs->outputTensorAccessPattern[0].memsetBeforeExecution = 1;
     // f_start f(i) = elementsInVec*i + 0;
     // f_end   f(i) = elementsInVec*i + (elementsInVec - 1);
     // Resource 0 (OFM) dim 0

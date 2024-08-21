@@ -38,7 +38,7 @@ typedef float                       SCALAR;
 #define s_ld_g_a(a)                 s_f32_ld_g(a)
 #define v_ld_g_a(a)                 v_f32_ld_g(a)
 #define v_mov_s(a)                  v_f32_mov_b(a)
-#define log(a)                      log_f32(a)
+#define log(a)                      v_log_f32(a)
 #define exp(a)                      exp_f32(a)
 #define V_LANE_ID                   read_lane_id_4b_b()
 #define v_sel_leq_v_v_v_v(a, b, c, d) v_f32_sel_leq_f32_b(a, b, c, d)
@@ -56,9 +56,19 @@ typedef float                       SCALAR;
 #define v_mov_v_b(a, b, predicate, predicatePolarity)\
                 v_f32_mov_b(a, 0, b, predicate, predicatePolarity)
 #define v_add_v_v(a, b, st)            v_f32_add_b(a, b)
+#define v_ld_g_a(a)                    v_f32_ld_g(a)
 #endif
 
 #if defined(BFLOAT16)
+inline bfloat128 sigmoid_bf16(bfloat128 input)
+{
+    // sigmoid(x) =  0.5 * tanh(0.5*x) + 0.5
+    bfloat128 x = v_bf16_mul_b(input, 0.5f);           // 1
+    x = tanh_bf16(x); // 15
+    x = v_bf16_mac_b(x, 0.5, 0.5, SW_NO_NEG); // 16
+
+    return x;
+}
 #define VECTOR                      bfloat128
 #define VECTOR_SIZE                 128
 typedef bf16                        SCALAR;
@@ -75,7 +85,7 @@ typedef bf16                        SCALAR;
                 v_bf16_mac_b(a, b, source, neg, predicate, predicatePolarity)
 #define exp(a)                      exp_bf16(a)
 #define log(a)                      log_bf16(a)
-#define sigmoid(a)                  v_sigmoid_bf16(a)
+#define sigmoid(a)                  sigmoid_bf16(a)
 #define v_mul_v_v_b(a, b, source, predicate, predicatePolarity) \
                 v_bf16_mul_b(a, b, 0, source, predicate, predicatePolarity)
 #define st_tnsr_rmw_i_v(a, b, c, rmw_op, rmw, tnsr_dt_location) \
@@ -89,5 +99,7 @@ typedef bf16                        SCALAR;
 #define v_mul_v_v(a, b)                v_bf16_mul_b(a, b)
 #define v_add_v_v_b(a, b, source, predicate, predicatePolarity) \
                 v_bf16_add_b(a, b, 0, source, predicate, predicatePolarity)
+#define v_ld_g_a(a)                 v_bf16_ld_g(a)             
+
 
 #endif
