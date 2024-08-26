@@ -15,6 +15,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #include "kernel_config.h"
+#pragma tpc_printf (enable)
+#define print_vec_float(vec, str)  { printf(str); for (int ii=0; ii<5; ii++) {  printf("%f, ", vec[ii]);  }; printf("\n"); }
 
 void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor ifm_B, tensor ifm_C, tensor ifm_D, tensor ifm_dt_bias,
 #if defined(USE_Z_TENSOR)
@@ -32,6 +34,9 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
 
     const int5 indexSpaceStart = get_index_space_offset();
     const int5 indexSpaceEnd = get_index_space_size() + indexSpaceStart;
+    const int dstate_size = get_dim_size(ifm_state, 1);
+    const int nhead_size = get_dim_size(ifm_state, 2); 
+    const int ngroup_size = get_dim_size(ifm_B, 2); 
 
     int5 ifm_state_Coords   = { 0, 0, 0, 0, 0 };
     int5 ifm_x_Coords       = { 0, 0, 0, 0, 0 };
@@ -49,9 +54,9 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
     const int dimStart = indexSpaceStart[dim] * dimStep;
     const int dimEnd = indexSpaceEnd[dim] * dimStep;
     // dstate
-    const int dstateStep = 1;
-    const int dstateStart = indexSpaceStart[dstate] * dstateStep;
-    const int dstateEnd = indexSpaceEnd[dstate] * dstateStep;
+    //const int dstateStep = 1;
+    //const int dstateStart = indexSpaceStart[dstate] * dstateStep;
+    //const int dstateEnd = indexSpaceEnd[dstate] * dstateStep;
     // nhead
     const int nheadStep = 1;
     const int nheadStart = indexSpaceStart[nhead];
@@ -63,6 +68,7 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
 
     VECTOR vec_state, vec_x, vec_dt, vec_A, scl_B, scl_C, vec_D, vec_dt_bias;
     VECTOR vec_out;
+    const int nn = nhead_size / ngroup_size;
 
     #pragma loop_taken
     for (int b = batchStart; b < batchtEnd; b += batchStep)
@@ -84,8 +90,8 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
             ifm_x_Coords[nhead] = h;
             ifm_dt_Coords[nhead] = h;
             ifm_A_Coords[nhead] = h; 
-            ifm_B_Coords[nhead] = h;
-            ifm_C_Coords[nhead] = h;
+            ifm_B_Coords[nhead] = h/nn;
+            ifm_C_Coords[nhead] = h/nn;
             ifm_D_Coords[nhead] = h; 
             ifm_z_Coords[nhead] = h;
             ifm_dt_bias_Coords[nhead] = h; 
@@ -108,7 +114,9 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
                 vec_x = v_ld_tnsr_i(ifm_x_Coords, ifm_x);
                 vec_out = 0; // reset to 0 before dstate loop
                 VECTOR temp;
-                for (int n = dstateStart ; n < dstateEnd; n += 1)
+                print_vec_float(vec_x, "vec_x HPU: ")
+                //for (int n = dstateStart ; n < dstateEnd; n += 1)
+                for (int n = 0 ; n < dstate_size; n += 1)
                 {
                     ifm_state_Coords[dstate] = n;
                     ifm_x_Coords[dstate] = 0;  // x doesn't have dstate
@@ -124,8 +132,9 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
                     vec_dt = v_ld_tnsr_i(ifm_dt_Coords, ifm_dt);
                     vec_dt_bias = v_ld_tnsr_i(ifm_dt_bias_Coords, ifm_dt_bias);
                     int8_t Pred_dt = s_i32_cmp_neq(with_dt_bias, 0);
+
                     vec_dt = v_add_v_v_b(vec_dt, vec_dt_bias, vec_dt, Pred_dt, 0);
-                    
+                   
 #if defined(USE_SOFTPLUS_DT) 
                     VECTOR vec_one = 1;
                     temp = exp(vec_dt);
@@ -164,7 +173,8 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
                 vec_z = v_mul_v_v(tp_sig, temp);
                 vec_out = v_mul_v_v(vec_out, vec_z);
 #endif
-                st_tnsr_rmw_i_v(ofm_out_Coords, ofm_out, vec_out, e_rmw_add, e_rmw_atomic, e_tnsr_dt_srf);          
+                //st_tnsr_rmw_i_v(ofm_out_Coords, ofm_out, vec_out, e_rmw_add, e_rmw_atomic, e_tnsr_dt_srf); 
+                st_tnsr_i_v(ofm_out_Coords, ofm_out, vec_out);
             } // end of dim loop
         }
     }

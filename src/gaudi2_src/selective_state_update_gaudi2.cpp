@@ -79,7 +79,6 @@ tpc_lib_api::GlueCodeReturn SelectiveStateUpdateGaudi2::GetGcDefinitions(
         tpc_lib_api::HabanaKernelParams* in_defs,
         tpc_lib_api::HabanaKernelInstantiation* out_defs)
 {
-	const int c_unrollCount = 1;
     tpc_lib_api::GlueCodeReturn retVal;
     SSUParam* def = static_cast<SSUParam*>(in_defs->nodeParams.nodeParams);
     /*************************************************************************************
@@ -178,10 +177,9 @@ tpc_lib_api::GlueCodeReturn SelectiveStateUpdateGaudi2::GetGcDefinitions(
     unsigned depthIndex = (inputSizes[0] + (elementsInVec - 1)) / elementsInVec;
     out_defs->indexSpaceRank = 4;
     out_defs->indexSpaceGeometry[0] = depthIndex;
-    out_defs->indexSpaceGeometry[1] = inputSizes[1]; //
+    out_defs->indexSpaceGeometry[1] = 1;
     out_defs->indexSpaceGeometry[2] = inputSizes[2];
     out_defs->indexSpaceGeometry[3] = inputSizes[3];
-
 
     /*************************************************************************************
     *    Stage III -  Define index space mapping
@@ -198,8 +196,9 @@ tpc_lib_api::GlueCodeReturn SelectiveStateUpdateGaudi2::GetGcDefinitions(
     {
         dim_a = elementsInVec;
         dim_end_b = elementsInVec - 1;
-        dstate_a = c_unrollCount;
-        dstate_end_b = c_unrollCount - 1;
+        dstate_a = 0;
+        dstate_end_b = 0;
+
         batch_a = 1;
 
         if((i == 1) || (i == 2) || (i == 8))
@@ -214,11 +213,11 @@ tpc_lib_api::GlueCodeReturn SelectiveStateUpdateGaudi2::GetGcDefinitions(
             dim_a = 0;
             dim_end_b = 0;
         }
-        if((i==6) || (i ==7))
+        /*if((i==6) || (i ==7))
         {
             dstate_a = batch_a = 0;
             dstate_end_b = 0;
-        }
+        }*/
         out_defs->inputTensorAccessPattern[i].allRequired = true;
         out_defs->inputTensorAccessPattern[i].mapping[0].indexSpaceDim      = 0;
         out_defs->inputTensorAccessPattern[i].mapping[0].a        = dim_a;
