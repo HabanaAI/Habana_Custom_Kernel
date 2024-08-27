@@ -28,6 +28,7 @@ void SelectiveStateUpdateGaudi2Test::selective_state_update_fp32_ref(
          const test::Tensor<float,4>& dt_bias_M,
          const test::Tensor<float,4>& z_M,
          test::Tensor<float,4>& output,
+         test::Tensor<float,4>& state_out,
          const IndexSpace& indexSpace, const int head_group,
          SelectiveStateUpdateGaudi2::SSUParam def,
          Gaudi2_Kernel_Name_e NameofKernel)
@@ -119,6 +120,7 @@ void SelectiveStateUpdateGaudi2Test::selective_state_update_fp32_ref(
 
                     float dB = ifmVal_dt * ifmVal_B;
                     float temp = (ifmVal_state * dA) + (dB * ifmVal_x);
+                    state_out.SetElement(coords_state, temp);
 
                     float tmp_out = temp * ifmVal_C;
                     ofmVal += tmp_out;
@@ -150,6 +152,7 @@ void SelectiveStateUpdateGaudi2Test::selective_state_update_bf16_ref(
          const test::Tensor<bfloat16,4>& dt_bias_M,
          const test::Tensor<bfloat16,4>& z_M,
          test::Tensor<bfloat16,4>& output,
+         test::Tensor<bfloat16,4>& state_out,
          const IndexSpace& indexSpace, const int head_group,
          SelectiveStateUpdateGaudi2::SSUParam def,
          Gaudi2_Kernel_Name_e NameofKernel)
@@ -246,6 +249,7 @@ void SelectiveStateUpdateGaudi2Test::selective_state_update_bf16_ref(
 
                     float dB = ifmVal_dt * ifmVal_B;
                     float temp = (ifmVal_state * dA) + (dB * ifmVal_x);
+                    state_out.SetElement(coords_state, temp);
 
                     float tmp_out = temp * ifmVal_C;
                     ofmVal += tmp_out;
@@ -302,6 +306,8 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
         float_4DTensor ifm_dt_bias(ifm_D_dtbias_Initializer);
         float_4DTensor ofm_out(ofm_out_Initializer);
         float_4DTensor ofm_out_ref(ofm_out_Initializer);
+        float_4DTensor ofm_state_out(ifm_state_Initializer);
+        float_4DTensor ofm_state_out_ref(ifm_state_Initializer);
     
 
         ifm_state.FillWithData();
@@ -327,7 +333,7 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
         sdef.using_dt_bias = 0;
 
         // execute reference implementation of the kernel.
-        this->selective_state_update_fp32_ref(ifm_state, ifm_x, ifm_dt, ifm_A, ifm_B, ifm_C, ifm_D, ifm_dt_bias, ifm_z, ofm_out_ref, indexSpace, ifm_nhead/ifm_ngroup, sdef, NameofKernel);
+        this->selective_state_update_fp32_ref(ifm_state, ifm_x, ifm_dt, ifm_A, ifm_B, ifm_C, ifm_D, ifm_dt_bias, ifm_z, ofm_out_ref, ofm_state_out_ref, indexSpace, ifm_nhead/ifm_ngroup, sdef, NameofKernel);
 
         // generate input for query call
         m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI2;
@@ -348,8 +354,9 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
         if((NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_F32) || (NameofKernel == GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_F32))
             LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[8]),ifm_z);
 
-        m_in_defs.outputTensorNr = 1;
-        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]),ofm_out );
+        m_in_defs.outputTensorNr = 2;
+        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]),ofm_out);
+        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[1]),ofm_state_out);
 
         tpc_lib_api::GuidInfo *guids = nullptr;
         unsigned kernelCount = 0;
@@ -388,6 +395,7 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
             vec.push_back(ifm_z.GetTensorDescriptor());
         }
         vec.push_back(ofm_out.GetTensorDescriptor());
+        vec.push_back(ofm_state_out.GetTensorDescriptor());
 
         // execute a simulation of the kernel using TPC simulator,
         TestBase::RunSimulation(vec, m_in_defs, m_out_defs);
@@ -402,11 +410,28 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
             float absDiff = std::abs(ofmVal - ofmRefVal);        
             if (absDiff/ofmVal > 0.005)
             {
-                std::cout << "Selective State Update FP32 test failed!!" << std::endl;
+                std::cout << "Selective State Update output FP32 test failed!!" << std::endl;
                 return -1;
             }
         }
-        std::cout << "Selective State Updatetest FP32 pass!!" << std::endl;
+        std::cout << "Selective State Update output FP32 pass!!" << std::endl;
+
+        ofm_state_out.Print(0);
+        ofm_state_out_ref.Print(0);
+
+        for (int element = 0 ; element <  ofm_state_out_ref.ElementCount() ; element++)
+        {
+            float ofmVal = ofm_state_out.Data()[element];
+            float ofmRefVal = ofm_state_out_ref.Data()[element];
+            float absDiff = std::abs(ofmVal - ofmRefVal);        
+            if (absDiff/ofmVal > 0.005)
+            {
+                std::cout << "Selective State Update state FP32 test failed!!" << std::endl;
+                return -1;
+            }
+        }
+        std::cout << "Selective State Update state FP32 pass!!" << std::endl;
+
     }
     else
     {
@@ -421,6 +446,8 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
         bfloat16_4DTensor ifm_dt_bias(ifm_D_dtbias_Initializer);
         bfloat16_4DTensor ofm_out(ofm_out_Initializer);
         bfloat16_4DTensor ofm_out_ref(ofm_out_Initializer);
+        bfloat16_4DTensor ofm_state_out(ifm_state_Initializer);
+        bfloat16_4DTensor ofm_state_out_ref(ifm_state_Initializer);
 
         ifm_state.FillWithData();
         ifm_x.FillWithData();
@@ -445,7 +472,7 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
         sdef.using_dt_bias = 0;
 
         // execute reference implementation of the kernel.
-        this->selective_state_update_bf16_ref(ifm_state, ifm_x, ifm_dt, ifm_A, ifm_B, ifm_C, ifm_D, ifm_dt_bias, ifm_z, ofm_out_ref, indexSpace, ifm_nhead/ifm_ngroup, sdef, NameofKernel);
+        this->selective_state_update_bf16_ref(ifm_state, ifm_x, ifm_dt, ifm_A, ifm_B, ifm_C, ifm_D, ifm_dt_bias, ifm_z, ofm_out_ref, ofm_state_out_ref, indexSpace, ifm_nhead/ifm_ngroup, sdef, NameofKernel);
 
         // generate input for query call
         m_in_defs.deviceId = tpc_lib_api::DEVICE_ID_GAUDI2;
@@ -467,7 +494,8 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
             LoadTensorToGcDescriptor(&(m_in_defs.inputTensors[8]),ifm_z);
 
         m_in_defs.outputTensorNr = 1;
-        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]),ofm_out );
+        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]),ofm_out);
+        LoadTensorToGcDescriptor(&(m_in_defs.outputTensors[0]),ofm_state_out);
 
         tpc_lib_api::GuidInfo *guids = nullptr;
         unsigned kernelCount = 0;
@@ -506,6 +534,7 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
             vec.push_back(ifm_z.GetTensorDescriptor());
         }
         vec.push_back(ofm_out.GetTensorDescriptor());
+        vec.push_back(ofm_state_out.GetTensorDescriptor());
 
         // execute a simulation of the kernel using TPC simulator,
         TestBase::RunSimulation(vec, m_in_defs, m_out_defs);

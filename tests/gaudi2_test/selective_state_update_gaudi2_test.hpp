@@ -40,6 +40,7 @@ public:
          const test::Tensor<float,4>& dt_bias_M,
          const test::Tensor<float,4>& z_M,
          test::Tensor<float,4>& output,
+         test::Tensor<float,4>& state_out,
          const IndexSpace& indexSpace, const int head_group,
          SelectiveStateUpdateGaudi2::SSUParam def, Gaudi2_Kernel_Name_e NameofKernel);
 
@@ -54,6 +55,7 @@ public:
          const test::Tensor<bfloat16,4>& dt_bias_M,
          const test::Tensor<bfloat16,4>& z_M,
          test::Tensor<bfloat16,4>& output,
+         test::Tensor<bfloat16,4>& state_out,
          const IndexSpace& indexSpace, const int head_group,
          SelectiveStateUpdateGaudi2::SSUParam def,
          Gaudi2_Kernel_Name_e NameofKernel);

@@ -23,6 +23,7 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
         tensor ifm_z, 
 #endif        
         tensor ofm_out,
+        tensor ofm_state_out,
         unsigned int with_D, 
         unsigned int with_dt_bias
         )
@@ -159,6 +160,7 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
 
                     VECTOR vec_out_partial;
                     vec_out_partial = v_mul_v_v(vec_state, scl_C);
+                    st_tnsr_i_v(ifm_state_Coords, ofm_state_out, vec_state);
                     vec_out = v_add_v_v(vec_out_partial, vec_out, 0);
 
                 } // end of dstate loop

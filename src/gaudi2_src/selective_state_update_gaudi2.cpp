@@ -102,9 +102,9 @@ tpc_lib_api::GlueCodeReturn SelectiveStateUpdateGaudi2::GetGcDefinitions(
 
     }
     //validate correct amount of output tensors
-    if (in_defs->outputTensorNr != 1)
+    if (in_defs->outputTensorNr != 2)
     {
-        in_defs->outputTensorNr  = 1;
+        in_defs->outputTensorNr  = 2;
         return tpc_lib_api::GLUE_INCOMPATIBLE_OUTPUT_COUNT;
     }
 
@@ -267,6 +267,27 @@ tpc_lib_api::GlueCodeReturn SelectiveStateUpdateGaudi2::GetGcDefinitions(
         out_defs->outputTensorAccessPattern[0].mapping[dims].end_b    = 1 - 1;
     }
 
+    out_defs->outputTensorAccessPattern[1].mapping[0].indexSpaceDim      = 0;
+    out_defs->outputTensorAccessPattern[1].mapping[0].a        = elementsInVec;
+    out_defs->outputTensorAccessPattern[1].mapping[0].start_b  = 0;
+    out_defs->outputTensorAccessPattern[1].mapping[0].end_b    = elementsInVec - 1;
+	
+    // one 1 for this dstate
+	out_defs->outputTensorAccessPattern[1].mapping[1].indexSpaceDim      = 1;
+    out_defs->outputTensorAccessPattern[1].mapping[1].a        = 0;
+    out_defs->outputTensorAccessPattern[1].mapping[1].start_b  = 0;
+    out_defs->outputTensorAccessPattern[1].mapping[1].end_b    = 0;
+
+    // f_start f(i) = 1*i + 0;
+    // f_end   f(i) = 1*i + 0;
+    // Resource 0 (OFM) dim 1-4
+    for (unsigned int dims = 2; dims < out_defs->indexSpaceRank; dims++)
+    {
+        out_defs->outputTensorAccessPattern[1].mapping[dims].indexSpaceDim      = dims;
+        out_defs->outputTensorAccessPattern[1].mapping[dims].a        = 1;
+        out_defs->outputTensorAccessPattern[1].mapping[dims].start_b  = 0;
+        out_defs->outputTensorAccessPattern[1].mapping[dims].end_b    = 1 - 1;
+    }
 
     /*************************************************************************************
     *    Stage IV -  define scalar parameters
