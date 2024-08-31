@@ -329,7 +329,7 @@ int SelectiveStateUpdateGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
 
         // Define the two flags
         SelectiveStateUpdateGaudi2::SSUParam sdef;
-        sdef.using_D = 1;
+        sdef.using_D = 0;
         sdef.using_dt_bias = 0;
 
         // execute reference implementation of the kernel.
