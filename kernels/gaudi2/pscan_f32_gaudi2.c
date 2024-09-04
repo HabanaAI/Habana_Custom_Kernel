@@ -11,5 +11,4 @@
 */
 
 #define FLOAT32
-#define USE_D_Z_TENSOR
-#include "pscan.h"
+#include "pscan_update.h"

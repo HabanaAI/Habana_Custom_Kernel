@@ -38,6 +38,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "relu_all_gaudi2.hpp"
 #include "user_lut_gaudi2.hpp"
 #include "selective_state_update_gaudi2.hpp"
+#include "pscan_gaudi2.hpp"
+#include "pscan_update_gaudi2.hpp"
 
 #include "entry_points.hpp"
 #include <stdio.h>
@@ -158,6 +160,15 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId       
            SSUNozBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOZ_BF16].name, SelectiveStateUpdateGaudi2::sel_state_update_noz_bf16);
            SelectiveStateUpdateGaudi2 SSUNoSPNozBF16g2Instance(SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_bf16);
            SSUNoSPNozBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_NOZ_BF16].name, SelectiveStateUpdateGaudi2::sel_state_update_nosp_noz_bf16);
+
+           PscanGaudi2 PscanF32g2Instance(PscanGaudi2::pscan_f32);
+           PscanF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_PSCAN_F32].name, PscanGaudi2::pscan_f32);
+           PscanGaudi2 PscanBF16g2Instance(PscanGaudi2::pscan_bf16);
+           PscanBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_PSCAN_BF16].name, PscanGaudi2::pscan_bf16);
+           PscanUpdateGaudi2 PscanUpdateF32g2Instance(PscanUpdateGaudi2::pscan_update_f32);
+           PscanUpdateF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_PSCAN_UPDATE_F32].name, PscanUpdateGaudi2::pscan_update_f32);
+           PscanUpdateGaudi2 PscanUpdateBF16g2Instance(PscanUpdateGaudi2::pscan_update_bf16);
+           PscanUpdateBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_PSCAN_UPDATE_BF16].name, PscanUpdateGaudi2::pscan_update_bf16);
 
         }
 
@@ -513,6 +524,31 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     if (strcmp(params->guid.name, kernelName) == 0)
     {
         return SSUNoSPNozBF16g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    PscanGaudi2 PscanF32g2Instance(PscanGaudi2::pscan_f32);
+    PscanF32g2Instance.GetKernelName(kernelName, PscanGaudi2::pscan_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return PscanF32g2Instance.GetGcDefinitions(params,instance);
+    }
+    PscanGaudi2 PscanBF16g2Instance(PscanGaudi2::pscan_bf16);
+    PscanBF16g2Instance.GetKernelName(kernelName, PscanGaudi2::pscan_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return PscanBF16g2Instance.GetGcDefinitions(params,instance);
+    }
+    PscanUpdateGaudi2 PscanUpdateF32g2Instance(PscanUpdateGaudi2::pscan_update_f32);
+    PscanUpdateF32g2Instance.GetKernelName(kernelName, PscanUpdateGaudi2::pscan_update_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return PscanUpdateF32g2Instance.GetGcDefinitions(params,instance);
+    }
+    PscanUpdateGaudi2 PscanUpdateBF16g2Instance(PscanUpdateGaudi2::pscan_update_bf16);
+    PscanUpdateBF16g2Instance.GetKernelName(kernelName, PscanUpdateGaudi2::pscan_update_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return PscanUpdateBF16g2Instance.GetGcDefinitions(params,instance);
     }
 
     return tpc_lib_api::GLUE_NODE_NOT_FOUND;

@@ -15,30 +15,30 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #include <cstring>
-#include "pscan_gaudi2.hpp"
+#include "pscan_update_gaudi2.hpp"
 #include <stdio.h>
 #include <iostream>
 
-extern unsigned char _binary___pscan_f32_gaudi2_o_start;
-extern unsigned char _binary___pscan_f32_gaudi2_o_end;
+extern unsigned char _binary___pscan_update_f32_gaudi2_o_start;
+extern unsigned char _binary___pscan_update_f32_gaudi2_o_end;
 
-extern unsigned char _binary___pscan_bf16_gaudi2_o_start;
-extern unsigned char _binary___pscan_bf16_gaudi2_o_end;
+extern unsigned char _binary___pscan_update_bf16_gaudi2_o_start;
+extern unsigned char _binary___pscan_update_bf16_gaudi2_o_end;
 
 
-tpc_lib_api::GlueCodeReturn PscanGaudi2::GetKernelName(
-        char kernelName [tpc_lib_api::MAX_NODE_NAME], pscan_mode_t mode)
+tpc_lib_api::GlueCodeReturn PscanUpdateGaudi2::GetKernelName(
+        char kernelName [tpc_lib_api::MAX_NODE_NAME], pscan_update_mode_t mode)
 {
     switch(mode)
     {
-        case pscan_f32:
-            strcpy(kernelName,"custom_pscan_f32_gaudi2");
+        case pscan_update_f32:
+            strcpy(kernelName,"custom_pscan_update_f32_gaudi2");
             break;
-        case pscan_bf16:
-            strcpy(kernelName,"custom_pscan_bf16_gaudi2");
+        case pscan_update_bf16:
+            strcpy(kernelName,"custom_pscan_update_bf16_gaudi2");
             break;
         default:
-            strcpy(kernelName,"custom_pscan_f32_gaudi2");
+            strcpy(kernelName,"custom_pscan_update_f32_gaudi2");
             break;
 
     }
@@ -46,7 +46,7 @@ tpc_lib_api::GlueCodeReturn PscanGaudi2::GetKernelName(
     return tpc_lib_api::GLUE_SUCCESS;
 }
 
-tpc_lib_api::GlueCodeReturn PscanGaudi2::GetGcDefinitions(
+tpc_lib_api::GlueCodeReturn PscanUpdateGaudi2::GetGcDefinitions(
         tpc_lib_api::HabanaKernelParams* in_defs,
         tpc_lib_api::HabanaKernelInstantiation* out_defs)
 {
@@ -68,7 +68,7 @@ tpc_lib_api::GlueCodeReturn PscanGaudi2::GetGcDefinitions(
     }
 
     // validate input and output data type
-    if(m_mode == pscan_f32)
+    if(m_mode == pscan_update_f32)
     {
         for(unsigned int i = 0; i < in_defs->inputTensorNr; i++)
         {
@@ -112,7 +112,7 @@ tpc_lib_api::GlueCodeReturn PscanGaudi2::GetGcDefinitions(
     // verify that output feature map dimension are correct
     for(uint64_t i=0;i<in_defs->outputTensors[0].geometry.dims;i++)
     {
-        if (i == 2) // the output tensor dimension 1 is fixed 1, not the same as first input tensor
+        if (i == 1) // the output tensor dimension 1 is fixed 1, not the same as first input tensor
             continue;
         if (memcmp(&(in_defs->outputTensors[0].geometry.maxSizes[i]), &(inputSizes[i]),
                     sizeof(uint64_t) ) != 0)
@@ -128,7 +128,7 @@ tpc_lib_api::GlueCodeReturn PscanGaudi2::GetGcDefinitions(
     *    the dimensions of the output tensor, up to dim 0.
     **************************************************************************************/
     int elementsInVec;
-    if(m_mode == pscan_f32 )
+    if(m_mode == pscan_update_f32 )
         elementsInVec = 64;
     else
         elementsInVec = 128;
@@ -137,8 +137,8 @@ tpc_lib_api::GlueCodeReturn PscanGaudi2::GetGcDefinitions(
     unsigned depthIndex = (inputSizes[0] + (elementsInVec - 1)) / elementsInVec;
     out_defs->indexSpaceRank = 4;
     out_defs->indexSpaceGeometry[0] = depthIndex;
-    out_defs->indexSpaceGeometry[1] = inputSizes[1];
-    out_defs->indexSpaceGeometry[2] = 1;
+    out_defs->indexSpaceGeometry[1] = 1;
+    out_defs->indexSpaceGeometry[2] = inputSizes[2];
     out_defs->indexSpaceGeometry[3] = inputSizes[3];
 
     /*************************************************************************************
@@ -154,10 +154,10 @@ tpc_lib_api::GlueCodeReturn PscanGaudi2::GetGcDefinitions(
     // Resource 0 (IFM) dim 0
     int dim_a;
     int dim_end_b;
-    int dstate_a = 1;
+    int dstate_a = 0;
     int dstate_end_b = 0;
     // seq_len dimension is doing the pscan
-    int seq_a = 0;
+    int seq_a = 1;
     int seq_end_b = 0;
     int batch_a;
     for (unsigned i = 0; i < in_defs->inputTensorNr; i++)
@@ -165,28 +165,30 @@ tpc_lib_api::GlueCodeReturn PscanGaudi2::GetGcDefinitions(
         dim_a = elementsInVec;
         dim_end_b = elementsInVec - 1;
 
-        dstate_a = 1;
+        dstate_a = 0;
         dstate_end_b = 0;
 
-        seq_a = 0;
+        seq_a = 1;
         seq_end_b = 0;
 
         batch_a = 1;
 
-        if((i == 1) || (i == 2))
-        {
-            dstate_a = 0;
-            dstate_end_b = 0;
-        }
-        if(i == 3)
-        {
-            batch_a = 0;
-        }
-        if(i== 4)
+        if(i== 2)       // C
         {
             dim_a = 0;
             dim_end_b = 0;
         }
+        if((i == 3) || (i == 4)) //D and z
+        {
+            dstate_a = 0;
+            dstate_end_b = 0;
+        }
+        if(i == 3) // D
+        {
+            batch_a = 0;
+            seq_a = 0;
+        }
+
         out_defs->inputTensorAccessPattern[i].allRequired = true;
         out_defs->inputTensorAccessPattern[i].mapping[0].indexSpaceDim      = 0;
         out_defs->inputTensorAccessPattern[i].mapping[0].a        = dim_a;
@@ -222,12 +224,12 @@ tpc_lib_api::GlueCodeReturn PscanGaudi2::GetGcDefinitions(
 	
     // one 1 for this dstate
 	out_defs->outputTensorAccessPattern[0].mapping[1].indexSpaceDim      = 1;
-    out_defs->outputTensorAccessPattern[0].mapping[1].a        = 1;
+    out_defs->outputTensorAccessPattern[0].mapping[1].a        = 0;
     out_defs->outputTensorAccessPattern[0].mapping[1].start_b  = 0;
     out_defs->outputTensorAccessPattern[0].mapping[1].end_b    = 0;
 
     out_defs->outputTensorAccessPattern[0].mapping[2].indexSpaceDim      = 2;
-    out_defs->outputTensorAccessPattern[0].mapping[2].a        = 0;
+    out_defs->outputTensorAccessPattern[0].mapping[2].a        = 1;
     out_defs->outputTensorAccessPattern[0].mapping[2].start_b  = 0;
     out_defs->outputTensorAccessPattern[0].mapping[2].end_b    = 0;
 
@@ -243,17 +245,17 @@ tpc_lib_api::GlueCodeReturn PscanGaudi2::GetGcDefinitions(
     /*************************************************************************************
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
-    unsigned IsaSize = (&_binary___pscan_f32_gaudi2_o_end - &_binary___pscan_f32_gaudi2_o_start);
-    unsigned char *binary_kernel =  &_binary___pscan_f32_gaudi2_o_start;
+    unsigned IsaSize = (&_binary___pscan_update_f32_gaudi2_o_end - &_binary___pscan_update_f32_gaudi2_o_start);
+    unsigned char *binary_kernel =  &_binary___pscan_update_f32_gaudi2_o_start;
     switch (m_mode)
     {
-        case pscan_f32:
-            IsaSize = (&_binary___pscan_f32_gaudi2_o_end - &_binary___pscan_f32_gaudi2_o_start);
-            binary_kernel = &_binary___pscan_f32_gaudi2_o_start;
+        case pscan_update_f32:
+            IsaSize = (&_binary___pscan_update_f32_gaudi2_o_end - &_binary___pscan_update_f32_gaudi2_o_start);
+            binary_kernel = &_binary___pscan_update_f32_gaudi2_o_start;
             break;
-        case pscan_bf16:
-            IsaSize = (&_binary___pscan_bf16_gaudi2_o_end - &_binary___pscan_bf16_gaudi2_o_start);
-            binary_kernel = &_binary___pscan_bf16_gaudi2_o_start;
+        case pscan_update_bf16:
+            IsaSize = (&_binary___pscan_update_bf16_gaudi2_o_end - &_binary___pscan_update_bf16_gaudi2_o_start);
+            binary_kernel = &_binary___pscan_update_bf16_gaudi2_o_start;
             break;
         default:
             break;

@@ -14,36 +14,36 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef _PSCAN_GAUDI2_HPP
-#define _PSCAN_GAUDI2_HPP
+#ifndef _PSCAN_UPDATE_GAUDI2_HPP
+#define _PSCAN_UPDATE_GAUDI2_HPP
 
 #include "gc_interface.h"
 #include "tpc_kernel_lib_interface.h"
 
-class PscanGaudi2
+class PscanUpdateGaudi2
 {
 public:
     typedef enum _pscan_mode_t
     {
-        pscan_f32,
-        pscan_bf16,
-    } pscan_mode_t;
+        pscan_update_f32,
+        pscan_update_bf16,
+    } pscan_update_mode_t;
 
-    PscanGaudi2(pscan_mode_t mode=pscan_f32) {m_mode = mode;}
-    virtual ~PscanGaudi2() {}
+    PscanUpdateGaudi2(pscan_update_mode_t mode=pscan_update_f32) {m_mode = mode;}
+    virtual ~PscanUpdateGaudi2() {}
 
     virtual tpc_lib_api::GlueCodeReturn GetGcDefinitions(
             tpc_lib_api::HabanaKernelParams* params,
             tpc_lib_api::HabanaKernelInstantiation* kernel);
 
     virtual tpc_lib_api::GlueCodeReturn GetKernelName(
-            char kernelName [tpc_lib_api::MAX_NODE_NAME], pscan_mode_t mode);
+            char kernelName [tpc_lib_api::MAX_NODE_NAME], pscan_update_mode_t mode);
     
 private:
-    pscan_mode_t m_mode;
-    PscanGaudi2(const PscanGaudi2& other) = delete;
-    PscanGaudi2& operator=(const PscanGaudi2& other) = delete;
+    pscan_update_mode_t m_mode;
+    PscanUpdateGaudi2(const PscanUpdateGaudi2& other) = delete;
+    PscanUpdateGaudi2& operator=(const PscanUpdateGaudi2& other) = delete;
 };
 
 
-#endif //_PSCAN_GAUDI2_HPP
+#endif //_PSCAN_UPDATE_GAUDI2_HPP
