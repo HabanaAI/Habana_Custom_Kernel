@@ -101,12 +101,12 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
                     vec_x = v_ld_tnsr_i(ifm_x_Coords, ifm_x);
                     VECTOR temp;
 
+                    vec_dt = v_ld_tnsr_i(ifm_dt_Coords, ifm_dt);
                     VECTOR vec_one = 1;
                     temp = exp(vec_dt);
                     temp = vec_one + temp;
                     vec_dt = log(temp);
 
-                    vec_dt = v_ld_tnsr_i(ifm_dt_Coords, ifm_dt);
                     VECTOR dA;
                     temp = v_mul_v_v(vec_dt, vec_A);
                     dA = exp(temp);                    
