@@ -40,6 +40,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "selective_state_update_gaudi2.hpp"
 #include "pscan_gaudi2.hpp"
 #include "pscan_update_gaudi2.hpp"
+#include "pscan_combined_gaudi2.hpp"
 
 #include "entry_points.hpp"
 #include <stdio.h>
@@ -169,6 +170,10 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId       
            PscanUpdateF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_PSCAN_UPDATE_F32].name, PscanUpdateGaudi2::pscan_update_f32);
            PscanUpdateGaudi2 PscanUpdateBF16g2Instance(PscanUpdateGaudi2::pscan_update_bf16);
            PscanUpdateBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_PSCAN_UPDATE_BF16].name, PscanUpdateGaudi2::pscan_update_bf16);
+           PscanCombinedGaudi2 PscanCombinedF32g2Instance(PscanCombinedGaudi2::pscan_combined_f32);
+           PscanCombinedF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_PSCAN_COMBINED_F32].name, PscanCombinedGaudi2::pscan_combined_f32);
+           PscanCombinedGaudi2 PscanCombinedBF16g2Instance(PscanCombinedGaudi2::pscan_combined_bf16);
+           PscanCombinedBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_PSCAN_COMBINED_BF16].name, PscanCombinedGaudi2::pscan_combined_bf16);
 
         }
 
@@ -549,6 +554,18 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     if (strcmp(params->guid.name, kernelName) == 0)
     {
         return PscanUpdateBF16g2Instance.GetGcDefinitions(params,instance);
+    }
+    PscanCombinedGaudi2 PscanCombinedF32g2Instance(PscanCombinedGaudi2::pscan_combined_f32);
+    PscanCombinedF32g2Instance.GetKernelName(kernelName, PscanCombinedGaudi2::pscan_combined_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return PscanCombinedF32g2Instance.GetGcDefinitions(params,instance);
+    }
+    PscanCombinedGaudi2 PscanCombinedBF16g2Instance(PscanCombinedGaudi2::pscan_combined_bf16);
+    PscanCombinedBF16g2Instance.GetKernelName(kernelName, PscanCombinedGaudi2::pscan_combined_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return PscanCombinedBF16g2Instance.GetGcDefinitions(params,instance);
     }
 
     return tpc_lib_api::GLUE_NODE_NOT_FOUND;
