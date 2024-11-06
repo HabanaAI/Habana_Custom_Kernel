@@ -86,8 +86,6 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
                 ifm_B_Coords[dim] = 0; // B doesn't have dim
                 ofm_state_out_Coords[dim] = d;
 
-                vec_state = v_ld_tnsr_i(ifm_state_Coords, ifm_state);
-                vec_A = v_ld_tnsr_i(ifm_A_Coords, ifm_A);
 
                 for (int h = 0; h < seq_size; h += 1)
                 {
@@ -97,6 +95,9 @@ void main(tensor ifm_state, tensor ifm_x, tensor ifm_dt, tensor ifm_A, tensor if
                     //ifm_A_Coords[seq] = 0;      // A doesn't have seq
                     ifm_B_Coords[seq] = h;
                     ofm_state_out_Coords[seq] = h;
+
+                    vec_state = v_ld_tnsr_i(ifm_state_Coords, ifm_state);
+                    vec_A = v_ld_tnsr_i(ifm_A_Coords, ifm_A);
 
                     vec_x = v_ld_tnsr_i(ifm_x_Coords, ifm_x);
                     VECTOR temp;

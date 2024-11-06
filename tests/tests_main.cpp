@@ -36,6 +36,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "kl_div_all_test.hpp"
 #include "user_lut_gaudi2_test.hpp"
 #include "selective_state_update_gaudi2_test.hpp"
+#include "pscan_gaudi2_test.hpp"
+#include "pscan_update_gaudi2_test.hpp"
 
 int check_arg(int argc, char** argv, const char* device, const char* test)
 {
@@ -106,7 +108,11 @@ int main(int argc, char** argv)
             "SelStateUpdateGaudi2Test1  Run SelStateUpdateGaudi2Test1 only   " << std::endl <<
             "SelStateUpdateGaudi2Testsp Run SelStateUpdateGaudi2Testsp only   " << std::endl <<
             "SelStateUpdateGaudi2Testz  Run SelStateUpdateGaudi2Testz only   " << std::endl <<
-            "SelStateUpdateGaudi2Test2  Run SelStateUpdateGaudi2Test2 only   " << std::endl;
+            "SelStateUpdateGaudi2Test2  Run SelStateUpdateGaudi2Test2 only   " << std::endl <<
+            "PscanGaudi2F32Test         Run PscanGaudi2F32Test only   "        << std::endl <<
+            "PscanGaudi2BF16Test        Run PscanGaudi2BF16Test only   "       << std::endl <<
+            "PscanUpdateGaudi2F32Test   Run PscanUpdateGaudi2F32Test only   "  << std::endl <<
+            "PscanUpdateGaudi2BF16Test  Run PscanUpdateGaudi2BF16Test only   " << std::endl;
 
         exit(0);
     }
@@ -531,6 +537,56 @@ int main(int argc, char** argv)
         testSSU.SetUp();
         result = testSSU.runTest(GAUDI2_KERNEL_SELECTIVE_STATE_UPDATE_NOSP_F32);
         testSSU.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    PscanGaudi2Test testPscan;
+    if(check_arg(argc, argv, "Gaudi2", "PscanGaudi2F32Test"))
+    {
+        testPscan.SetUp();
+        result = testPscan.runTest(GAUDI2_KERNEL_PSCAN_F32);
+        testPscan.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(check_arg(argc, argv, "Gaudi2", "PscanGaudi2BF16Test"))
+    {
+        testPscan.SetUp();
+        result = testPscan.runTest(GAUDI2_KERNEL_PSCAN_BF16);
+        testPscan.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    PscanUpdateGaudi2Test testPscanUpdate;
+    if(check_arg(argc, argv, "Gaudi2", "PscanUpdateGaudi2F32Test"))
+    {
+        testPscanUpdate.SetUp();
+        result = testPscanUpdate.runTest(GAUDI2_KERNEL_PSCAN_UPDATE_F32);
+        testPscanUpdate.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(check_arg(argc, argv, "Gaudi2", "PscanUpdateGaudi2BF16Test"))
+    {
+        testPscanUpdate.SetUp();
+        result = testPscanUpdate.runTest(GAUDI2_KERNEL_PSCAN_UPDATE_BF16);
+        testPscanUpdate.TearDown();
         testCount ++;
         if (result != 0)
         {
