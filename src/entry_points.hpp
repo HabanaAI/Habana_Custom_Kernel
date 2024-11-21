@@ -68,11 +68,22 @@ typedef enum
     GAUDI2_KERNEL_RELU_BWD_F32,
     GAUDI2_KERNEL_RELU_FWD_BF16,
     GAUDI2_KERNEL_RELU_BWD_BF16,    
-    GAUDI2_KERNEL_USER_LUT,
+    GAUDI2_KERNEL_USER_LUT,    
+    GAUDI2_KERNEL_MYGATHER_F32,
+    GAUDI2_KERNEL_MYGATHER_BF16,
 
     GAUDI2_KERNEL_MAX_EXAMPLE_KERNEL
 
 } Gaudi2_Kernel_Name_e;
+
+typedef enum
+{
+    GAUDI3_KERNEL_MYGATHER_F32,
+    GAUDI3_KERNEL_MYGATHER_BF16,
+
+    GAUDI3_KERNEL_MAX_EXAMPLE_KERNEL
+
+} Gaudi3_Kernel_Name_e;
 
 /*
  ***************************************************************************************************

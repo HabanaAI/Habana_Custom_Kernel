@@ -35,6 +35,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "gather_fwd_i32_test.hpp"
 #include "kl_div_all_test.hpp"
 #include "user_lut_gaudi2_test.hpp"
+#include "mygather_gaudi2_test.hpp"
 
 int check_arg(int argc, char** argv, const char* device, const char* test)
 {
@@ -101,7 +102,9 @@ int main(int argc, char** argv)
             "AvgPool2DBwdF32Gaudi2Test  Run AvgPool2DBwdF32Gaudi2Test only   " << std::endl <<
             "CastF16toI16Gaudi2Test     Run CastF16toI16Gaudi2Test only   " << std::endl <<
             "SoftMaxBF16Gaudi2Test      Run SoftMaxBF16Gaudi2Test only   " << std::endl <<
-            "UserLutGaudi2Test          Run UserLutGaudi2Test only   " << std::endl;
+            "UserLutGaudi2Test          Run UserLutGaudi2Test only   " << std::endl <<
+            "MygatherF32                Run MygatherF32 only"  << std::endl <<
+            "MygatherBF16               Run MygatherBF16 only"  << std::endl;
 
         exit(0);
     }
@@ -478,6 +481,31 @@ int main(int argc, char** argv)
         result = userLutTest.runTest();
         userLutTest.TearDown();
         testCount++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    MygatherGaudi2Test testMygather;
+    if(check_arg(argc, argv, "Gaudi2", "MygatherF32"))
+    {
+        testMygather.SetUp();
+        result = testMygather.runTest(GAUDI2_KERNEL_MYGATHER_F32);
+        testMygather.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(check_arg(argc, argv, "Gaudi2", "MygatherBF16"))
+    {
+        testMygather.SetUp();
+        result = testMygather.runTest(GAUDI2_KERNEL_MYGATHER_BF16);
+        testMygather.TearDown();
+        testCount ++;
         if (result != 0)
         {
             return result;

@@ -15,30 +15,30 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 ********************************************************************/
 
 #include <cstring>
-#include "mygather_gaudi2.hpp"
+#include "mygather_gaudi3.hpp"
 #include <stdio.h>
 #include <iostream>
 
-extern unsigned char _binary___mygather_f32_gaudi2_o_start;
-extern unsigned char _binary___mygather_f32_gaudi2_o_end;
+extern unsigned char _binary___mygather_f32_gaudi3_o_start;
+extern unsigned char _binary___mygather_f32_gaudi3_o_end;
 
-extern unsigned char _binary___mygather_bf16_gaudi2_o_start;
-extern unsigned char _binary___mygather_bf16_gaudi2_o_end;
+extern unsigned char _binary___mygather_bf16_gaudi3_o_start;
+extern unsigned char _binary___mygather_bf16_gaudi3_o_end;
 
 
-tpc_lib_api::GlueCodeReturn MygatherGaudi2::GetKernelName(
+tpc_lib_api::GlueCodeReturn MygatherGaudi3::GetKernelName(
         char kernelName [tpc_lib_api::MAX_NODE_NAME], mygather_mode_t mode)
 {
     switch(mode)
     {
         case mygather_f32:
-            strcpy(kernelName,"custom_mygather_f32_gaudi2");
+            strcpy(kernelName,"custom_mygather_f32_gaudi3");
             break;
         case mygather_bf16:
-            strcpy(kernelName,"custom_mygather_bf16_gaudi2");
+            strcpy(kernelName,"custom_mygather_bf16_gaudi3");
             break;
         default:
-            strcpy(kernelName,"custom_mygather_f32_gaudi2");
+            strcpy(kernelName,"custom_mygather_f32_gaudi3");
             break;
 
     }
@@ -46,7 +46,7 @@ tpc_lib_api::GlueCodeReturn MygatherGaudi2::GetKernelName(
     return tpc_lib_api::GLUE_SUCCESS;
 }
 
-tpc_lib_api::GlueCodeReturn MygatherGaudi2::GetGcDefinitions(
+tpc_lib_api::GlueCodeReturn MygatherGaudi3::GetGcDefinitions(
         tpc_lib_api::HabanaKernelParams* in_defs,
         tpc_lib_api::HabanaKernelInstantiation* out_defs)
 {
@@ -228,17 +228,17 @@ tpc_lib_api::GlueCodeReturn MygatherGaudi2::GetGcDefinitions(
     /*************************************************************************************
     *    Stage V -  Load ISA into the descriptor.
     **************************************************************************************/
-    unsigned IsaSize = (&_binary___mygather_f32_gaudi2_o_end - &_binary___mygather_f32_gaudi2_o_start);
-    unsigned char *binary_kernel =  &_binary___mygather_f32_gaudi2_o_start;
+    unsigned IsaSize = (&_binary___mygather_f32_gaudi3_o_end - &_binary___mygather_f32_gaudi3_o_start);
+    unsigned char *binary_kernel =  &_binary___mygather_f32_gaudi3_o_start;
     switch (m_mode)
     {
         case mygather_f32:
-            IsaSize = (&_binary___mygather_f32_gaudi2_o_end - &_binary___mygather_f32_gaudi2_o_start);
-            binary_kernel = &_binary___mygather_f32_gaudi2_o_start;
+            IsaSize = (&_binary___mygather_f32_gaudi3_o_end - &_binary___mygather_f32_gaudi3_o_start);
+            binary_kernel = &_binary___mygather_f32_gaudi3_o_start;
             break;
         case mygather_bf16:
-            IsaSize = (&_binary___mygather_bf16_gaudi2_o_end - &_binary___mygather_bf16_gaudi2_o_start);
-            binary_kernel = &_binary___mygather_bf16_gaudi2_o_start;
+            IsaSize = (&_binary___mygather_bf16_gaudi3_o_end - &_binary___mygather_bf16_gaudi3_o_start);
+            binary_kernel = &_binary___mygather_bf16_gaudi3_o_start;
             break;
         default:
             break;

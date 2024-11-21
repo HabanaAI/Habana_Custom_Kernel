@@ -50,6 +50,10 @@ file(GLOB TPC_C_GAUDI_SOURCES_TO_EMBED ./kernels/gaudi/*.c)
 # linked into tpc_kernels executable.
 file(GLOB TPC_C_GAUDI2_SOURCES_TO_EMBED ./kernels/gaudi2/*.c)
 
+# Add TPC-C source files to be compiled by TPC Gaudi3 compiler and
+# linked into tpc_kernels executable.
+file(GLOB TPC_C_GAUDI3_SOURCES_TO_EMBED ./kernels/gaudi3/*.c)
+
 # Add TPC assembly files to be compiled by TPC Goya assembler and
 # linked into tpc_kernels executable.
 file(GLOB TPC_ASSEMBLY_TO_EMBED  ./kernels/*.tpcasm)

@@ -37,6 +37,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "add_f32_gaudi2.hpp"
 #include "relu_all_gaudi2.hpp"
 #include "user_lut_gaudi2.hpp"
+#include "mygather_gaudi2.hpp"
+#include "mygather_gaudi3.hpp"
 
 #include "entry_points.hpp"
 #include <stdio.h>
@@ -47,6 +49,7 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId       
                                             _INOUT_ uint32_t*       kernelCount,
                                             _OUT_   tpc_lib_api::GuidInfo*       guids)
 {
+    printf("Entering ZZZZZZ entry point............\n");
     if (deviceId == tpc_lib_api::DEVICE_ID_GAUDI)
     {
         if (guids != nullptr )
@@ -141,12 +144,32 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId       
            ReluBwdBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_RELU_BWD_BF16].name, ReluAllGaudi2::relu_bwd_bf16);
            UserLutGaudi2 userLutInstance;
            userLutInstance.GetKernelName(guids[GAUDI2_KERNEL_USER_LUT].name);
+           MygatherGaudi2 MygatherF32g2Instance(MygatherGaudi2::mygather_f32);
+           MygatherF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_MYGATHER_F32].name, MygatherGaudi2::mygather_f32);
+           MygatherGaudi2 MygatherBF16g2Instance(MygatherGaudi2::mygather_bf16);
+           MygatherBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_MYGATHER_BF16].name, MygatherGaudi2::mygather_bf16);
         }
 
         if (kernelCount != nullptr)
         {
             // currently the library support 8 kernel.
             *kernelCount = GAUDI2_KERNEL_MAX_EXAMPLE_KERNEL;
+        }
+    }
+    else if (deviceId == tpc_lib_api::DEVICE_ID_GAUDI3)
+    {
+        if (guids != nullptr )
+        {
+           MygatherGaudi3 MygatherF32g3Instance(MygatherGaudi3::mygather_f32);
+           MygatherF32g3Instance.GetKernelName(guids[GAUDI3_KERNEL_MYGATHER_F32].name, MygatherGaudi3::mygather_f32);
+           MygatherGaudi3 MygatherBF16g3Instance(MygatherGaudi3::mygather_bf16);
+           MygatherBF16g3Instance.GetKernelName(guids[GAUDI3_KERNEL_MYGATHER_BF16].name, MygatherGaudi3::mygather_bf16);
+        }
+
+        if (kernelCount != nullptr)
+        {
+            // currently the library support 2 kernel.
+            *kernelCount = GAUDI3_KERNEL_MAX_EXAMPLE_KERNEL;
         }
     }
     else
@@ -439,6 +462,36 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     if (strcmp(params->guid.name, kernelName) == 0)
     {
         return userLutInstance.GetGcDefinitions(params,instance);
+    }
+
+    MygatherGaudi2 MygatherF32g2Instance(MygatherGaudi2::mygather_f32);
+    MygatherF32g2Instance.GetKernelName(kernelName, MygatherGaudi2::mygather_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MygatherF32g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    MygatherGaudi2 MygatherBF16g2Instance(MygatherGaudi2::mygather_bf16);
+    MygatherBF16g2Instance.GetKernelName(kernelName, MygatherGaudi2::mygather_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MygatherBF16g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    /////// --- Gaudi3 
+    ///////////////////////////////
+    MygatherGaudi3 MygatherF32g3Instance(MygatherGaudi3::mygather_f32);
+    MygatherF32g3Instance.GetKernelName(kernelName, MygatherGaudi3::mygather_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MygatherF32g3Instance.GetGcDefinitions(params,instance);
+    }
+
+    MygatherGaudi3 MygatherBF16g3Instance(MygatherGaudi3::mygather_bf16);
+    MygatherBF16g3Instance.GetKernelName(kernelName, MygatherGaudi3::mygather_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MygatherBF16g3Instance.GetGcDefinitions(params,instance);
     }
 
     return tpc_lib_api::GLUE_NODE_NOT_FOUND;

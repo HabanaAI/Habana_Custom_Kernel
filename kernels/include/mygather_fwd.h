@@ -28,7 +28,7 @@ void main(tensor ifm_in, tensor ifm_start, tensor ofm_out, unsigned int rng_size
 
     const int5 indexSpaceStart = get_index_space_offset();
     const int5 indexSpaceEnd = get_index_space_size() + indexSpaceStart;
-    const int memlen_size = get_dim_size(ifm_dt, 0); 
+    //const int memlen_size = get_dim_size(ifm_in, 0); 
 
     int5 ifm_in_Coords      = { 0, 0, 0, 0, 0 };
     int5 ifm_start_Coords   = { 0, 0, 0, 0, 0 };
@@ -36,8 +36,8 @@ void main(tensor ifm_in, tensor ifm_start, tensor ofm_out, unsigned int rng_size
 
     // memlen (FCD)
     const int memStep = VECTOR_SIZE;
-    const int memStart = indexSpaceStart[mem] * memStep;
-    const int memEnd = indexSpaceEnd[mem] * memStep;
+    //const int memStart = indexSpaceStart[mem] * memStep;
+    //const int memEnd = indexSpaceEnd[mem] * memStep;
     // dim
     const int dimStep = 1;
     const int dimStart = indexSpaceStart[dim] * dimStep;
@@ -61,11 +61,11 @@ void main(tensor ifm_in, tensor ifm_start, tensor ofm_out, unsigned int rng_size
         ifm_start_Coords[batch] = b;
         ofm_out_Coords[batch] = b;
 
-        for (int h = headStart ; n < headEnd; n += headStep)
+        for (int h = headStart ; h < headEnd; h += headStep)
         {
             ifm_in_Coords[head] = h;
             ifm_start_Coords[head] = 0; 
-            ofm_out_Coords[dstate] = h; 
+            ofm_out_Coords[head] = h; 
 
             for (int d = dimStart; d < dimEnd; d += dimStep)
             {
@@ -81,7 +81,7 @@ void main(tensor ifm_in, tensor ifm_start, tensor ofm_out, unsigned int rng_size
                     ofm_out_Coords[mem] = m;
 
                     idx_start = s_i32_ld_g(gen_addr(ifm_start_Coords, ifm_start));
-                    ifm_in_Coords[mem] = m + idx_start;
+                    ifm_in_Coords[mem]  += idx_start;
                     vec_in = v_ld_tnsr_i(ifm_in_Coords, ifm_in);
 
                     st_tnsr_i_v(ofm_out_Coords, ofm_out, vec_in);

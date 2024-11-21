@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2024 Habana Labs.
+Copyright (c) 2024 Habana Labs. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -14,38 +14,40 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef MYGATHER_GAUDI2_TEST_HPP
-#define MYGATHER_GAUDI2_TEST_HPP
+#ifndef _PSCAN_GAUDI3_HPP
+#define _PSCAN_GAUDI3_HPP
 
-#include "test_base.hpp"
-#include "tensor.h"
-#include "mygather_gaudi2.hpp"
-#include "entry_points.hpp"
+#include "gc_interface.h"
+#include "tpc_kernel_lib_interface.h"
 
-class MygatherGaudi2Test : public TestBase
+class MygatherGaudi3
 {
 public:
-    MygatherGaudi2Test() {}
-    ~MygatherGaudi2Test() {}
-    int runTest(Gaudi2_Kernel_Name_e NameofKernel);
+    typedef enum _mygather_mode_t
+    {
+        mygather_f32,
+        mygather_bf16,
+    } mygather_mode_t;
 
-    static void mygather_fp32_ref(
-         const test::Tensor<float,4>& in_M,
-         const test::Tensor<int,4>& start_M,
-         test::Tensor<float,4>& output,
-         const IndexSpace& indexSpace, 
-         MygatherGaudi2::MygatherParam def);
+    MygatherGaudi3(mygather_mode_t mode=mygather_f32) {m_mode = mode;}
+    virtual ~MygatherGaudi3() {}
 
-    static void mygather_bf16_ref(
-         const test::Tensor<bfloat16,4>& in_M,
-         const test::Tensor<int,4>& start_M,
-         test::Tensor<bfloat16,4>& output,
-         const IndexSpace& indexSpace,
-         MygatherGaudi2::MygatherParam def);
+    virtual tpc_lib_api::GlueCodeReturn GetGcDefinitions(
+            tpc_lib_api::HabanaKernelParams* params,
+            tpc_lib_api::HabanaKernelInstantiation* kernel);
+
+    virtual tpc_lib_api::GlueCodeReturn GetKernelName(
+            char kernelName [tpc_lib_api::MAX_NODE_NAME], mygather_mode_t mode);
+    
+    struct MygatherParam
+    {
+        int max_ctx_len;
+    };    
 private:
-    MygatherGaudi2Test(const MygatherGaudi2Test& other) = delete;
-    MygatherGaudi2Test& operator=(const MygatherGaudi2Test& other) = delete;
-
+    mygather_mode_t m_mode;
+    MygatherGaudi3(const MygatherGaudi3& other) = delete;
+    MygatherGaudi3& operator=(const MygatherGaudi3& other) = delete;
 };
 
-#endif /* MYGATHER_GAUDI2_TEST_HPP */
+
+#endif //_MYGATHER_GAUDI3_HPP

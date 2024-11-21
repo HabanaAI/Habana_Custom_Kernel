@@ -19,12 +19,12 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 void MygatherGaudi2Test::mygather_fp32_ref(
          const test::Tensor<float,4>& in_M,
-         const test::Tensor<float,4>& start_M,
+         const test::Tensor<int,4>& start_M,
          test::Tensor<float,4>& output,
          const IndexSpace& indexSpace,
-         MygatherGaudi2Test::MygatherParam def)
+         MygatherGaudi2::MygatherParam def)
 {
-    int eig = 64;
+    //int eig = 64;
 
     int coords_in[5] = { 0 };
     int coords_start[5] = { 0 };
@@ -64,12 +64,12 @@ void MygatherGaudi2Test::mygather_fp32_ref(
 
 void MygatherGaudi2Test::mygather_bf16_ref(
          const test::Tensor<bfloat16,4>& in_M,
-         const test::Tensor<bfloat16,4>& start_M,
+         const test::Tensor<int,4>& start_M,
          test::Tensor<bfloat16,4>& output,
          const IndexSpace& indexSpace, 
-         MygatherGaudi2Test::MygatherParam def)
+         MygatherGaudi2::MygatherParam def)
 {
-    int eig = 128;
+    //int eig = 128;
     
     int coords_in[5] = { 0 };
     int coords_start[5] = { 0 };
@@ -125,7 +125,7 @@ int MygatherGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
     if((NameofKernel == GAUDI2_KERNEL_MYGATHER_F32))
     {
         float_4DTensor ifm_in(ifm_in_Initializer);
-        float_4DTensor ifm_start(ifm_start_Initializer);
+        int32_4DTensor ifm_start(ifm_start_Initializer);
         float_4DTensor ofm_out(ofm_out_Initializer);
         float_4DTensor ofm_out_ref(ofm_out_Initializer);
     
@@ -208,7 +208,7 @@ int MygatherGaudi2Test::runTest(Gaudi2_Kernel_Name_e NameofKernel)
     else
     {
         bfloat16_4DTensor ifm_in(ifm_in_Initializer);
-        bfloat16_4DTensor ifm_start(ifm_start_Initializer);
+        int32_4DTensor ifm_start(ifm_start_Initializer);
         bfloat16_4DTensor ofm_out(ofm_out_Initializer);
         bfloat16_4DTensor ofm_out_ref(ofm_out_Initializer);
 
