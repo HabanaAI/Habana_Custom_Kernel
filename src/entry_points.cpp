@@ -39,6 +39,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "user_lut_gaudi2.hpp"
 #include "mygather_gaudi2.hpp"
 #include "mygather_gaudi3.hpp"
+#include "mygather_where_gaudi2.hpp"
+#include "mygather_where_gaudi3.hpp"
 
 #include "entry_points.hpp"
 #include <stdio.h>
@@ -148,6 +150,10 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId       
            MygatherF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_MYGATHER_F32].name, MygatherGaudi2::mygather_f32);
            MygatherGaudi2 MygatherBF16g2Instance(MygatherGaudi2::mygather_bf16);
            MygatherBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_MYGATHER_BF16].name, MygatherGaudi2::mygather_bf16);
+           MygatherwhereGaudi2 MygatherwhereF32g2Instance(MygatherwhereGaudi2::mygatherw_f32);
+           MygatherwhereF32g2Instance.GetKernelName(guids[GAUDI2_KERNEL_MYGATHER_WHERE_F32].name, MygatherwhereGaudi2::mygatherw_f32);
+           MygatherwhereGaudi2 MygatherwhereBF16g2Instance(MygatherwhereGaudi2::mygatherw_bf16);
+           MygatherwhereBF16g2Instance.GetKernelName(guids[GAUDI2_KERNEL_MYGATHER_WHERE_BF16].name, MygatherwhereGaudi2::mygatherw_bf16);
         }
 
         if (kernelCount != nullptr)
@@ -164,6 +170,10 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId       
            MygatherF32g3Instance.GetKernelName(guids[GAUDI3_KERNEL_MYGATHER_F32].name, MygatherGaudi3::mygather_f32);
            MygatherGaudi3 MygatherBF16g3Instance(MygatherGaudi3::mygather_bf16);
            MygatherBF16g3Instance.GetKernelName(guids[GAUDI3_KERNEL_MYGATHER_BF16].name, MygatherGaudi3::mygather_bf16);
+           MygatherwhereGaudi3 MygatherwhereF32g3Instance(MygatherwhereGaudi3::mygatherw_f32);
+           MygatherwhereF32g3Instance.GetKernelName(guids[GAUDI3_KERNEL_MYGATHER_WHERE_F32].name, MygatherwhereGaudi3::mygatherw_f32);
+           MygatherwhereGaudi3 MygatherwhereBF16g3Instance(MygatherwhereGaudi3::mygatherw_bf16);
+           MygatherwhereBF16g3Instance.GetKernelName(guids[GAUDI3_KERNEL_MYGATHER_WHERE_BF16].name, MygatherwhereGaudi3::mygatherw_bf16);
         }
 
         if (kernelCount != nullptr)
@@ -478,6 +488,20 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
         return MygatherBF16g2Instance.GetGcDefinitions(params,instance);
     }
 
+    MygatherwhereGaudi2 MygatherwhereF32g2Instance(MygatherwhereGaudi2::mygatherw_f32);
+    MygatherwhereF32g2Instance.GetKernelName(kernelName, MygatherwhereGaudi2::mygatherw_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MygatherwhereF32g2Instance.GetGcDefinitions(params,instance);
+    }
+
+    MygatherwhereGaudi2 MygatherwhereBF16g2Instance(MygatherwhereGaudi2::mygatherw_bf16);
+    MygatherwhereBF16g2Instance.GetKernelName(kernelName, MygatherwhereGaudi2::mygatherw_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MygatherwhereBF16g2Instance.GetGcDefinitions(params,instance);
+    }
+
     /////// --- Gaudi3 
     ///////////////////////////////
     MygatherGaudi3 MygatherF32g3Instance(MygatherGaudi3::mygather_f32);
@@ -492,6 +516,20 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
     if (strcmp(params->guid.name, kernelName) == 0)
     {
         return MygatherBF16g3Instance.GetGcDefinitions(params,instance);
+    }
+
+    MygatherwhereGaudi3 MygatherwhereF32g3Instance(MygatherwhereGaudi3::mygatherw_f32);
+    MygatherwhereF32g3Instance.GetKernelName(kernelName, MygatherwhereGaudi3::mygatherw_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MygatherwhereF32g3Instance.GetGcDefinitions(params,instance);
+    }
+
+    MygatherwhereGaudi3 MygatherwhereBF16g3Instance(MygatherwhereGaudi3::mygatherw_bf16);
+    MygatherwhereBF16g3Instance.GetKernelName(kernelName, MygatherwhereGaudi3::mygatherw_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MygatherwhereBF16g3Instance.GetGcDefinitions(params,instance);
     }
 
     return tpc_lib_api::GLUE_NODE_NOT_FOUND;

@@ -16,9 +16,11 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 
 #if defined(FLOAT32)
 #define VECTOR                      float64
+#define VECTOR_INT                  int64
 #define VECTOR_SIZE                 64
 typedef float                       SCALAR;
 #define v_ld_tnsr_i(a,b)            v_f32_ld_tnsr_b(a,b)
+#define v_ld_int_tnsr_i(a, b)       v_i32_ld_tnsr_b(a, b)
 #define v_sel_less_v_s_v_v(a,b,c,d) v_f32_sel_less_f32_b(a,b,c,d)
 #define v_sel_geq_v_s_v_v(a,b,c,d)    v_f32_sel_geq_f32_b(a,b,c,d)
 #define v_sel_grt_v_s_v_v(a,b,c,d)    v_f32_sel_grt_f32_b(a,b,c,d)
@@ -40,14 +42,16 @@ typedef float                       SCALAR;
 #define exp(a)                      exp_f32(a)
 #define V_LANE_ID                   read_lane_id_4b_b()
 #define v_sel_leq_v_v_v_v(a, b, c, d) v_f32_sel_leq_f32_b(a, b, c, d)
-
+#define bv_int_cmp_eq_v_v(a, b)     from_bool64(v_i32_cmp_eq_b(a, b))
 #endif
 
 #if defined(BFLOAT16)
 #define VECTOR                      bfloat128
+#define VECTOR_INT                  short128
 #define VECTOR_SIZE                 128
 typedef bf16                        SCALAR;
-#define v_ld_tnsr_i(a,b)            v_bf16_ld_tnsr_b(a,b)
+#define v_ld_tnsr_i(a,b)            v_bf16_ld_tnsr_b(a,b)        
+#define v_ld_int_tnsr_i(a, b)       v_i16_ld_tnsr_b(a, b)
 #define v_sel_less_v_s_v_v(a,b,c,d) v_bf16_sel_less_bf16_b(a,b,c,d)
 #define v_sel_geq_v_s_v_v(a,b,c,d)    v_bf16_sel_geq_bf16_b(a,b,c,d)
 #define v_sel_grt_v_s_v_v(a,b,c,d)    v_bf16_sel_grt_bf16_b(a,b,c,d)
@@ -55,5 +59,7 @@ typedef bf16                        SCALAR;
 #define v_sel_geq_v_s_v_v_b(a, b, c, d, i, p, o)  v_bf16_sel_geq_bf16_b(a, b, c, d, 0, i, p, o)
 #define v_sel_less_v_s_v_v_b(a, b, c, d, i, p, o) v_bf16_sel_less_bf16_b(a, b, c, d, 0, i, p, o)
 #define st_tnsr_i_v(a,b,c)          v_bf16_st_tnsr(a,b,c)
-
+#define v_mov_v_vb(a, b, c, d)      v_bf16_mov_vb(a, 0, b, to_bool128(c), d)
+#define bv_int_cmp_eq_v_v(a, b)     from_bool128(v_i16_cmp_eq_b(a, b))
+#define v_ld_g_a(a)                 v_bf16_ld_g(a)
 #endif

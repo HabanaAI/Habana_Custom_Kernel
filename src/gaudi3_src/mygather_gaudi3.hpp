@@ -14,8 +14,8 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef _PSCAN_GAUDI3_HPP
-#define _PSCAN_GAUDI3_HPP
+#ifndef _MYGATHER_GAUDI3_HPP
+#define _MYGATHER_GAUDI3_HPP
 
 #include "gc_interface.h"
 #include "tpc_kernel_lib_interface.h"

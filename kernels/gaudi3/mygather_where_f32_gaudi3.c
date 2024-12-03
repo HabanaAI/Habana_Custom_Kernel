@@ -14,40 +14,5 @@ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY TH
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef _MYGATHER_GAUDI2_HPP
-#define _MYGATHER_GAUDI2_HPP
-
-#include "gc_interface.h"
-#include "tpc_kernel_lib_interface.h"
-
-class MygatherGaudi2
-{
-public:
-    typedef enum _mygather_mode_t
-    {
-        mygather_f32,
-        mygather_bf16,
-    } mygather_mode_t;
-
-    MygatherGaudi2(mygather_mode_t mode=mygather_f32) {m_mode = mode;}
-    virtual ~MygatherGaudi2() {}
-
-    virtual tpc_lib_api::GlueCodeReturn GetGcDefinitions(
-            tpc_lib_api::HabanaKernelParams* params,
-            tpc_lib_api::HabanaKernelInstantiation* kernel);
-
-    virtual tpc_lib_api::GlueCodeReturn GetKernelName(
-            char kernelName [tpc_lib_api::MAX_NODE_NAME], mygather_mode_t mode);
-    
-    struct MygatherParam
-    {
-        int max_ctx_len;
-    };    
-private:
-    mygather_mode_t m_mode;
-    MygatherGaudi2(const MygatherGaudi2& other) = delete;
-    MygatherGaudi2& operator=(const MygatherGaudi2& other) = delete;
-};
-
-
-#endif //_MYGATHER_GAUDI2_HPP
+#define FLOAT32
+#include "mygather_fwd.h"
