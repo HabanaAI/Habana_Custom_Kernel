@@ -37,6 +37,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "add_f32_gaudi2.hpp"
 #include "relu_all_gaudi2.hpp"
 #include "user_lut_gaudi2.hpp"
+#include "mamba_pscan_gaudi3.hpp"
+#include "mamba_pscan_update_gaudi3.hpp"
 
 #include "entry_points.hpp"
 #include <stdio.h>
@@ -147,6 +149,26 @@ tpc_lib_api::GlueCodeReturn GetKernelGuids( _IN_    tpc_lib_api::DeviceId       
         {
             // currently the library support 8 kernel.
             *kernelCount = GAUDI2_KERNEL_MAX_EXAMPLE_KERNEL;
+        }
+    }
+    else if (deviceId == tpc_lib_api::DEVICE_ID_GAUDI3)
+    {
+        if (guids != nullptr )
+        {
+            MambaPscanGaudi3 MambaPscanF32g3Instance(MambaPscanGaudi3::pscan_f32);
+            MambaPscanF32g3Instance.GetKernelName(guids[GAUDI3_KERNEL_PSCAN_F32].name, MambaPscanGaudi3::pscan_f32);
+            MambaPscanGaudi3 MambaPscanBF16g3Instance(MambaPscanGaudi3::pscan_bf16);
+            MambaPscanBF16g3Instance.GetKernelName(guids[GAUDI3_KERNEL_PSCAN_BF16].name, MambaPscanGaudi3::pscan_bf16);
+            MambaPscanUpdateGaudi3 MambaPscanUpdateF32g3Instance(MambaPscanUpdateGaudi3::pscan_update_f32);
+            MambaPscanUpdateF32g3Instance.GetKernelName(guids[GAUDI3_KERNEL_PSCAN_UPDATE_F32].name, MambaPscanUpdateGaudi3::pscan_update_f32);
+            MambaPscanUpdateGaudi3 MambaPscanUpdateBF16g3Instance(MambaPscanUpdateGaudi3::pscan_update_bf16);
+            MambaPscanUpdateBF16g3Instance.GetKernelName(guids[GAUDI3_KERNEL_PSCAN_UPDATE_BF16].name, MambaPscanUpdateGaudi3::pscan_update_bf16);
+        }
+
+        if (kernelCount != nullptr)
+        {
+            // currently the library support 8 kernel.
+            *kernelCount = GAUDI3_KERNEL_MAX_EXAMPLE_KERNEL;
         }
     }
     else
@@ -441,6 +463,32 @@ InstantiateTpcKernel(_IN_  tpc_lib_api::HabanaKernelParams* params,
         return userLutInstance.GetGcDefinitions(params,instance);
     }
 
+    /////// --- Gaudi3
+    ///////////////////////////////    
+    MambaPscanGaudi3 MambaPscanF32g3Instance(MambaPscanGaudi3::pscan_f32);
+    MambaPscanF32g3Instance.GetKernelName(kernelName, MambaPscanGaudi3::pscan_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MambaPscanF32g3Instance.GetGcDefinitions(params,instance);
+    }
+    MambaPscanGaudi3 MambaPscanBF16g3Instance(MambaPscanGaudi3::pscan_bf16);
+    MambaPscanBF16g3Instance.GetKernelName(kernelName, MambaPscanGaudi3::pscan_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MambaPscanBF16g3Instance.GetGcDefinitions(params,instance);
+    }
+    MambaPscanUpdateGaudi3 MambaPscanUpdateF32g3Instance(MambaPscanUpdateGaudi3::pscan_update_f32);
+    MambaPscanUpdateF32g3Instance.GetKernelName(kernelName, MambaPscanUpdateGaudi3::pscan_update_f32);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MambaPscanUpdateF32g3Instance.GetGcDefinitions(params,instance);
+    }
+    MambaPscanUpdateGaudi3 MambaPscanUpdateBF16g3Instance(MambaPscanUpdateGaudi3::pscan_update_bf16);
+    MambaPscanUpdateBF16g3Instance.GetKernelName(kernelName, MambaPscanUpdateGaudi3::pscan_update_bf16);
+    if (strcmp(params->guid.name, kernelName) == 0)
+    {
+        return MambaPscanUpdateBF16g3Instance.GetGcDefinitions(params,instance);
+    }    
     return tpc_lib_api::GLUE_NODE_NOT_FOUND;
 }
 

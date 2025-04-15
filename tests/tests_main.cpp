@@ -35,6 +35,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 #include "gather_fwd_i32_test.hpp"
 #include "kl_div_all_test.hpp"
 #include "user_lut_gaudi2_test.hpp"
+#include "mamba_pscan_gaudi3_test.hpp"
+#include "mamba_pscan_update_gaudi3_test.hpp"
 
 int check_arg(int argc, char** argv, const char* device, const char* test)
 {
@@ -101,7 +103,11 @@ int main(int argc, char** argv)
             "AvgPool2DBwdF32Gaudi2Test  Run AvgPool2DBwdF32Gaudi2Test only   " << std::endl <<
             "CastF16toI16Gaudi2Test     Run CastF16toI16Gaudi2Test only   " << std::endl <<
             "SoftMaxBF16Gaudi2Test      Run SoftMaxBF16Gaudi2Test only   " << std::endl <<
-            "UserLutGaudi2Test          Run UserLutGaudi2Test only   " << std::endl;
+            "UserLutGaudi2Test          Run UserLutGaudi2Test only   " << std::endl <<
+            "MambaPscanGaudi3F32Test         Run MambaPscanGaudi3F32Test only   "        << std::endl <<
+            "MambaPscanGaudi3BF16Test        Run MambaPscanGaudi3BF16Test only   "       << std::endl <<
+            "MambaPscanUpdateGaudi3F32Test   Run MambaPscanUpdateGaudi3F32Test only   "  << std::endl <<
+            "MambaPscanUpdateGaudi3BF16Test  Run MambaPscanUpdateGaudi3BF16Test only   " << std::endl;            
 
         exit(0);
     }
@@ -478,6 +484,56 @@ int main(int argc, char** argv)
         result = userLutTest.runTest();
         userLutTest.TearDown();
         testCount++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    MambaPscanGaudi3Test testPscan;
+    if(check_arg(argc, argv, "Gaudi3", "MambaPscanGaudi3F32Test"))
+    {
+        testPscan.SetUp();
+        result = testPscan.runTest(GAUDI3_KERNEL_PSCAN_F32);
+        testPscan.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(check_arg(argc, argv, "Gaudi3", "MambaPscanGaudi3BF16Test"))
+    {
+        testPscan.SetUp();
+        result = testPscan.runTest(GAUDI3_KERNEL_PSCAN_BF16);
+        testPscan.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    MambaPscanUpdateGaudi3Test testPscanUpdate;
+    if(check_arg(argc, argv, "Gaudi3", "MambaPscanUpdateGaudi3F32Test"))
+    {
+        testPscanUpdate.SetUp();
+        result = testPscanUpdate.runTest(GAUDI3_KERNEL_PSCAN_UPDATE_F32);
+        testPscanUpdate.TearDown();
+        testCount ++;
+        if (result != 0)
+        {
+            return result;
+        }
+    }
+
+    if(check_arg(argc, argv, "Gaudi3", "MambaPscanUpdateGaudi3BF16Test"))
+    {
+        testPscanUpdate.SetUp();
+        result = testPscanUpdate.runTest(GAUDI3_KERNEL_PSCAN_UPDATE_BF16);
+        testPscanUpdate.TearDown();
+        testCount ++;
         if (result != 0)
         {
             return result;

@@ -74,6 +74,18 @@ typedef enum
 
 } Gaudi2_Kernel_Name_e;
 
+typedef enum
+{
+    GAUDI3_KERNEL_PSCAN_F32,
+    GAUDI3_KERNEL_PSCAN_BF16,
+    GAUDI3_KERNEL_PSCAN_UPDATE_F32,
+    GAUDI3_KERNEL_PSCAN_UPDATE_BF16,
+
+    GAUDI3_KERNEL_MAX_EXAMPLE_KERNEL
+
+} Gaudi3_Kernel_Name_e;
+
+
 /*
  ***************************************************************************************************
  *   @brief This function returns exported kernel names
